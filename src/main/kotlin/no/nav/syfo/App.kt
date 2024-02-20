@@ -7,6 +7,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.pdl.PdlClient
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.wellknown.getWellKnown
 import org.slf4j.LoggerFactory
@@ -18,14 +19,17 @@ fun main() {
     val applicationState = ApplicationState()
     val environment = Environment()
     val logger = LoggerFactory.getLogger("ktor.application")
-    val wellKnownInternalAzureAD =
-        getWellKnown(
-            wellKnownUrl = environment.azure.appWellKnownUrl
-        )
-    val azureAdClient =
-        AzureAdClient(
-            azureEnvironment = environment.azure
-        )
+
+    val wellKnownInternalAzureAD = getWellKnown(
+        wellKnownUrl = environment.azure.appWellKnownUrl
+    )
+    val azureAdClient = AzureAdClient(
+        azureEnvironment = environment.azure
+    )
+    val pdlClient = PdlClient(
+        azureAdClient = azureAdClient,
+        pdlEnvironment = environment.clients.pdl,
+    )
     val veilederTilgangskontrollClient =
         VeilederTilgangskontrollClient(
             azureAdClient = azureAdClient,
@@ -60,10 +64,8 @@ fun main() {
     )
 
     Runtime.getRuntime().addShutdownHook(
-        Thread {
-            server.stop(10, 10, TimeUnit.SECONDS)
-        }
+        Thread { server.stop(10, 10, TimeUnit.SECONDS) }
     )
-
+    
     server.start(wait = true)
 }
