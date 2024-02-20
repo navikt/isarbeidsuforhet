@@ -1,8 +1,7 @@
 package no.nav.syfo
 
 import io.ktor.server.application.*
-import no.nav.syfo.api.ClientEnvironment
-import no.nav.syfo.api.ClientsEnvironment
+import no.nav.syfo.api.*
 import no.nav.syfo.infrastructure.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
 
@@ -26,10 +25,12 @@ data class Environment(
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val clients: ClientsEnvironment =
         ClientsEnvironment(
-            istilgangskontroll =
-            ClientEnvironment(
+            istilgangskontroll = ClientEnvironment(
                 baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
                 clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID")
+            ),
+            isarbeidsuforhetpdfgen = OpenClientEnvironment(
+                baseUrl = "http://isarbeidsuforhetpdfgen"
             ),
             pdl = ClientEnvironment(
                 baseUrl = getEnvVar("PDL_URL"),
