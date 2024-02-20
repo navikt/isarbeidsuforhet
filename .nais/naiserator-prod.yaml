@@ -6,7 +6,7 @@ metadata:
   labels:
     team: teamsykefravr
 spec:
-  image: {{ image }}
+  image: { { image } }
   port: 8080
   replicas:
     min: 2
@@ -41,8 +41,6 @@ spec:
     inbound:
       rules:
         - application: syfomodiaperson
-          namespace: teamsykefravr
-          cluster: prod-gcp
     outbound:
       external:
         - host: "login.microsoftonline.com"
