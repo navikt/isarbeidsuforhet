@@ -1,9 +1,9 @@
 package no.nav.syfo
 
 import io.ktor.server.application.*
+import no.nav.syfo.api.ClientEnvironment
+import no.nav.syfo.api.ClientsEnvironment
 import no.nav.syfo.infrastructure.azuread.AzureEnvironment
-import no.nav.syfo.web.ClientEnvironment
-import no.nav.syfo.web.ClientsEnvironment
 
 data class Environment(
     val azure: AzureEnvironment =

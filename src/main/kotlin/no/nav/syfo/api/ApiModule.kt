@@ -1,4 +1,4 @@
-package no.nav.syfo.web
+package no.nav.syfo.api
 
 import io.ktor.client.plugins.*
 import io.ktor.http.*
@@ -14,6 +14,11 @@ import io.ktor.server.routing.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
+import no.nav.syfo.api.auth.JwtIssuer
+import no.nav.syfo.api.auth.JwtIssuerType
+import no.nav.syfo.api.auth.installJwtAuthentication
+import no.nav.syfo.api.endpoints.metricEndpoints
+import no.nav.syfo.api.endpoints.podEndpoints
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.infrastructure.veiledertilgang.ForbiddenAccessVeilederException
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
@@ -22,11 +27,6 @@ import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.configure
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getConsumerClientId
-import no.nav.syfo.web.auth.JwtIssuer
-import no.nav.syfo.web.auth.JwtIssuerType
-import no.nav.syfo.web.auth.installJwtAuthentication
-import no.nav.syfo.web.endpoints.metricEndpoints
-import no.nav.syfo.web.endpoints.podEndpoints
 import java.time.Duration
 import java.util.*
 

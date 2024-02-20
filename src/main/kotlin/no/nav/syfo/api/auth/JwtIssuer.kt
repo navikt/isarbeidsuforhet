@@ -1,4 +1,4 @@
-package no.nav.syfo.web.auth
+package no.nav.syfo.api.auth
 
 import no.nav.syfo.infrastructure.wellknown.WellKnown
 

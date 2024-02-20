@@ -1,4 +1,4 @@
-package no.nav.syfo.web
+package no.nav.syfo.api
 
 data class ClientsEnvironment(
     val istilgangskontroll: ClientEnvironment
