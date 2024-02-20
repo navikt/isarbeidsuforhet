@@ -48,6 +48,7 @@ spec:
         - host: "login.microsoftonline.com"
       rules:
         - application: istilgangskontroll
+        - application: isarbeidsuforhetpdfgen
   azure:
     application:
       allowAllUsers: true
