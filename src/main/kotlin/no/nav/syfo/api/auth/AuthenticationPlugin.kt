@@ -1,4 +1,4 @@
-package no.nav.syfo.web.auth
+package no.nav.syfo.api.auth
 
 import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.server.application.*
