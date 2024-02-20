@@ -1,28 +1,53 @@
-# Hello NAIS
+![Build status](https://github.com/navikt/isarbeidsuforhet/workflows/main/badge.svg?branch=main)
 
-This is a bare bone repository containing a simple web server.
-The repository is used by the hello nais tutorial in the nais documentation.
+# isarbeidsuforhet
 
-## Local Development
+Applikasjon for vurdering av arbeidsuførhet (§8-4). § 8-4 er grunnvilkåret for rett til sykepenger.
+Se "§ 8-4 Medisinske vilkår" på Navet for mer informasjon.
 
-### Prerequisites
+## Technologies used
 
-- [ ] Docker CLI - via one of these alternatives:
-   - [Colima](https://github.com/abiosoft/colima) - Colima command-line tool (recommended)
-   - [Rancher](https://rancherdesktop.io) - Rancher desktop
-   - [Podman](https://podman-desktop.io) - Podman desktop
-   - [Docker desktop](https://www.docker.com/products/docker-desktop/) - Docker desktop (requires license)
+* Docker
+* Gradle
+* Kafka
+* Kotlin
+* Ktor
+* Postgres (Soon to be implemented)
+
+##### Test Libraries:
+
+* Kluent
+* Mockk
+* Spek
+
+#### Requirements
+
+* JDK 17
 
 ### Build
 
-1. Build Docker image:
+Run `./gradlew clean shadowJar`
 
-    ```shell
-    docker build . -t hello-nais
-    ```
+### Lint (Ktlint)
 
-2. Run Docker image:
+##### Command line
 
-    ```shell
-    docker run -p 8080:8080 hello-nais
-    ```
+Run checking: `./gradlew --continue ktlintCheck`
+
+Run formatting: `./gradlew ktlintFormat`
+
+##### Git Hooks
+
+Apply checking: `./gradlew addKtlintCheckGitPreCommitHook`
+
+Apply formatting: `./gradlew addKtlintFormatGitPreCommitHook`
+
+## Kafka
+
+Kafka is not currently in place, but will be added in the near future.
+
+## Contact
+
+### For NAV employees
+
+We are available at the Slack channel `#isyfo`.
