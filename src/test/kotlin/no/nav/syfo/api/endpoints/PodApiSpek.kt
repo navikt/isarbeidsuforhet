@@ -4,8 +4,8 @@ import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import no.nav.syfo.ApplicationState
-import no.nav.syfo.TestDatabase
-import no.nav.syfo.TestDatabaseNotResponding
+import no.nav.syfo.infrastructure.database.TestDatabase
+import no.nav.syfo.infrastructure.database.TestDatabaseNotResponding
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
