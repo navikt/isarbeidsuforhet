@@ -1,6 +1,5 @@
 package no.nav.syfo
 
-import io.ktor.server.application.*
 import no.nav.syfo.api.*
 import no.nav.syfo.infrastructure.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
@@ -44,12 +43,4 @@ fun getEnvVar(
     defaultValue: String? = null
 ) = System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
 
-val Application.envKind get() = environment.config.property("ktor.environment").getString()
-
-fun Application.isLocal(block: () -> Unit) {
-    if (envKind != "production") block()
-}
-
-fun Application.isDevOrProd(block: () -> Unit) {
-    if (envKind == "production") block()
-}
+fun isLocal() = getEnvVar("KTOR_ENV", "local") == "local"
