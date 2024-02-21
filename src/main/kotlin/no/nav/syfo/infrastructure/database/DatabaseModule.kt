@@ -1,14 +1,14 @@
 package no.nav.syfo.infrastructure.database
 
 import io.ktor.server.application.*
-import no.nav.syfo.isDev
-import no.nav.syfo.isProd
+import no.nav.syfo.isLocal
+import no.nav.syfo.isDevOrProd
 
 lateinit var applicationDatabase: DatabaseInterface
 fun Application.databaseModule(
     databaseEnvironment: DatabaseEnvironment
 ) {
-    isDev {
+    isLocal {
         applicationDatabase = Database(
             DatabaseConfig(
                 jdbcUrl = "jdbc:postgresql://localhost:5432/isarbeidsuforhet_dev",
@@ -18,7 +18,7 @@ fun Application.databaseModule(
         )
     }
 
-    isProd {
+    isDevOrProd {
         applicationDatabase = Database(
             DatabaseConfig(
                 jdbcUrl = databaseEnvironment.jdbcUrl(),

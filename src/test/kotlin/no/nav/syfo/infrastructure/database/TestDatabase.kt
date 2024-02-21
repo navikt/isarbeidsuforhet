@@ -8,7 +8,7 @@ class TestDatabase : DatabaseInterface {
     private val pg: EmbeddedPostgres = try {
         EmbeddedPostgres.start()
     } catch (e: Exception) {
-        EmbeddedPostgres.builder().setLocaleConfig("locale", "en_US").start()
+        EmbeddedPostgres.builder().start()
     }
 
     override val connection: Connection
