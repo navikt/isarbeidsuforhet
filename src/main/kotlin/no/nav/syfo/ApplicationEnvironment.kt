@@ -20,8 +20,12 @@ data class Environment(
             ClientEnvironment(
                 baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
                 clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID")
-            )
-        )
+            ),
+            pdl = ClientEnvironment(
+                baseUrl = getEnvVar("PDL_URL"),
+                clientId = getEnvVar("PDL_CLIENT_ID"),
+            ),
+        ),
 )
 
 fun getEnvVar(

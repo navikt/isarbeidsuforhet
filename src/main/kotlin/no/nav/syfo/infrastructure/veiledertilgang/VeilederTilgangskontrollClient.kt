@@ -11,12 +11,12 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.api.ClientEnvironment
 import no.nav.syfo.api.httpClientDefault
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
+import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
-import no.nav.syfo.util.NAV_CALL_ID_HEADER
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
 class VeilederTilgangskontrollClient(

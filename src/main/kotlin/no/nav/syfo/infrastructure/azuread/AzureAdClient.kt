@@ -30,6 +30,18 @@ class AzureAdClient(
             }
         )?.toAzureAdToken()
 
+    suspend fun getSystemToken(scopeClientId: String): AzureAdToken? {
+        val azureAdTokenResponse = getAccessToken(
+            Parameters.build {
+                append("client_id", azureEnvironment.appClientId)
+                append("client_secret", azureEnvironment.appClientSecret)
+                append("grant_type", "client_credentials")
+                append("scope", "api://$scopeClientId/.default")
+            }
+        )
+        return azureAdTokenResponse?.toAzureAdToken()
+    }
+
     private suspend fun getAccessToken(formParameters: Parameters): AzureAdTokenResponse? =
         try {
             val response: HttpResponse =
