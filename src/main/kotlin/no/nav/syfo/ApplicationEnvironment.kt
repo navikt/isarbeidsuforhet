@@ -1,11 +1,20 @@
 package no.nav.syfo
 
 import io.ktor.server.application.*
-import no.nav.syfo.api.ClientEnvironment
-import no.nav.syfo.api.ClientsEnvironment
+import no.nav.syfo.api.*
 import no.nav.syfo.infrastructure.azuread.AzureEnvironment
+import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+
+const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISARBEIDSUFORHET_ISARBEIDSUFORHET_DB"
 
 data class Environment(
+    val database: DatabaseEnvironment = DatabaseEnvironment(
+        host = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_HOST"),
+        port = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PORT"),
+        name = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_DATABASE"),
+        username = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_USERNAME"),
+        password = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
+    ),
     val azure: AzureEnvironment =
         AzureEnvironment(
             appClientId = getEnvVar("AZURE_APP_CLIENT_ID"),
@@ -16,10 +25,12 @@ data class Environment(
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
     val clients: ClientsEnvironment =
         ClientsEnvironment(
-            istilgangskontroll =
-            ClientEnvironment(
+            istilgangskontroll = ClientEnvironment(
                 baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
                 clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID")
+            ),
+            isarbeidsuforhetpdfgen = OpenClientEnvironment(
+                baseUrl = "http://isarbeidsuforhetpdfgen"
             ),
             pdl = ClientEnvironment(
                 baseUrl = getEnvVar("PDL_URL"),
@@ -35,10 +46,10 @@ fun getEnvVar(
 
 val Application.envKind get() = environment.config.property("ktor.environment").getString()
 
-fun Application.isDev(block: () -> Unit) {
-    if (envKind == "dev") block()
+fun Application.isLocal(block: () -> Unit) {
+    if (envKind != "production") block()
 }
 
-fun Application.isProd(block: () -> Unit) {
+fun Application.isDevOrProd(block: () -> Unit) {
     if (envKind == "production") block()
 }

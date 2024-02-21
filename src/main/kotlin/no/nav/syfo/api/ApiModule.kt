@@ -19,6 +19,7 @@ import no.nav.syfo.api.auth.JwtIssuerType
 import no.nav.syfo.api.auth.installJwtAuthentication
 import no.nav.syfo.api.endpoints.metricEndpoints
 import no.nav.syfo.api.endpoints.podEndpoints
+import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.infrastructure.veiledertilgang.ForbiddenAccessVeilederException
@@ -34,7 +35,8 @@ fun Application.apiModule(
     applicationState: ApplicationState,
     environment: Environment,
     wellKnownInternalAzureAD: WellKnown,
-    veilederTilgangskontrollClient: VeilederTilgangskontrollClient
+    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    database: DatabaseInterface,
 ) {
     installMetrics()
     installCallId()
@@ -52,7 +54,7 @@ fun Application.apiModule(
     )
 
     routing {
-        podEndpoints(applicationState = applicationState)
+        podEndpoints(applicationState = applicationState, database = database)
         metricEndpoints()
         authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
         }

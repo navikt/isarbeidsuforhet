@@ -8,6 +8,8 @@ import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.pdl.PdlClient
+import no.nav.syfo.infrastructure.database.applicationDatabase
+import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.wellknown.getWellKnown
 import org.slf4j.LoggerFactory
@@ -44,11 +46,15 @@ fun main() {
                 port = applicationPort
             }
             module {
+                databaseModule(
+                    databaseEnvironment = environment.database,
+                )
                 apiModule(
                     applicationState = applicationState,
+                    database = applicationDatabase,
                     environment = environment,
                     wellKnownInternalAzureAD = wellKnownInternalAzureAD,
-                    veilederTilgangskontrollClient = veilederTilgangskontrollClient
+                    veilederTilgangskontrollClient = veilederTilgangskontrollClient,
                 )
             }
         }
