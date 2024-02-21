@@ -1,11 +1,10 @@
 package no.nav.syfo.infrastructure.database
 
-import io.ktor.server.application.*
 import no.nav.syfo.isLocal
 import no.nav.syfo.isDevOrProd
 
 lateinit var applicationDatabase: DatabaseInterface
-fun Application.databaseModule(
+fun databaseModule(
     databaseEnvironment: DatabaseEnvironment
 ) {
     isLocal {
