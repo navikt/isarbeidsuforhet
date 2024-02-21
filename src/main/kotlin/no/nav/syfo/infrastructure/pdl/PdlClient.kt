@@ -30,7 +30,7 @@ class PdlClient(
             setBody(request)
             header(HttpHeaders.ContentType, "application/json")
             header(HttpHeaders.Authorization, bearerHeader(token.accessToken))
-            header(TEMA_HEADER, ALLE_TEMA_HEADERVERDI)
+            header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
         }
 
         val person = when (response.status) {
@@ -65,10 +65,12 @@ class PdlClient(
 
     companion object {
         private val httpClient: HttpClient = httpClientDefault()
-        private const val TEMA_HEADER = "Tema"
-        private const val ALLE_TEMA_HEADERVERDI = "GEN"
-
         private const val PDL_QUERY_PATH = "/pdl/hentPerson.graphql"
+
+        // Se behandlingskatalog https://behandlingskatalog.intern.nav.no/
+        // Behandling: Sykefraværsoppfølging: Vurdere behov for oppfølging og rett til sykepenger etter §§ 8-4 og 8-8
+        private const val BEHANDLINGSNUMMER_HEADER_KEY = "behandlingsnummer"
+        private const val BEHANDLINGSNUMMER_HEADER_VALUE = "B426"
 
         private val logger = LoggerFactory.getLogger(PdlClient::class.java)
     }
