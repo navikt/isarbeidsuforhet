@@ -12,7 +12,7 @@ Se "§ 8-4 Medisinske vilkår" på Navet for mer informasjon.
 * Kafka
 * Kotlin
 * Ktor
-* Postgres (Soon to be implemented)
+* Postgres
 
 ##### Test Libraries:
 

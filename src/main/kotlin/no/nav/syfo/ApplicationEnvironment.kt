@@ -4,8 +4,18 @@ import io.ktor.server.application.*
 import no.nav.syfo.api.ClientEnvironment
 import no.nav.syfo.api.ClientsEnvironment
 import no.nav.syfo.infrastructure.azuread.AzureEnvironment
+import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+
+const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISARBEIDSUFORHET_ISARBEIDSUFORHET_DB"
 
 data class Environment(
+    val database: DatabaseEnvironment = DatabaseEnvironment(
+        host = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_HOST"),
+        port = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PORT"),
+        name = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_DATABASE"),
+        username = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_USERNAME"),
+        password = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
+    ),
     val azure: AzureEnvironment =
         AzureEnvironment(
             appClientId = getEnvVar("AZURE_APP_CLIENT_ID"),
