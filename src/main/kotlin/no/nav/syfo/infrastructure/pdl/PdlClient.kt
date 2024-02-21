@@ -24,8 +24,7 @@ class PdlClient(
     private suspend fun getPerson(personIdent: PersonIdent): PdlPerson {
         val token = azureAdClient.getSystemToken(pdlEnvironment.clientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
-        val query = getPdlQuery("/pdl/hentPerson.graphql")
-        val request = PdlHentPersonRequest(query, PdlHentPersonRequestVariables(personIdent.value))
+        val request = PdlHentPersonRequest(getPdlQuery(), PdlHentPersonRequestVariables(personIdent.value))
 
         val response: HttpResponse = httpClient.post(pdlEnvironment.baseUrl) {
             setBody(request)
@@ -59,16 +58,17 @@ class PdlClient(
         return person ?: throw RuntimeException("PDL did not return a person for given fnr")
     }
 
-    private fun getPdlQuery(queryFilePath: String): String {
-        return this::class.java.getResource(queryFilePath)!!
+    private fun getPdlQuery(): String =
+        this::class.java.getResource(PDL_QUERY_PATH)!!
             .readText()
             .replace("[\n\r]", "")
-    }
 
     companion object {
         private val httpClient: HttpClient = httpClientDefault()
         private const val TEMA_HEADER = "Tema"
         private const val ALLE_TEMA_HEADERVERDI = "GEN"
+
+        private const val PDL_QUERY_PATH = "/pdl/hentPerson.graphql"
 
         private val logger = LoggerFactory.getLogger(PdlClient::class.java)
     }
@@ -76,8 +76,6 @@ class PdlClient(
 
 private class Metrics {
     companion object {
-        const val CALL_PDL_IDENTER_BASE = "${METRICS_NS}_call_pdl_identer"
-
         const val CALL_PDL_PERSON_BASE = "${METRICS_NS}_call_pdl_person"
         const val CALL_PDL_PERSON_SUCCESS = "${CALL_PDL_PERSON_BASE}_success_count"
         const val CALL_PDL_PERSON_FAIL = "${CALL_PDL_PERSON_BASE}_fail_count"
