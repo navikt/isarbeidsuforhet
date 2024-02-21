@@ -47,7 +47,7 @@ fun getEnvVar(
 val Application.envKind get() = environment.config.property("ktor.environment").getString()
 
 fun Application.isLocal(block: () -> Unit) {
-    if (envKind != "production") block()
+    if (envKind == "local") block()
 }
 
 fun Application.isDevOrProd(block: () -> Unit) {
