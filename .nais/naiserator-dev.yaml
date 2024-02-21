@@ -47,6 +47,12 @@ spec:
       rules:
         - application: istilgangskontroll
         - application: isarbeidsuforhetpdfgen
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_15
+        databases:
+          - name: isarbeidsuforhet-db
+        diskAutoresize: true
   azure:
     application:
       allowAllUsers: true
