@@ -43,12 +43,4 @@ fun getEnvVar(
     defaultValue: String? = null
 ) = System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
 
-val envKind get() = getEnvVar("KTOR_ENV", "local")
-
-fun isLocal(block: () -> Unit) {
-    if (envKind != "production") block()
-}
-
-fun isDevOrProd(block: () -> Unit) {
-    if (envKind == "production") block()
-}
+fun isLocal() = getEnvVar("KTOR_ENV", "local") == "local"
