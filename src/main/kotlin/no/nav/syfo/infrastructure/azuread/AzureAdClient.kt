@@ -7,7 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import no.nav.syfo.api.httpClientProxy
+import no.nav.syfo.infrastructure.httpClientProxy
 import org.slf4j.LoggerFactory
 
 class AzureAdClient(

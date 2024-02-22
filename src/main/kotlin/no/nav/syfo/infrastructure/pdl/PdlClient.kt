@@ -6,11 +6,11 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Counter
-import no.nav.syfo.api.ClientEnvironment
-import no.nav.syfo.api.httpClientDefault
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.infrastructure.ClientEnvironment
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.bearerHeader
+import no.nav.syfo.infrastructure.httpClientDefault
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import no.nav.syfo.infrastructure.pdl.dto.*

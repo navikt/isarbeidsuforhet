@@ -1,6 +1,8 @@
 package no.nav.syfo
 
-import no.nav.syfo.api.*
+import no.nav.syfo.infrastructure.ClientEnvironment
+import no.nav.syfo.infrastructure.ClientsEnvironment
+import no.nav.syfo.infrastructure.OpenClientEnvironment
 import no.nav.syfo.infrastructure.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
 
