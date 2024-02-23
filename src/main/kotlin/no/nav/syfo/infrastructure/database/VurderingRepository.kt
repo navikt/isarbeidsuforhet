@@ -14,25 +14,23 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
     override fun createForhandsvarsel(
         pdf: ByteArray,
         document: List<DocumentComponent>,
-        personIdent: PersonIdent,
-        veileder: String,
-        type: String,
-        begrunnelse: String
+        personident: PersonIdent,
+        veilederident: String,
+        begrunnelse: String,
     ) {
         database.connection.use { connection ->
             val vurdering = connection.createVurdering(
-                personIdent = personIdent,
-                veileder = veileder,
-                type = type,
-                begrunnelse = begrunnelse
+                personIdent = personident,
+                veileder = veilederident,
+                begrunnelse = begrunnelse,
             )
             val varsel = connection.createVarsel(
                 vurderingId = vurdering.id,
-                document = document
+                document = document,
             )
             connection.createPdf(
                 varselId = varsel.id,
-                pdf = pdf
+                pdf = pdf,
             )
             connection.commit()
         }
@@ -41,8 +39,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
     private fun Connection.createVurdering(
         personIdent: PersonIdent,
         veileder: String,
-        type: String,
-        begrunnelse: String
+        begrunnelse: String,
     ): PVurdering {
         val now = OffsetDateTime.now()
 
@@ -52,13 +49,13 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setObject(3, now)
             it.setObject(4, now)
             it.setString(5, veileder)
-            it.setString(6, type)
+            it.setString(6, "FORHANDSVARSEL")
             it.setString(7, begrunnelse)
             it.executeQuery().toList { toPVurdering() }
         }.single()
     }
 
-    private fun Connection.createVarsel(vurderingId: Int, document: List<DocumentComponent>): PVarsel {
+    private fun Connection.createVarsel(vurderingId: Int, document: List<DocumentComponent>,): PVarsel {
         val now = OffsetDateTime.now()
 
         return prepareStatement(CREATE_VARSEL).use {
@@ -71,7 +68,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         }
     }
 
-    private fun Connection.createPdf(varselId: Int, pdf: ByteArray): PVarselPdf =
+    private fun Connection.createPdf(varselId: Int, pdf: ByteArray,): PVarselPdf =
         prepareStatement(CREATE_VARSEL_PDF).use {
             it.setString(1, UUID.randomUUID().toString())
             it.setObject(2, OffsetDateTime.now())

@@ -21,9 +21,8 @@ class VurderingRepositorySpek : Spek({
                 vurderingRepository.createForhandsvarsel(
                     pdf = UserConstants.PDF_FORHANDSVARSEL,
                     document = generateDocumentComponent(fritekst = begrunnelse),
-                    personIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                    veileder = UserConstants.VEILEDER_IDENT,
-                    type = "FORHANDSVARSEL",
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
+                    veilederident = UserConstants.VEILEDER_IDENT,
                     begrunnelse = begrunnelse,
                 )
                 // TODO: Sjekk at ting er lagret når vi har implementert spørringer

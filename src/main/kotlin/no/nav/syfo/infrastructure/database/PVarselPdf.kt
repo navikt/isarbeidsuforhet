@@ -8,5 +8,5 @@ data class PVarselPdf(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val varselId: Int,
-    val pdf: ByteArray
+    val pdf: ByteArray,
 )

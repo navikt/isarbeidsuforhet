@@ -12,5 +12,5 @@ data class PVurdering(
     val updatedAt: OffsetDateTime,
     val veilederident: String,
     val type: String,
-    val begrunnelse: String
+    val begrunnelse: String,
 )
