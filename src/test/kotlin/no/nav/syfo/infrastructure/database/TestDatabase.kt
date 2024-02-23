@@ -27,7 +27,18 @@ class TestDatabase : DatabaseInterface {
 }
 
 fun DatabaseInterface.dropData() {
-    val queryList = emptyList<String>() // TODO: Delete statements for db-tables
+    val queryList = listOf(
+        """
+        DELETE FROM VURDERING
+        """.trimIndent(),
+        """
+        DELETE FROM VARSEL
+        """.trimIndent(),
+        """
+        DELETE FROM VARSEL_PDF
+        """.trimIndent(),
+    )
+
     this.connection.use { connection ->
         queryList.forEach { query ->
             connection.prepareStatement(query).execute()
