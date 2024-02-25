@@ -20,6 +20,7 @@ import no.nav.syfo.api.auth.installJwtAuthentication
 import no.nav.syfo.api.endpoints.metricEndpoints
 import no.nav.syfo.api.endpoints.podEndpoints
 import no.nav.syfo.api.endpoints.registerArbeidsuforhetEndpoints
+import no.nav.syfo.application.service.ForhandsvarselService
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
@@ -38,6 +39,7 @@ fun Application.apiModule(
     wellKnownInternalAzureAD: WellKnown,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     database: DatabaseInterface,
+    forhandsvarselService: ForhandsvarselService,
 ) {
     installMetrics()
     installCallId()
@@ -60,6 +62,7 @@ fun Application.apiModule(
         authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
             registerArbeidsuforhetEndpoints(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                forhandsvarselService = forhandsvarselService,
             )
         }
     }

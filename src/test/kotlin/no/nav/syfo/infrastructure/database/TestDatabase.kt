@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.database
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import org.flywaydb.core.Flyway
 import java.sql.Connection
+import java.util.*
 
 class TestDatabase : DatabaseInterface {
     private val pg: EmbeddedPostgres = try {
@@ -26,7 +27,7 @@ class TestDatabase : DatabaseInterface {
     }
 }
 
-fun DatabaseInterface.dropData() {
+fun TestDatabase.dropData() {
     val queryList = listOf(
         """
         DELETE FROM VURDERING
@@ -46,6 +47,63 @@ fun DatabaseInterface.dropData() {
         connection.commit()
     }
 }
+
+private const val queryGetVurdering =
+    """
+        SELECT *
+        FROM vurdering
+        WHERE uuid = ?
+    """
+
+fun TestDatabase.getVurdering(
+    uuid: UUID,
+): PVurdering? =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetVurdering).use {
+            it.setString(1, uuid.toString())
+            it.executeQuery()
+                .toList { toPVurdering() }
+                .firstOrNull()
+        }
+    }
+
+private const val queryGetVarsel =
+    """
+        SELECT *
+        FROM varsel
+        WHERE uuid = ?
+    """
+
+fun TestDatabase.getVarsel(
+    uuid: UUID,
+): PVarsel? =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetVarsel).use {
+            it.setString(1, uuid.toString())
+            it.executeQuery()
+                .toList { toPVarsel() }
+                .firstOrNull()
+        }
+    }
+
+private const val queryGetVarselPdf =
+    """
+        SELECT *
+        FROM varsel_pdf
+        WHERE varsel_id = ?
+    """
+
+fun TestDatabase.getVarselPdf(
+    varselId: Int,
+): PVarselPdf? =
+    this.connection.use { connection ->
+        connection.prepareStatement(queryGetVarselPdf).use {
+            it.setInt(1, varselId)
+            it.executeQuery()
+                .toList { toPVarselPdf() }
+                .firstOrNull()
+        }
+    }
 
 class TestDatabaseNotResponding : DatabaseInterface {
 
