@@ -1,9 +1,11 @@
 package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.UserConstants
-import no.nav.syfo.generator.generateDocumentComponent
+import no.nav.syfo.generator.generateForhandsvarselVurdering
+import org.amshove.kluent.internal.assertFailsWith
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.lang.IllegalStateException
 
 class VurderingRepositorySpek : Spek({
     describe(VurderingRepository::class.java.simpleName) {
@@ -16,16 +18,25 @@ class VurderingRepositorySpek : Spek({
         }
 
         describe("createForhandsvarsel") {
+            val vurdering = generateForhandsvarselVurdering()
+
             it("creates vurdering, varsel and pdf in database") {
-                val begrunnelse = "Fin begrunnelse"
                 vurderingRepository.createForhandsvarsel(
                     pdf = UserConstants.PDF_FORHANDSVARSEL,
-                    document = generateDocumentComponent(fritekst = begrunnelse),
-                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                    veilederident = UserConstants.VEILEDER_IDENT,
-                    begrunnelse = begrunnelse,
+                    vurdering = vurdering,
                 )
                 // TODO: Sjekk at ting er lagret når vi har implementert spørringer
+            }
+
+            it("fails if vurdering is missing a varsel") {
+                val vurderingWithoutVarsel = generateForhandsvarselVurdering().copy(varsel = null)
+
+                assertFailsWith(IllegalStateException::class) {
+                    vurderingRepository.createForhandsvarsel(
+                        pdf = UserConstants.PDF_FORHANDSVARSEL,
+                        vurdering = vurderingWithoutVarsel,
+                    )
+                }
             }
         }
     }

@@ -14,7 +14,8 @@ data class PdlHentPerson(
 data class PdlPerson(
     val navn: List<PdlPersonNavn>,
 ) {
-    val fullName: String? = navn.firstOrNull()?.fullName()
+    val fullName: String = navn.firstOrNull()?.fullName()
+        ?: throw RuntimeException("PDL returned empty navn for given fnr")
 }
 
 data class PdlPersonNavn(

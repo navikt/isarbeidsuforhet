@@ -21,7 +21,7 @@ class PdlClient(
     private val pdlEnvironment: ClientEnvironment,
 ) {
 
-    private suspend fun getPerson(personIdent: PersonIdent): PdlPerson {
+    suspend fun getPerson(personIdent: PersonIdent): PdlPerson {
         val token = azureAdClient.getSystemToken(pdlEnvironment.clientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
         val request = PdlHentPersonRequest(getPdlQuery(), PdlHentPersonRequestVariables(personIdent.value))
