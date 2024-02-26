@@ -3,7 +3,6 @@ package no.nav.syfo.api
 import io.ktor.server.application.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.wellKnownInternalAzureAD
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
@@ -18,7 +17,7 @@ fun Application.testApiModule(
     this.apiModule(
         applicationState = externalMockEnvironment.applicationState,
         environment = externalMockEnvironment.environment,
-        wellKnownInternalAzureAD = wellKnownInternalAzureAD(),
+        wellKnownInternalAzureAD = externalMockEnvironment.wellKnownInternalAzureAD,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
         database = database,
     )

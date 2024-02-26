@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 class PdlClient(
     private val azureAdClient: AzureAdClient,
     private val pdlEnvironment: ClientEnvironment,
+    private val httpClient: HttpClient = httpClientDefault(),
 ) {
 
     suspend fun getPerson(personIdent: PersonIdent): PdlPerson {
@@ -64,7 +65,6 @@ class PdlClient(
             .replace("[\n\r]", "")
 
     companion object {
-        private val httpClient: HttpClient = httpClientDefault()
         private const val PDL_QUERY_PATH = "/pdl/hentPerson.graphql"
 
         // Se behandlingskatalog https://behandlingskatalog.intern.nav.no/
