@@ -1,10 +1,10 @@
 package no.nav.syfo.infrastructure.cronjob
 
 import io.mockk.*
+import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.application.service.VarselService
 import no.nav.syfo.domain.model.UnpublishedVarsel
-import no.nav.syfo.infrastructure.database.TestDatabase
 import no.nav.syfo.infrastructure.database.VarselRepository
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakervarselProducer
@@ -27,7 +27,7 @@ private val unpublishedVarsel = UnpublishedVarsel(
 class PubliserForhandsvarselCronjobSpek : Spek({
     describe(PubliserForhandsvarselCronjob::class.java.simpleName) {
 
-        val database = TestDatabase()
+        val database = ExternalMockEnvironment.instance.database
 
         val varselRepository = mockk<VarselRepository>(relaxed = true)
         val kafkaProducer = mockk<KafkaProducer<String, String>>()

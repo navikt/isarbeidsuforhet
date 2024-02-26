@@ -12,5 +12,5 @@ data class PVarsel(
     val vurderingId: Int,
     val document: List<DocumentComponent>,
     val journalpostId: String?,
-    val publishedAt: OffsetDateTime?
+    val publishedAt: OffsetDateTime?,
 )

@@ -14,7 +14,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                 UnpublishedVarsel(
                     personident = PersonIdent(getString("personident")),
                     varselUuid = UUID.fromString(getString("uuid")),
-                    journalpostId = getString("journalpost_id")
+                    journalpostId = getString("journalpost_id"),
                 )
             }
         }
