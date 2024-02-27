@@ -2,6 +2,8 @@ package no.nav.syfo.infrastructure.database
 
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.IVurderingRepository
+import no.nav.syfo.domain.Varsel
+import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.configuredJacksonMapper
@@ -13,23 +15,18 @@ import java.util.UUID
 class VurderingRepository(private val database: DatabaseInterface) : IVurderingRepository {
     override fun createForhandsvarsel(
         pdf: ByteArray,
-        document: List<DocumentComponent>,
-        personident: PersonIdent,
-        veilederident: String,
-        begrunnelse: String,
+        vurdering: Vurdering,
     ) {
+        if (vurdering.varsel == null) throw IllegalStateException("Vurdering should have Varsel when creating forhåndsvarsel")
+
         database.connection.use { connection ->
-            val vurdering = connection.createVurdering(
-                personIdent = personident,
-                veileder = veilederident,
-                begrunnelse = begrunnelse,
-            )
-            val varsel = connection.createVarsel(
-                vurderingId = vurdering.id,
-                document = document,
+            val pVurdering = connection.createVurdering(vurdering)
+            val pVarsel = connection.createVarsel(
+                vurderingId = pVurdering.id,
+                varsel = vurdering.varsel,
             )
             connection.createPdf(
-                varselId = varsel.id,
+                varselId = pVarsel.id,
                 pdf = pdf,
             )
             connection.commit()
@@ -37,33 +34,31 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
     }
 
     private fun Connection.createVurdering(
-        personIdent: PersonIdent,
-        veileder: String,
-        begrunnelse: String,
+        vurdering: Vurdering,
     ): PVurdering {
         val now = OffsetDateTime.now()
 
         return prepareStatement(CREATE_VURDERING).use {
-            it.setString(1, UUID.randomUUID().toString())
-            it.setString(2, personIdent.value)
-            it.setObject(3, now)
+            it.setString(1, vurdering.uuid.toString())
+            it.setString(2, vurdering.personident.value)
+            it.setObject(3, vurdering.createdAt)
             it.setObject(4, now)
-            it.setString(5, veileder)
-            it.setString(6, "FORHANDSVARSEL")
-            it.setString(7, begrunnelse)
+            it.setString(5, vurdering.veilederident)
+            it.setString(6, vurdering.type.name)
+            it.setString(7, vurdering.begrunnelse)
             it.executeQuery().toList { toPVurdering() }
         }.single()
     }
 
-    private fun Connection.createVarsel(vurderingId: Int, document: List<DocumentComponent>,): PVarsel {
+    private fun Connection.createVarsel(vurderingId: Int, varsel: Varsel): PVarsel {
         val now = OffsetDateTime.now()
 
         return prepareStatement(CREATE_VARSEL).use {
-            it.setString(1, UUID.randomUUID().toString())
-            it.setObject(2, now)
+            it.setString(1, varsel.uuid.toString())
+            it.setObject(2, varsel.createdAt)
             it.setObject(3, now)
             it.setInt(4, vurderingId)
-            it.setObject(5, mapper.writeValueAsString(document))
+            it.setObject(5, mapper.writeValueAsString(varsel.document))
             it.executeQuery().toList { toPVarsel() }.single()
         }
     }

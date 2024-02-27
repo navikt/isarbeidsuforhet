@@ -21,11 +21,11 @@ class PdfGenClient(
 
     suspend fun createForhandsvarselPdf(
         callId: String,
-        payloadString: String, // TODO: Bytt ut med riktig objekt
+        forhandsvarselPdfDTO: VarselPdfDTO,
     ): ByteArray =
         getPdf(
             callId = callId,
-            payload = payloadString,
+            payload = forhandsvarselPdfDTO,
             pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$FORHANDSVARSEL_PATH"
         ) ?: throw RuntimeException("Failed to request pdf for forhandsvarsel, callId: $callId")
 
