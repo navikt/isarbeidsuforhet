@@ -3,7 +3,7 @@ package no.nav.syfo.application.service
 import io.mockk.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
-import no.nav.syfo.domain.model.UnpublishedVarsel
+import no.nav.syfo.generator.generateVarsel
 import no.nav.syfo.infrastructure.database.VarselRepository
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakervarselProducer
@@ -12,16 +12,10 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.util.*
 import java.util.concurrent.Future
 
 private const val journalpostId = "123"
-private val varselUuid = UUID.randomUUID()
-private val unpublishedVarsel = UnpublishedVarsel(
-    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-    varselUuid = varselUuid,
-    journalpostId = journalpostId
-)
+private val unpublishedVarsel = generateVarsel().copy(journalpostId = journalpostId)
 
 class VarselServiceSpek : Spek({
     describe(VarselService::class.java.simpleName) {
@@ -47,7 +41,7 @@ class VarselServiceSpek : Spek({
         describe("publishUnpublishedVarsler") {
 
             it("publishes unpublished varsel") {
-                every { varselRepository.getUnpublishedVarsler() } returns listOf(unpublishedVarsel)
+                every { varselRepository.getUnpublishedVarsler() } returns listOf(Pair(UserConstants.ARBEIDSTAKER_PERSONIDENT, unpublishedVarsel))
 
                 val (success, failed) = varselService.publishUnpublishedVarsler().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
@@ -71,7 +65,7 @@ class VarselServiceSpek : Spek({
             }
 
             it("fails publishing when kafka-producer fails") {
-                every { varselRepository.getUnpublishedVarsler() } returns listOf(unpublishedVarsel)
+                every { varselRepository.getUnpublishedVarsler() } returns listOf(Pair(UserConstants.ARBEIDSTAKER_PERSONIDENT, unpublishedVarsel))
                 every { kafkaProducer.send(any()) } throws Exception("Error producing to kafka")
 
                 val (success, failed) = varselService.publishUnpublishedVarsler().partition { it.isSuccess }
@@ -83,7 +77,7 @@ class VarselServiceSpek : Spek({
             }
 
             it("fails publishing when repository fails") {
-                every { varselRepository.getUnpublishedVarsler() } returns listOf(unpublishedVarsel)
+                every { varselRepository.getUnpublishedVarsler() } returns listOf(Pair(UserConstants.ARBEIDSTAKER_PERSONIDENT, unpublishedVarsel))
                 every { varselRepository.setPublished(any()) } throws Exception("Error set published")
 
                 val (success, failed) = varselService.publishUnpublishedVarsler().partition { it.isSuccess }

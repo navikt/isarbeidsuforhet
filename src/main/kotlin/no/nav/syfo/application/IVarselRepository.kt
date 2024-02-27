@@ -1,8 +1,9 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.model.UnpublishedVarsel
+import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Varsel
 
 interface IVarselRepository {
-    fun getUnpublishedVarsler(): List<UnpublishedVarsel>
-    fun setPublished(varsel: UnpublishedVarsel)
+    fun getUnpublishedVarsler(): List<Pair<PersonIdent, Varsel>>
+    fun setPublished(varsel: Varsel)
 }

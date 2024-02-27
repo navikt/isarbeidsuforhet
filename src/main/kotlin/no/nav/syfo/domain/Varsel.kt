@@ -17,5 +17,17 @@ data class Varsel private constructor(
             createdAt = nowUTC(),
             journalpostId = null,
         )
+
+        fun createFromDatabase(
+            uuid: UUID,
+            document: List<DocumentComponent>,
+            createdAt: OffsetDateTime,
+            journalpostId: String?
+        ) = Varsel(
+            uuid = uuid,
+            document = document,
+            createdAt = createdAt,
+            journalpostId = journalpostId,
+        )
     }
 }
