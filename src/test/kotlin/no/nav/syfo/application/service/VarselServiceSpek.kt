@@ -9,10 +9,15 @@ import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakervarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -27,7 +32,7 @@ class VarselServiceSpek : Spek({
 
         val varselRepository = VarselRepository(database = database)
         val vurderingRepository = VurderingRepository(database = database)
-        val kafkaProducer = mockk<KafkaProducer<String, String>>()
+        val kafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
 
         val varselProducer = ArbeidstakervarselProducer(kafkaArbeidstakervarselProducer = kafkaProducer)
         val varselService = VarselService(varselRepository = varselRepository, varselProducer = varselProducer)
@@ -60,7 +65,8 @@ class VarselServiceSpek : Spek({
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 1
 
-                verify(exactly = 1) { kafkaProducer.send(any()) }
+                val producerRecordSlot = slot<ProducerRecord<String, EsyfovarselHendelse>>()
+                verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
 
                 val publishedVarsel = success.first().getOrThrow()
                 publishedVarsel.uuid.shouldBeEqualTo(unpublishedVarsel.uuid)
@@ -69,7 +75,12 @@ class VarselServiceSpek : Spek({
 
                 varselRepository.getUnpublishedVarsler().shouldBeEmpty()
 
-                // TODO: Test kafkaproducer record value
+                val esyfovarselHendelse = producerRecordSlot.captured.value() as ArbeidstakerHendelse
+                esyfovarselHendelse.type.shouldBeEqualTo(HendelseType.SM_ARBEIDSUFORHET_FORHANDSVARSEL)
+                esyfovarselHendelse.arbeidstakerFnr.shouldBeEqualTo(UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
+                val varselData = esyfovarselHendelse.data as VarselData
+                varselData.journalpost?.uuid.shouldBeEqualTo(publishedVarsel.uuid.toString())
+                varselData.journalpost?.id.shouldBeEqualTo(publishedVarsel.journalpostId)
             }
 
             it("publishes nothing when no unpublished varsel") {

@@ -3,21 +3,33 @@ package no.nav.syfo.infrastructure.kafka.esyfovarsel
 import no.nav.syfo.application.IVarselProducer
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.*
 import java.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 
-// TODO: Add esyfovarsel-hendelse as kafkaproducer value
-class ArbeidstakervarselProducer(private val kafkaArbeidstakervarselProducer: KafkaProducer<String, String>) : IVarselProducer {
+class ArbeidstakervarselProducer(private val kafkaArbeidstakervarselProducer: KafkaProducer<String, EsyfovarselHendelse>) : IVarselProducer {
 
     override fun sendArbeidstakerVarsel(personIdent: PersonIdent, varsel: Varsel) {
+        val varselHendelse = ArbeidstakerHendelse(
+            type = HendelseType.SM_ARBEIDSUFORHET_FORHANDSVARSEL,
+            arbeidstakerFnr = personIdent.value,
+            data = VarselData(
+                journalpost = VarselDataJournalpost(
+                    uuid = varsel.uuid.toString(),
+                    id = varsel.journalpostId,
+                ),
+            ),
+            orgnummer = null,
+        )
+
         try {
             kafkaArbeidstakervarselProducer.send(
                 ProducerRecord(
                     ESYFOVARSEL_TOPIC,
                     UUID.randomUUID().toString(),
-                    "",
+                    varselHendelse,
                 )
             ).get()
         } catch (e: Exception) {
