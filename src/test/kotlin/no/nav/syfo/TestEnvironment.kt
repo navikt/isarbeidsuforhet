@@ -5,6 +5,7 @@ import no.nav.syfo.infrastructure.ClientsEnvironment
 import no.nav.syfo.infrastructure.OpenClientEnvironment
 import no.nav.syfo.infrastructure.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 
 fun testEnvironment() = Environment(
     database = DatabaseEnvironment(
@@ -13,6 +14,13 @@ fun testEnvironment() = Environment(
         name = "isaktivitetskrav_dev",
         username = "username",
         password = "password",
+    ),
+    kafka = KafkaEnvironment(
+        aivenBootstrapServers = "kafkaBootstrapServers",
+        aivenCredstorePassword = "credstorepassord",
+        aivenKeystoreLocation = "keystore",
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = "truststore",
     ),
     azure = AzureEnvironment(
         appClientId = "isarbeidsuforhet-client-id",
