@@ -4,6 +4,7 @@ data class ClientsEnvironment(
     val istilgangskontroll: ClientEnvironment,
     val isarbeidsuforhetpdfgen: OpenClientEnvironment,
     val pdl: ClientEnvironment,
+    val dokarkiv: ClientEnvironment,
 )
 
 data class ClientEnvironment(

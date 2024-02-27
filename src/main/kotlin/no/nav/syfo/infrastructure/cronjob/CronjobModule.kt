@@ -6,15 +6,22 @@ import no.nav.syfo.application.service.VarselService
 import no.nav.syfo.infrastructure.leaderelection.LeaderPodClient
 import no.nav.syfo.launchBackgroundTask
 
-fun launchCronjobs(environment: Environment, applicationState: ApplicationState, varselService: VarselService) {
+fun launchCronjobs(
+    applicationState: ApplicationState,
+    environment: Environment,
+    varselService: VarselService,
+) {
     val leaderPodClient = LeaderPodClient(
         electorPath = environment.electorPath
     )
     val cronjobRunner = CronjobRunner(
         applicationState = applicationState,
-        leaderPodClient = leaderPodClient
+        leaderPodClient = leaderPodClient,
     )
     val cronjobs = mutableListOf<Cronjob>()
+
+    val journalforForhandsvarselCronjob = JournalforForhandsvarselCronjob(varselService)
+    cronjobs.add(journalforForhandsvarselCronjob)
 
     if (environment.publishForhandsvarselEnabled) {
         val publiserForhandsvarselCronjob = PubliserForhandsvarselCronjob(varselService = varselService)
