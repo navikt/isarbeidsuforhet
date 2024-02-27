@@ -15,5 +15,11 @@ data class PVarsel(
     val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
 ) {
-    fun toVarsel(): Varsel = Varsel.createFromDatabase(uuid = uuid, document = document, createdAt = createdAt, journalpostId = journalpostId)
+    fun toVarsel(): Varsel = Varsel.createFromDatabase(
+        uuid = uuid,
+        document = document,
+        createdAt = createdAt,
+        journalpostId = journalpostId,
+        publishedAt = publishedAt,
+    )
 }

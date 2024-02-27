@@ -21,20 +21,18 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         }
     }.map { (personident, pVarsel) -> Pair(personident, pVarsel.toVarsel()) }
 
-    override fun setPublished(varsel: Varsel) {
-        val now = nowUTC()
-        database.connection.use { connection ->
-            connection.prepareStatement(SET_VARSEL_PUBLISHED).use {
-                it.setObject(1, now)
-                it.setObject(2, now)
-                it.setString(3, varsel.uuid.toString())
-                val updated = it.executeUpdate()
-                if (updated != 1) {
-                    throw SQLException("Expected a single row to be updated, got update count $updated")
-                }
+    override fun update(varsel: Varsel) = database.connection.use { connection ->
+        connection.prepareStatement(UPDATE_VARSEL).use {
+            it.setObject(1, varsel.publishedAt)
+            it.setString(2, varsel.journalpostId)
+            it.setObject(3, nowUTC())
+            it.setString(4, varsel.uuid.toString())
+            val updated = it.executeUpdate()
+            if (updated != 1) {
+                throw SQLException("Expected a single row to be updated, got update count $updated")
             }
-            connection.commit()
         }
+        connection.commit()
     }
 
     companion object {
@@ -46,10 +44,10 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                 WHERE v.journalpost_id IS NOT NULL AND v.published_at IS NULL
             """
 
-        private const val SET_VARSEL_PUBLISHED =
+        private const val UPDATE_VARSEL =
             """
                  UPDATE varsel
-                 SET published_at = ?, updated_at = ?
+                 SET published_at = ?, journalpost_id = ?, updated_at = ?
                  WHERE uuid = ?
             """
     }
