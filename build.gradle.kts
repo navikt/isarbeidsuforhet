@@ -8,6 +8,7 @@ object Version {
     const val HIKARI = "5.1.0"
     const val POSTGRES = "42.7.2"
     const val POSTGRES_EMBEDDED = "2.0.6"
+    const val KAFKA = "3.6.1"
     const val LOGBACK = "1.4.14"
     const val LOGSTASH_ENCODER = "7.4"
     const val MICROMETER_REGISTRY = "1.12.2"
@@ -56,6 +57,12 @@ dependencies {
     implementation("com.zaxxer:HikariCP:${Version.HIKARI}")
     implementation("org.flywaydb:flyway-database-postgresql:${Version.FLYWAY}")
     testImplementation("io.zonky.test:embedded-postgres:${Version.POSTGRES_EMBEDDED}")
+
+    // Kafka
+    val excludeLog4j = fun ExternalModuleDependency.() {
+        exclude(group = "log4j")
+    }
+    implementation("org.apache.kafka:kafka_2.13:${Version.KAFKA}", excludeLog4j)
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.JACKSON_DATATYPE}")

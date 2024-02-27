@@ -1,11 +1,9 @@
 package no.nav.syfo.infrastructure.database
 
-import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.IVurderingRepository
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.domain.Vurdering
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.Connection
 import java.sql.ResultSet
@@ -73,6 +71,8 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         }
 
     companion object {
+        private val mapper = configuredJacksonMapper()
+
         private const val CREATE_VURDERING =
             """
             INSERT INTO VURDERING (
@@ -115,9 +115,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
     }
 }
 
-private val mapper = configuredJacksonMapper()
-
-fun ResultSet.toPVurdering(): PVurdering = PVurdering(
+internal fun ResultSet.toPVurdering(): PVurdering = PVurdering(
     id = getInt("id"),
     uuid = UUID.fromString(getString("uuid")),
     personident = PersonIdent(getString("personident")),
@@ -126,25 +124,4 @@ fun ResultSet.toPVurdering(): PVurdering = PVurdering(
     veilederident = getString("veilederident"),
     type = getString("type"),
     begrunnelse = getString("begrunnelse")
-)
-
-fun ResultSet.toPVarsel(): PVarsel = PVarsel(
-    id = getInt("id"),
-    uuid = UUID.fromString(getString("uuid")),
-    createdAt = getObject("created_at", OffsetDateTime::class.java),
-    updatedAt = getObject("updated_at", OffsetDateTime::class.java),
-    vurderingId = getInt("vurdering_id"),
-    document = mapper.readValue(
-        getString("document"),
-        object : TypeReference<List<DocumentComponent>>() {}
-    ),
-    journalpostId = getString("journalpost_id"),
-)
-
-fun ResultSet.toPVarselPdf(): PVarselPdf = PVarselPdf(
-    id = getInt("id"),
-    uuid = UUID.fromString(getString("uuid")),
-    createdAt = getObject("created_at", OffsetDateTime::class.java),
-    varselId = getInt("varsel_id"),
-    pdf = getBytes("pdf"),
 )

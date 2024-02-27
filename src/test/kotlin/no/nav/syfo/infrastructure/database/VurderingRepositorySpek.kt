@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.database
 
+import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import org.amshove.kluent.internal.assertFailsWith
@@ -10,7 +11,7 @@ import java.lang.IllegalStateException
 class VurderingRepositorySpek : Spek({
     describe(VurderingRepository::class.java.simpleName) {
 
-        val database = TestDatabase()
+        val database = ExternalMockEnvironment.instance.database
         val vurderingRepository = VurderingRepository(database = database)
 
         afterEachTest {
