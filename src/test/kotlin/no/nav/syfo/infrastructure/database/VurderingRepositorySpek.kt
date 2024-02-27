@@ -4,6 +4,7 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import org.amshove.kluent.internal.assertFailsWith
+import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.lang.IllegalStateException
@@ -26,7 +27,10 @@ class VurderingRepositorySpek : Spek({
                     pdf = UserConstants.PDF_FORHANDSVARSEL,
                     vurdering = vurdering,
                 )
-                // TODO: Sjekk at ting er lagret når vi har implementert spørringer
+
+                val pVurdering = database.getVurdering(uuid = vurdering.uuid)
+                pVurdering.shouldNotBeNull()
+                // TODO: Sjekk varsel og pdf lagret når vi har implementert spørringer
             }
 
             it("fails if vurdering is missing a varsel") {
