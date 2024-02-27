@@ -60,6 +60,8 @@ spec:
       claims:
         extra:
           - "NAVident"
+  kafka:
+    pool: nav-dev
   env:
     - name: KTOR_ENV
       value: "production"
