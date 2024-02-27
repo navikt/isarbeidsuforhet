@@ -6,10 +6,15 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
+import no.nav.syfo.application.IVurderingRepository
+import no.nav.syfo.application.service.ForhandsvarselService
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.database.VurderingRepository
 import no.nav.syfo.infrastructure.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
+import no.nav.syfo.infrastructure.pdfgen.PdfGenClient
+import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.wellknown.getWellKnown
 import org.slf4j.LoggerFactory
@@ -38,6 +43,18 @@ fun main() {
             clientEnvironment = environment.clients.istilgangskontroll
         )
 
+    val pdfGenClient = PdfGenClient(
+        pdfGenBaseUrl = environment.clients.isarbeidsuforhetpdfgen.baseUrl,
+    )
+
+    val varselPdfService = VarselPdfService(
+        pdfGenClient = pdfGenClient,
+        pdlClient = pdlClient,
+    )
+
+    lateinit var forhandsvarselService: ForhandsvarselService
+    lateinit var vurderingRepository: IVurderingRepository
+
     val applicationEngineEnvironment =
         applicationEngineEnvironment {
             log = logger
@@ -49,12 +66,20 @@ fun main() {
                 databaseModule(
                     databaseEnvironment = environment.database,
                 )
+
+                vurderingRepository = VurderingRepository(applicationDatabase)
+                forhandsvarselService = ForhandsvarselService(
+                    vurderingRepository = vurderingRepository,
+                    varselPdfService = varselPdfService,
+                )
+
                 apiModule(
                     applicationState = applicationState,
                     database = applicationDatabase,
                     environment = environment,
                     wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                     veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                    forhandsvarselService = forhandsvarselService,
                 )
             }
         }

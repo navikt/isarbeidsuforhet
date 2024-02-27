@@ -72,41 +72,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.executeQuery().toList { toPVarselPdf() }.single()
         }
 
-    private fun ResultSet.toPVurdering(): PVurdering = PVurdering(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        personident = PersonIdent(getString("personident")),
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        updatedAt = getObject("updated_at", OffsetDateTime::class.java),
-        veilederident = getString("veilederident"),
-        type = getString("type"),
-        begrunnelse = getString("begrunnelse")
-    )
-
-    private fun ResultSet.toPVarsel(): PVarsel = PVarsel(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        updatedAt = getObject("updated_at", OffsetDateTime::class.java),
-        vurderingId = getInt("vurdering_id"),
-        document = mapper.readValue(
-            getString("document"),
-            object : TypeReference<List<DocumentComponent>>() {}
-        ),
-        journalpostId = getString("journalpost_id"),
-    )
-
-    private fun ResultSet.toPVarselPdf(): PVarselPdf = PVarselPdf(
-        id = getInt("id"),
-        uuid = UUID.fromString(getString("uuid")),
-        createdAt = getObject("created_at", OffsetDateTime::class.java),
-        varselId = getInt("varsel_id"),
-        pdf = getBytes("pdf"),
-    )
-
     companion object {
-        private val mapper = configuredJacksonMapper()
-
         private const val CREATE_VURDERING =
             """
             INSERT INTO VURDERING (
@@ -148,3 +114,37 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             """
     }
 }
+
+private val mapper = configuredJacksonMapper()
+
+fun ResultSet.toPVurdering(): PVurdering = PVurdering(
+    id = getInt("id"),
+    uuid = UUID.fromString(getString("uuid")),
+    personident = PersonIdent(getString("personident")),
+    createdAt = getObject("created_at", OffsetDateTime::class.java),
+    updatedAt = getObject("updated_at", OffsetDateTime::class.java),
+    veilederident = getString("veilederident"),
+    type = getString("type"),
+    begrunnelse = getString("begrunnelse")
+)
+
+fun ResultSet.toPVarsel(): PVarsel = PVarsel(
+    id = getInt("id"),
+    uuid = UUID.fromString(getString("uuid")),
+    createdAt = getObject("created_at", OffsetDateTime::class.java),
+    updatedAt = getObject("updated_at", OffsetDateTime::class.java),
+    vurderingId = getInt("vurdering_id"),
+    document = mapper.readValue(
+        getString("document"),
+        object : TypeReference<List<DocumentComponent>>() {}
+    ),
+    journalpostId = getString("journalpost_id"),
+)
+
+fun ResultSet.toPVarselPdf(): PVarselPdf = PVarselPdf(
+    id = getInt("id"),
+    uuid = UUID.fromString(getString("uuid")),
+    createdAt = getObject("created_at", OffsetDateTime::class.java),
+    varselId = getInt("varsel_id"),
+    pdf = getBytes("pdf"),
+)
