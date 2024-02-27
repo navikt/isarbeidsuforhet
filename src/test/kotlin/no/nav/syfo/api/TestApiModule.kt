@@ -1,9 +1,12 @@
 package no.nav.syfo.api
 
 import io.ktor.server.application.*
+import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
-import no.nav.syfo.application.service.ForhandsvarselService
+import no.nav.syfo.application.service.VarselService
+import no.nav.syfo.infrastructure.database.VarselRepository
 import no.nav.syfo.infrastructure.database.VurderingRepository
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakervarselProducer
 import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 
@@ -17,14 +20,17 @@ fun Application.testApiModule(
         httpClient = externalMockEnvironment.mockHttpClient,
     )
     val vurderingRepository = VurderingRepository(database)
+    val varselRepository = VarselRepository(database)
     val varselPdfService = VarselPdfService(
         pdfGenClient = externalMockEnvironment.pdfgenClient,
         pdlClient = externalMockEnvironment.pdlClient,
     )
 
-    val forhandsvarselService = ForhandsvarselService(
+    val varselService = VarselService(
         vurderingRepository = vurderingRepository,
         varselPdfService = varselPdfService,
+        varselRepository = varselRepository,
+        varselProducer = ArbeidstakervarselProducer(mockk())
     )
 
     this.apiModule(
@@ -33,6 +39,6 @@ fun Application.testApiModule(
         wellKnownInternalAzureAD = externalMockEnvironment.wellKnownInternalAzureAD,
         veilederTilgangskontrollClient = veilederTilgangskontrollClient,
         database = database,
-        forhandsvarselService = forhandsvarselService,
+        varselService = varselService,
     )
 }

@@ -6,17 +6,21 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
-import no.nav.syfo.application.IVurderingRepository
-import no.nav.syfo.application.service.ForhandsvarselService
+import no.nav.syfo.application.service.VarselService
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.database.VarselRepository
 import no.nav.syfo.infrastructure.database.VurderingRepository
 import no.nav.syfo.infrastructure.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakervarselProducer
+import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.wellknown.getWellKnown
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -40,7 +44,7 @@ fun main() {
     val veilederTilgangskontrollClient =
         VeilederTilgangskontrollClient(
             azureAdClient = azureAdClient,
-            clientEnvironment = environment.clients.istilgangskontroll
+            clientEnvironment = environment.clients.istilgangskontroll,
         )
 
     val pdfGenClient = PdfGenClient(
@@ -52,8 +56,7 @@ fun main() {
         pdlClient = pdlClient,
     )
 
-    lateinit var forhandsvarselService: ForhandsvarselService
-    lateinit var vurderingRepository: IVurderingRepository
+    lateinit var varselService: VarselService
 
     val applicationEngineEnvironment =
         applicationEngineEnvironment {
@@ -67,10 +70,17 @@ fun main() {
                     databaseEnvironment = environment.database,
                 )
 
-                vurderingRepository = VurderingRepository(applicationDatabase)
-                forhandsvarselService = ForhandsvarselService(
-                    vurderingRepository = vurderingRepository,
+                varselService = VarselService(
+                    vurderingRepository = VurderingRepository(applicationDatabase),
+                    varselRepository = VarselRepository(applicationDatabase),
                     varselPdfService = varselPdfService,
+                    varselProducer = ArbeidstakervarselProducer(
+                        kafkaArbeidstakervarselProducer = KafkaProducer(
+                            kafkaAivenProducerConfig<StringSerializer>(
+                                kafkaEnvironment = environment.kafka,
+                            )
+                        )
+                    ),
                 )
 
                 apiModule(
@@ -79,7 +89,7 @@ fun main() {
                     environment = environment,
                     wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                     veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-                    forhandsvarselService = forhandsvarselService,
+                    varselService = varselService,
                 )
             }
         }
