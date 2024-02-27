@@ -1,4 +1,4 @@
-package no.nav.syfo.infrastructure.database
+package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Varsel

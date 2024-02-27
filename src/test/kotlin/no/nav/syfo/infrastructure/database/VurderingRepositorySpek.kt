@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.database
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.generator.generateForhandsvarselVurdering
+import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek

@@ -1,6 +1,8 @@
 package no.nav.syfo.infrastructure.database
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
+import no.nav.syfo.infrastructure.database.repository.*
+import no.nav.syfo.infrastructure.database.repository.toPVarsel
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.util.*

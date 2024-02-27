@@ -5,8 +5,8 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.generator.generateForhandsvarselVurdering
-import no.nav.syfo.infrastructure.database.VarselRepository
-import no.nav.syfo.infrastructure.database.VurderingRepository
+import no.nav.syfo.infrastructure.database.repository.VarselRepository
+import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakervarselProducer
 import org.amshove.kluent.shouldBeEmpty
