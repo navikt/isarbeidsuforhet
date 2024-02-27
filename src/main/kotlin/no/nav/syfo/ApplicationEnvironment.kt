@@ -5,6 +5,7 @@ import no.nav.syfo.infrastructure.ClientsEnvironment
 import no.nav.syfo.infrastructure.OpenClientEnvironment
 import no.nav.syfo.infrastructure.azuread.AzureEnvironment
 import no.nav.syfo.infrastructure.database.DatabaseEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 
 const val NAIS_DATABASE_ENV_PREFIX = "NAIS_DATABASE_ISARBEIDSUFORHET_ISARBEIDSUFORHET_DB"
 
@@ -15,6 +16,13 @@ data class Environment(
         name = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_DATABASE"),
         username = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_USERNAME"),
         password = getEnvVar("${NAIS_DATABASE_ENV_PREFIX}_PASSWORD"),
+    ),
+    val kafka: KafkaEnvironment = KafkaEnvironment(
+        aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
+        aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
+        aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
     ),
     val azure: AzureEnvironment =
         AzureEnvironment(
