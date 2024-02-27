@@ -11,28 +11,15 @@ class PubliserForhandsvarselCronjob(
     override val intervalDelayMinutes: Long = 10
 
     override suspend fun run() {
-        val result = runJob()
+        val (success, failed) = varselService.publishUnpublishedVarsler().partition { it.isSuccess }
+        failed.forEach {
+            log.error("Exception caught while publishing forhandsvarsel", it.exceptionOrNull())
+        }
         log.info(
             "Completed publishing forhandsvarsel with result: {}, {}",
-            StructuredArguments.keyValue("failed", result.failed),
-            StructuredArguments.keyValue("updated", result.updated),
+            StructuredArguments.keyValue("failed", failed.size),
+            StructuredArguments.keyValue("updated", success.size),
         )
-    }
-
-    fun runJob(): CronjobResult {
-        val result = CronjobResult()
-        val unpublishedVarsler = varselService.getUnpublished()
-        unpublishedVarsler.forEach {
-            try {
-                varselService.publish(it)
-                result.updated++
-            } catch (e: Exception) {
-                log.error("Exception caught while publishing forhandsvarsel", e)
-                result.failed++
-            }
-        }
-
-        return result
     }
 
     companion object {

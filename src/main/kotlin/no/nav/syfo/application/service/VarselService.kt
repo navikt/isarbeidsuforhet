@@ -8,13 +8,15 @@ class VarselService(
     private val varselRepository: IVarselRepository,
     private val varselProducer: IVarselProducer,
 ) {
+    fun publishUnpublishedVarsler(): List<Result<UnpublishedVarsel>> {
+        val unpublishedVarsler = varselRepository.getUnpublishedVarsler()
 
-    fun getUnpublished(): List<UnpublishedVarsel> {
-        return varselRepository.getUnpublishedVarsler()
-    }
-
-    fun publish(varsel: UnpublishedVarsel) {
-        varselProducer.sendArbeidstakerVarsel(varsel)
-        varselRepository.setPublished(varsel)
+        return unpublishedVarsler.map {
+            runCatching {
+                varselProducer.sendArbeidstakerVarsel(it)
+                varselRepository.setPublished(it)
+                it
+            }
+        }
     }
 }
