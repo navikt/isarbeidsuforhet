@@ -8,7 +8,7 @@ import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.database.dropData
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakervarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
@@ -34,7 +34,7 @@ class VarselServiceSpek : Spek({
         val vurderingRepository = VurderingRepository(database = database)
         val kafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
 
-        val varselProducer = ArbeidstakervarselProducer(kafkaArbeidstakervarselProducer = kafkaProducer)
+        val varselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = kafkaProducer)
         val varselService = VarselService(varselRepository = varselRepository, varselProducer = varselProducer)
 
         beforeEachTest {

@@ -9,9 +9,9 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 
-class ArbeidstakervarselProducer(private val kafkaArbeidstakervarselProducer: KafkaProducer<String, EsyfovarselHendelse>) : IVarselProducer {
+class ArbeidstakerForhandsvarselProducer(private val kafkaProducer: KafkaProducer<String, EsyfovarselHendelse>) : IVarselProducer {
 
-    override fun sendArbeidstakerVarsel(personIdent: PersonIdent, varsel: Varsel) {
+    override fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, varsel: Varsel) {
         val varselHendelse = ArbeidstakerHendelse(
             type = HendelseType.SM_ARBEIDSUFORHET_FORHANDSVARSEL,
             arbeidstakerFnr = personIdent.value,
@@ -25,7 +25,7 @@ class ArbeidstakervarselProducer(private val kafkaArbeidstakervarselProducer: Ka
         )
 
         try {
-            kafkaArbeidstakervarselProducer.send(
+            kafkaProducer.send(
                 ProducerRecord(
                     ESYFOVARSEL_TOPIC,
                     UUID.randomUUID().toString(),
@@ -40,6 +40,6 @@ class ArbeidstakervarselProducer(private val kafkaArbeidstakervarselProducer: Ka
 
     companion object {
         private const val ESYFOVARSEL_TOPIC = "team-esyfo.varselbus"
-        private val log = LoggerFactory.getLogger(ArbeidstakervarselProducer::class.java)
+        private val log = LoggerFactory.getLogger(ArbeidstakerForhandsvarselProducer::class.java)
     }
 }
