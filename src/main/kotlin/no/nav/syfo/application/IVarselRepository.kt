@@ -5,5 +5,6 @@ import no.nav.syfo.domain.Varsel
 
 interface IVarselRepository {
     fun getUnpublishedVarsler(): List<Pair<PersonIdent, Varsel>>
+    fun getExpiredVarsler(): List<Pair<PersonIdent, Varsel>>
     fun update(varsel: Varsel)
 }
