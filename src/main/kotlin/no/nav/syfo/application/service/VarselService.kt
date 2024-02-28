@@ -13,7 +13,7 @@ class VarselService(
 
         return unpublishedVarsler.map { (personident, varsel) ->
             runCatching {
-                varselProducer.sendArbeidstakerVarsel(personIdent = personident, varsel = varsel)
+                varselProducer.sendArbeidstakerForhandsvarsel(personIdent = personident, varsel = varsel)
                 val publishedVarsel = varsel.publish()
                 varselRepository.update(publishedVarsel)
                 publishedVarsel
