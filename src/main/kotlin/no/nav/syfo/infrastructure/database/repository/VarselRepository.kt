@@ -36,7 +36,8 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
             it.setObject(1, varsel.publishedAt)
             it.setString(2, varsel.journalpostId)
             it.setObject(3, nowUTC())
-            it.setString(4, varsel.uuid.toString())
+            it.setObject(4, varsel.expiredPublishedAt)
+            it.setString(5, varsel.uuid.toString())
             val updated = it.executeUpdate()
             if (updated != 1) {
                 throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -57,7 +58,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         private const val UPDATE_VARSEL =
             """
                  UPDATE varsel
-                 SET published_at = ?, journalpost_id = ?, updated_at = ?
+                 SET published_at = ?, journalpost_id = ?, updated_at = ?, expired_varsel_published_at = ?
                  WHERE uuid = ?
             """
 
@@ -67,7 +68,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                 FROM varsel v
                 INNER JOIN vurdering vu
                 ON v.vurdering_id = vu.id
-                WHERE published_at < NOW() - interval '3 weeks';
+                WHERE expires_at <= NOW() AND expired_varsel_published_at is null
             """
     }
 }
@@ -84,6 +85,8 @@ internal fun ResultSet.toPVarsel(): PVarsel = PVarsel(
     ),
     journalpostId = getString("journalpost_id"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
+    expiresAt = getObject("expires_at", OffsetDateTime::class.java),
+    expiredPublishedAt = getObject("expired_varsel_published_at", OffsetDateTime::class.java),
 )
 
 internal fun ResultSet.toPVarselPdf(): PVarselPdf = PVarselPdf(
