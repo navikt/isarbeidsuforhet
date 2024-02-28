@@ -46,6 +46,7 @@ data class Environment(
                 clientId = getEnvVar("PDL_CLIENT_ID"),
             ),
         ),
+    val publishForhandsvarselEnabled: Boolean = getEnvVar("TOGGLE_PUBLISH_FORHANDSVARSEL").toBoolean()
 )
 
 fun getEnvVar(
