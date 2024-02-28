@@ -1,10 +1,12 @@
-package no.nav.syfo.infrastructure.database
+package no.nav.syfo.infrastructure.database.repository
 
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.IVarselRepository
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
 import no.nav.syfo.util.nowUTC
 import java.sql.ResultSet

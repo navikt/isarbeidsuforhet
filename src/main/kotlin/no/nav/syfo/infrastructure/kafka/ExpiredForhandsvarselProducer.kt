@@ -27,7 +27,7 @@ class ExpiredForhandsvarselProducer(private val producer: KafkaProducer<String, 
         }
 
     companion object {
-        private const val TOPIC = "teamsykefravr."
+        private const val TOPIC = "teamsykefravr.arbeidsuforhet-expired-forhandsvarsel"
         private val log = LoggerFactory.getLogger(ExpiredForhandsvarselProducer::class.java)
     }
 }

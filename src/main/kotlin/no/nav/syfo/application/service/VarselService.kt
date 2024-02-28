@@ -16,7 +16,7 @@ class VarselService(
             runCatching {
                 varselProducer.sendArbeidstakerVarsel(personIdent = personident, varsel = varsel)
                 val publishedVarsel = varsel.publish()
-                varselRepository.update(varsel)
+                varselRepository.update(publishedVarsel)
                 publishedVarsel
             }
         }

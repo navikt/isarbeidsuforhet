@@ -9,12 +9,12 @@ import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.application.service.ForhandsvarselService
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.database.VurderingRepository
-import no.nav.syfo.infrastructure.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
+import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.pdl.PdlClient
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.wellknown.getWellKnown
 import org.slf4j.LoggerFactory

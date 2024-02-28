@@ -1,9 +1,11 @@
-package no.nav.syfo.infrastructure.database
+package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.domain.Vurdering
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.Connection
 import java.sql.ResultSet
