@@ -10,7 +10,7 @@ import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.Connection
 import java.sql.ResultSet
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 
 class VurderingRepository(private val database: DatabaseInterface) : IVurderingRepository {
     override fun createForhandsvarsel(
@@ -59,11 +59,13 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setObject(3, now)
             it.setInt(4, vurderingId)
             it.setObject(5, mapper.writeValueAsString(varsel.document))
+            it.setObject(6, varsel.expiresAt)
+            it.setObject(7, varsel.expiredPublishedAt)
             it.executeQuery().toList { toPVarsel() }.single()
         }
     }
 
-    private fun Connection.createPdf(varselId: Int, pdf: ByteArray,): PVarselPdf =
+    private fun Connection.createPdf(varselId: Int, pdf: ByteArray): PVarselPdf =
         prepareStatement(CREATE_VARSEL_PDF).use {
             it.setString(1, UUID.randomUUID().toString())
             it.setObject(2, OffsetDateTime.now())
@@ -98,8 +100,10 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 created_at,
                 updated_at,
                 vurdering_id,
-                document
-            ) values (DEFAULT, ?, ?, ?, ?, ?::jsonb)
+                document,
+                expires_at,
+                expired_varsel_published_at             
+            ) values (DEFAULT, ?, ?, ?, ?, ?::jsonb, ?, ?)
             RETURNING *
             """
 

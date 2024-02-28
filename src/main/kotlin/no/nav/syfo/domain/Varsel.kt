@@ -10,6 +10,8 @@ data class Varsel private constructor(
     val createdAt: OffsetDateTime,
     val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
+    val expiresAt: OffsetDateTime,
+    val expiredPublishedAt: OffsetDateTime?,
 ) {
     fun publish(): Varsel = this.copy(publishedAt = nowUTC())
 
@@ -20,6 +22,8 @@ data class Varsel private constructor(
             createdAt = nowUTC(),
             journalpostId = null,
             publishedAt = null,
+            expiresAt = nowUTC().plusWeeks(3),
+            expiredPublishedAt = null,
         )
 
         fun createFromDatabase(
@@ -27,13 +31,17 @@ data class Varsel private constructor(
             document: List<DocumentComponent>,
             createdAt: OffsetDateTime,
             journalpostId: String?,
-            publishedAt: OffsetDateTime?
+            publishedAt: OffsetDateTime?,
+            expiresAt: OffsetDateTime,
+            expiredPublishedAt: OffsetDateTime?,
         ) = Varsel(
             uuid = uuid,
             document = document,
             createdAt = createdAt,
             journalpostId = journalpostId,
             publishedAt = publishedAt,
+            expiresAt = expiresAt,
+            expiredPublishedAt = expiredPublishedAt,
         )
     }
 }
