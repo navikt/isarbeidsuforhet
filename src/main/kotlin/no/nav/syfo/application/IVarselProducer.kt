@@ -4,5 +4,5 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
 
 interface IVarselProducer {
-    fun sendArbeidstakerVarsel(personIdent: PersonIdent, varsel: Varsel)
+    fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, varsel: Varsel)
 }
