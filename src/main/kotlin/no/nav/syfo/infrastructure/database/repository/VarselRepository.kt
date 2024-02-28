@@ -17,6 +17,7 @@ import java.util.*
 private val mapper = configuredJacksonMapper()
 
 class VarselRepository(private val database: DatabaseInterface) : IVarselRepository {
+
     override fun getUnpublishedVarsler(): List<Pair<PersonIdent, Varsel>> = database.connection.use { connection ->
         connection.prepareStatement(GET_UNPUBLISHED_VARSEL).use {
             it.executeQuery().toList { Pair(PersonIdent(getString("personident")), toPVarsel()) }
@@ -28,7 +29,8 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
             it.setObject(1, varsel.publishedAt)
             it.setString(2, varsel.journalpostId)
             it.setObject(3, nowUTC())
-            it.setString(4, varsel.uuid.toString())
+            it.setObject(4, varsel.svarfristExpiredPublishedAt)
+            it.setString(5, varsel.uuid.toString())
             val updated = it.executeUpdate()
             if (updated != 1) {
                 throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -49,7 +51,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         private const val UPDATE_VARSEL =
             """
                  UPDATE varsel
-                 SET published_at = ?, journalpost_id = ?, updated_at = ?
+                 SET published_at = ?, journalpost_id = ?, updated_at = ?, svarfrist_expired_published_at = ?
                  WHERE uuid = ?
             """
     }
@@ -67,6 +69,8 @@ internal fun ResultSet.toPVarsel(): PVarsel = PVarsel(
     ),
     journalpostId = getString("journalpost_id"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
+    svarfrist = getObject("svarfrist", OffsetDateTime::class.java),
+    svarfristExpiredPublishedAt = getObject("svarfrist_expired_published_at", OffsetDateTime::class.java),
 )
 
 internal fun ResultSet.toPVarselPdf(): PVarselPdf = PVarselPdf(
