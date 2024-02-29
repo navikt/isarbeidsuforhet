@@ -15,6 +15,8 @@ data class Varsel private constructor(
 ) {
     fun publish(): Varsel = this.copy(publishedAt = nowUTC())
 
+    fun journalfor(journalpostId: String): Varsel = this.copy(journalpostId = journalpostId)
+
     companion object {
         fun create(document: List<DocumentComponent>) = Varsel(
             uuid = UUID.randomUUID(),
