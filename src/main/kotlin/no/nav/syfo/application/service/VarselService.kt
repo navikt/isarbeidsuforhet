@@ -24,15 +24,15 @@ class VarselService(
 
     fun publishExpiredForhandsvarsler(): List<Result<Varsel>> {
         val expiredUnpublishedVarsler = varselRepository.getUnpublishedExpiredVarsler()
-        return expiredUnpublishedVarsler.map { (personIdent, expiredUnpublishedVarsel) ->
-            runCatching {
-                expiredForhandsvarselProducer.send(
-                    personIdent = personIdent, varsel = expiredUnpublishedVarsel
-                )
-                val expiredPublishedVarsel = expiredUnpublishedVarsel.publishExpiredVarsel()
-                varselRepository.update(expiredPublishedVarsel)
-                expiredPublishedVarsel
+        return expiredUnpublishedVarsler
+            .map { (personIdent, expiredUnpublishedVarsel) ->
+                val result =
+                    expiredForhandsvarselProducer.send(personIdent = personIdent, varsel = expiredUnpublishedVarsel)
+                result.map {
+                    val expiredPublishedVarsel = it.publishExpiredVarsel()
+                    varselRepository.update(expiredPublishedVarsel)
+                    expiredPublishedVarsel
+                }
             }
-        }
     }
 }

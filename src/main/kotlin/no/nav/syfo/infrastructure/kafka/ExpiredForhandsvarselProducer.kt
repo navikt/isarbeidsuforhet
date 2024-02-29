@@ -8,7 +8,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class ExpiredForhandsvarselProducer(private val producer: KafkaProducer<String, String>) :
+class ExpiredForhandsvarselProducer(private val producer: KafkaProducer<String, Varsel>) :
     IExpiredForhandsvarselProducer {
 
     override fun send(personIdent: PersonIdent, varsel: Varsel): Result<Varsel> =
@@ -17,7 +17,7 @@ class ExpiredForhandsvarselProducer(private val producer: KafkaProducer<String, 
                 ProducerRecord(
                     TOPIC,
                     UUID.randomUUID().toString(),
-                    "",
+                    varsel,
                 )
             ).get()
             Result.success(varsel)

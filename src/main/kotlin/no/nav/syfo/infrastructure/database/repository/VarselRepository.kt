@@ -68,7 +68,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                 FROM varsel v
                 INNER JOIN vurdering vu
                 ON v.vurdering_id = vu.id
-                WHERE svarfrist < NOW() AND svarfrist_expired_published_at is null
+                WHERE svarfrist <= NOW() AND svarfrist_expired_published_at is null
             """
     }
 }

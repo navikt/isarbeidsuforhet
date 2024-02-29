@@ -4,6 +4,7 @@ import io.mockk.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.Varsel
+import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
@@ -22,6 +23,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
 import java.util.concurrent.Future
 
 private const val journalpostId = "123"
@@ -33,12 +35,12 @@ class VarselServiceSpek : Spek({
 
         val varselRepository = VarselRepository(database = database)
         val vurderingRepository = VurderingRepository(database = database)
-        val kafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
-        val kafkaExpiredForhandsvarselProducer = mockk<KafkaProducer<String, String>>()
+        val mockEsyfoVarselHendelseProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+        val mockExpiredForhandsvarselProducer = mockk<KafkaProducer<String, Varsel>>()
 
-        val varselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = kafkaProducer)
+        val varselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = mockEsyfoVarselHendelseProducer)
         val expiredForhandsvarselProducer =
-            ExpiredForhandsvarselProducer(producer = kafkaExpiredForhandsvarselProducer)
+            ExpiredForhandsvarselProducer(producer = mockExpiredForhandsvarselProducer)
         val varselService = VarselService(
             varselRepository = varselRepository,
             varselProducer = varselProducer,
@@ -46,10 +48,10 @@ class VarselServiceSpek : Spek({
         )
 
         beforeEachTest {
-            clearMocks(kafkaProducer)
-            coEvery {
-                kafkaProducer.send(any())
-            } returns mockk<Future<RecordMetadata>>(relaxed = true)
+            clearMocks(mockEsyfoVarselHendelseProducer)
+            clearMocks(mockExpiredForhandsvarselProducer)
+            coEvery { mockEsyfoVarselHendelseProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+            coEvery { mockExpiredForhandsvarselProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
         }
         afterEachTest {
             database.dropData()
@@ -64,6 +66,18 @@ class VarselServiceSpek : Spek({
             return unpublishedVarsel
         }
 
+        fun createExpiredUnpublishedVarsel(): Varsel {
+            val varselUnpublishedExpiredYesterday =
+                Varsel(
+                    generateDocumentComponent("En begrunnelse"),
+                    svarfrist = OffsetDateTime.now().minusDays(1)
+                )
+            val vurdering = generateForhandsvarselVurdering().copy(varsel = varselUnpublishedExpiredYesterday)
+
+            vurderingRepository.createForhandsvarsel(pdf = UserConstants.PDF_FORHANDSVARSEL, vurdering = vurdering)
+            return vurdering.varsel!!
+        }
+
         describe("publishUnpublishedVarsler") {
 
             it("publishes unpublished varsel") {
@@ -74,7 +88,7 @@ class VarselServiceSpek : Spek({
                 success.size shouldBeEqualTo 1
 
                 val producerRecordSlot = slot<ProducerRecord<String, EsyfovarselHendelse>>()
-                verify(exactly = 1) { kafkaProducer.send(capture(producerRecordSlot)) }
+                verify(exactly = 1) { mockEsyfoVarselHendelseProducer.send(capture(producerRecordSlot)) }
 
                 val publishedVarsel = success.first().getOrThrow()
                 publishedVarsel.uuid.shouldBeEqualTo(unpublishedVarsel.uuid)
@@ -96,21 +110,70 @@ class VarselServiceSpek : Spek({
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 0
 
-                verify(exactly = 0) { kafkaProducer.send(any()) }
+                verify(exactly = 0) { mockEsyfoVarselHendelseProducer.send(any()) }
             }
 
             it("fails publishing when kafka-producer fails") {
                 val unpublishedVarsel = createUnpublishedVarsel()
-                every { kafkaProducer.send(any()) } throws Exception("Error producing to kafka")
+                every { mockEsyfoVarselHendelseProducer.send(any()) } throws Exception("Error producing to kafka")
 
                 val (success, failed) = varselService.publishUnpublishedVarsler().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 1
                 success.size shouldBeEqualTo 0
 
-                verify(exactly = 1) { kafkaProducer.send(any()) }
+                verify(exactly = 1) { mockEsyfoVarselHendelseProducer.send(any()) }
 
                 val (_, varsel) = varselRepository.getUnpublishedVarsler().first()
                 varsel.uuid.shouldBeEqualTo(unpublishedVarsel.uuid)
+            }
+        }
+
+        describe("publishExpiredForhandsvarsler") {
+
+            it("publishes expired varsel") {
+                val expiredUnpublishedVarsel = createExpiredUnpublishedVarsel()
+
+                val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val producerRecordSlot = slot<ProducerRecord<String, Varsel>>()
+                verify(exactly = 1) { mockExpiredForhandsvarselProducer.send(capture(producerRecordSlot)) }
+
+                val publishedExpiredVarsel = success.first().getOrThrow()
+                publishedExpiredVarsel.uuid.shouldBeEqualTo(expiredUnpublishedVarsel.uuid)
+                publishedExpiredVarsel.journalpostId.shouldBeEqualTo(expiredUnpublishedVarsel.journalpostId)
+                publishedExpiredVarsel.svarfristExpiredPublishedAt.shouldNotBeNull()
+
+                varselRepository.getUnpublishedVarsler().shouldBeEmpty()
+
+                val publishedExpiredVarselRecord = producerRecordSlot.captured.value() as Varsel
+                publishedExpiredVarselRecord.uuid shouldBeEqualTo expiredUnpublishedVarsel.uuid
+            }
+
+            it("publishes nothing when no expired unpublished varsel") {
+                val publishedExpiredVarsel = createExpiredUnpublishedVarsel().publishExpiredVarsel()
+                varselRepository.update(publishedExpiredVarsel)
+
+                val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 0
+
+                verify(exactly = 0) { mockExpiredForhandsvarselProducer.send(any()) }
+            }
+
+            it("fails publishing when kafka-producer fails") {
+                val unpublishedExpiredVarsel = createExpiredUnpublishedVarsel()
+                every { mockExpiredForhandsvarselProducer.send(any()) } throws Exception("Error producing to kafka")
+
+                val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 1
+                success.size shouldBeEqualTo 0
+
+                verify(exactly = 1) { mockExpiredForhandsvarselProducer.send(any()) }
+
+                val (_, varsel) = varselRepository.getUnpublishedExpiredVarsler().first()
+                varsel.uuid.shouldBeEqualTo(unpublishedExpiredVarsel.uuid)
             }
         }
     }
