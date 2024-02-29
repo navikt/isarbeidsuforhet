@@ -1,6 +1,6 @@
 package no.nav.syfo.application.service
 
-import no.nav.syfo.application.IExpiredForhandsvarslerProducer
+import no.nav.syfo.application.IExpiredForhandsvarselProducer
 import no.nav.syfo.application.IVarselProducer
 import no.nav.syfo.application.IVarselRepository
 import no.nav.syfo.domain.Varsel
@@ -8,7 +8,7 @@ import no.nav.syfo.domain.Varsel
 class VarselService(
     private val varselRepository: IVarselRepository,
     private val varselProducer: IVarselProducer,
-    private val expiredForhandsvarslerProducer: IExpiredForhandsvarslerProducer,
+    private val expiredForhandsvarselProducer: IExpiredForhandsvarselProducer,
 ) {
     fun publishUnpublishedVarsler(): List<Result<Varsel>> {
         val unpublishedVarsler = varselRepository.getUnpublishedVarsler()
@@ -23,11 +23,16 @@ class VarselService(
     }
 
     fun publishExpiredForhandsvarsler(): List<Result<Varsel>> {
-        val expiredVarsler = varselRepository.getExpiredVarsler()
-        return expiredVarsler.map { (personIdent, expiredVarsel) ->
-            expiredForhandsvarslerProducer.send(
-                personIdent = personIdent, varsel = expiredVarsel
-            )
+        val expiredUnpublishedVarsler = varselRepository.getUnpublishedExpiredVarsler()
+        return expiredUnpublishedVarsler.map { (personIdent, expiredUnpublishedVarsel) ->
+            runCatching {
+                expiredForhandsvarselProducer.send(
+                    personIdent = personIdent, varsel = expiredUnpublishedVarsel
+                )
+                val expiredPublishedVarsel = expiredUnpublishedVarsel.publishExpiredVarsel()
+                varselRepository.update(expiredPublishedVarsel)
+                expiredPublishedVarsel
+            }
         }
     }
 }

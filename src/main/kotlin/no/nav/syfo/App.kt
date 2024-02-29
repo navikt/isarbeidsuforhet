@@ -94,7 +94,7 @@ fun main() {
                 varselService = VarselService(
                     varselRepository = varselRepository,
                     varselProducer = arbeidstakerForhandsvarselProducer,
-                    expiredForhandsvarslerProducer = expiredForhandsvarselProducer,
+                    expiredForhandsvarselProducer = expiredForhandsvarselProducer,
                 )
 
                 apiModule(

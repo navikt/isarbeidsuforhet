@@ -5,9 +5,10 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.generator.generateForhandsvarselVurdering
+import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.database.dropData
+import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
@@ -33,9 +34,16 @@ class VarselServiceSpek : Spek({
         val varselRepository = VarselRepository(database = database)
         val vurderingRepository = VurderingRepository(database = database)
         val kafkaProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
+        val kafkaExpiredForhandsvarselProducer = mockk<KafkaProducer<String, String>>()
 
         val varselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = kafkaProducer)
-        val varselService = VarselService(varselRepository = varselRepository, varselProducer = varselProducer)
+        val expiredForhandsvarselProducer =
+            ExpiredForhandsvarselProducer(producer = kafkaExpiredForhandsvarselProducer)
+        val varselService = VarselService(
+            varselRepository = varselRepository,
+            varselProducer = varselProducer,
+            expiredForhandsvarselProducer = expiredForhandsvarselProducer,
+        )
 
         beforeEachTest {
             clearMocks(kafkaProducer)

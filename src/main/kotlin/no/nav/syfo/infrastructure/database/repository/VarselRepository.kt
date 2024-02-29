@@ -24,9 +24,9 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         }
     }.map { (personident, pVarsel) -> Pair(personident, pVarsel.toVarsel()) }
 
-    override fun getExpiredVarsler(): List<Pair<PersonIdent, Varsel>> =
+    override fun getUnpublishedExpiredVarsler(): List<Pair<PersonIdent, Varsel>> =
         database.connection.use { connection ->
-            connection.prepareStatement(GET_EXPIRED_VARSLER).use {
+            connection.prepareStatement(GET_UNPUBLISHED_EXPIRED_VARSLER).use {
                 it.executeQuery().toList { Pair(PersonIdent(getString("personident")), toPVarsel()) }
             }
         }.map { (personident, pVarsel) -> Pair(personident, pVarsel.toVarsel()) }
@@ -62,13 +62,13 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                  WHERE uuid = ?
             """
 
-        private const val GET_EXPIRED_VARSLER =
+        private const val GET_UNPUBLISHED_EXPIRED_VARSLER =
             """
                 SELECT vu.personident, v.*
                 FROM varsel v
                 INNER JOIN vurdering vu
                 ON v.vurdering_id = vu.id
-                WHERE expires_at <= NOW() AND expired_varsel_published_at is null
+                WHERE svarfrist < NOW() AND svarfrist_expired_published_at is null
             """
     }
 }
