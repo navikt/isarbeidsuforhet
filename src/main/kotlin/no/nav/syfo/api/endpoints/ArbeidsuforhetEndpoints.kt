@@ -30,6 +30,17 @@ fun Route.registerArbeidsuforhetEndpoints(
             this.veilederTilgangskontrollClient = veilederTilgangskontrollClient
         }
 
+        get(forhandsvarselPath) {
+            val personIdent = call.getPersonIdent()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+
+            val forhandsvarselVurdering = forhandsvarselService.getForhandsvarsel(
+                personident = personIdent,
+            )
+            val responseDTO = forhandsvarselVurdering.map { vurdering -> VurderingResponseDTO.createFromVurdering(vurdering) }
+            call.respond(HttpStatusCode.OK, responseDTO)
+        }
+
         post(forhandsvarselPath) {
             val requestDTO = call.receive<ForhandsvarselRequestDTO>()
             if (requestDTO.document.isEmpty()) {

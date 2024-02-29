@@ -13,6 +13,20 @@ import java.time.OffsetDateTime
 import java.util.*
 
 class VurderingRepository(private val database: DatabaseInterface) : IVurderingRepository {
+    override fun getForhandsvarsel(
+        personident: PersonIdent,
+    ): List<Vurdering> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_VURDERING).use {
+                it.setString(1, personident.value)
+                it.executeQuery().toList { toPVurdering() }
+            }.map {
+                it.toVurdering(
+                    varsel = connection.getVarselForVurdering(it)
+                )
+            }
+        }
+
     override fun createForhandsvarsel(
         pdf: ByteArray,
         vurdering: Vurdering,
@@ -74,8 +88,24 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.executeQuery().toList { toPVarselPdf() }.single()
         }
 
+    private fun Connection.getVarselForVurdering(vurdering: PVurdering): Varsel? =
+        prepareStatement(GET_VARSEL_FOR_VURDERING).use {
+            it.setInt(1, vurdering.id)
+            it.executeQuery().toList { toPVarsel() }
+        }.map { it.toVarsel() }.firstOrNull()
+
     companion object {
         private val mapper = configuredJacksonMapper()
+
+        private const val GET_VURDERING =
+            """
+                SELECT * FROM VURDERING WHERE personident=? ORDER BY created_at DESC
+            """
+
+        private const val GET_VARSEL_FOR_VURDERING =
+            """
+                SELECT * FROM VARSEL WHERE vurdering_id = ?
+            """
 
         private const val CREATE_VURDERING =
             """
