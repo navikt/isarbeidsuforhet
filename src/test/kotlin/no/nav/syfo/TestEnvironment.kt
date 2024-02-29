@@ -42,6 +42,7 @@ fun testEnvironment() = Environment(
         ),
     ),
     electorPath = "electorPath",
+    publishForhandsvarselEnabled = true,
 )
 
 fun testAppState() = ApplicationState(
