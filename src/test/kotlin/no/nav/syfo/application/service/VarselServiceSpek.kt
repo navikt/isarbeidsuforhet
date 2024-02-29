@@ -1,14 +1,17 @@
 package no.nav.syfo.application.service
 
 import io.mockk.*
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.database.dropData
+import no.nav.syfo.infrastructure.database.getVarsel
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
+import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
@@ -17,6 +20,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeGreaterThan
 import org.amshove.kluent.shouldNotBeNull
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -31,7 +35,8 @@ private const val journalpostId = "123"
 class VarselServiceSpek : Spek({
     describe(VarselService::class.java.simpleName) {
 
-        val database = ExternalMockEnvironment.instance.database
+        val externalMockEnvironment = ExternalMockEnvironment.instance
+        val database = externalMockEnvironment.database
 
         val varselRepository = VarselRepository(database = database)
         val vurderingRepository = VurderingRepository(database = database)
@@ -41,10 +46,15 @@ class VarselServiceSpek : Spek({
         val varselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = mockEsyfoVarselHendelseProducer)
         val expiredForhandsvarselProducer =
             ExpiredForhandsvarselProducer(producer = mockExpiredForhandsvarselProducer)
+        val journalforingService = JournalforingService(
+            dokarkivClient = externalMockEnvironment.dokarkivClient,
+            pdlClient = externalMockEnvironment.pdlClient,
+        )
         val varselService = VarselService(
             varselRepository = varselRepository,
             varselProducer = varselProducer,
             expiredForhandsvarselProducer = expiredForhandsvarselProducer,
+            journalforingService = journalforingService,
         )
 
         beforeEachTest {
@@ -57,9 +67,13 @@ class VarselServiceSpek : Spek({
             database.dropData()
         }
 
+        val vurdering = generateForhandsvarselVurdering()
+
         fun createUnpublishedVarsel(): Varsel {
-            val vurdering = generateForhandsvarselVurdering()
-            vurderingRepository.createForhandsvarsel(pdf = UserConstants.PDF_FORHANDSVARSEL, vurdering = vurdering)
+            vurderingRepository.createForhandsvarsel(
+                pdf = UserConstants.PDF_FORHANDSVARSEL,
+                vurdering = vurdering,
+            )
             val unpublishedVarsel = vurdering.varsel?.copy(journalpostId = journalpostId)!!
             varselRepository.update(varsel = unpublishedVarsel)
 
@@ -72,10 +86,14 @@ class VarselServiceSpek : Spek({
                     generateDocumentComponent("En begrunnelse"),
                     svarfrist = OffsetDateTime.now().minusDays(1)
                 )
-            val vurdering = generateForhandsvarselVurdering().copy(varsel = varselUnpublishedExpiredYesterday)
+            val vurderingWithExpiredVarsel =
+                generateForhandsvarselVurdering().copy(varsel = varselUnpublishedExpiredYesterday)
 
-            vurderingRepository.createForhandsvarsel(pdf = UserConstants.PDF_FORHANDSVARSEL, vurdering = vurdering)
-            return vurdering.varsel!!
+            vurderingRepository.createForhandsvarsel(
+                pdf = UserConstants.PDF_FORHANDSVARSEL,
+                vurdering = vurderingWithExpiredVarsel
+            )
+            return vurderingWithExpiredVarsel.varsel!!
         }
 
         describe("publishUnpublishedVarsler") {
@@ -174,6 +192,82 @@ class VarselServiceSpek : Spek({
 
                 val (_, varsel) = varselRepository.getUnpublishedExpiredVarsler().first()
                 varsel.uuid.shouldBeEqualTo(unpublishedExpiredVarsel.uuid)
+            }
+        }
+
+        describe("Journalføring") {
+            it("journalfører forhåndsvarsel") {
+                vurderingRepository.createForhandsvarsel(
+                    pdf = UserConstants.PDF_FORHANDSVARSEL,
+                    vurdering = vurdering,
+                )
+
+                runBlocking {
+                    val journalforteVarsler = varselService.journalforVarsler()
+
+                    val (success, failed) = journalforteVarsler.partition { it.isSuccess }
+                    failed.size shouldBeEqualTo 0
+                    success.size shouldBeEqualTo 1
+
+                    val journalfortVarsel = success.first().getOrThrow()
+                    journalfortVarsel.journalpostId shouldBeEqualTo "1"
+                    journalfortVarsel.publishedAt shouldBeEqualTo null
+
+                    val pVarsel = database.getVarsel(vurdering.varsel!!.uuid)
+                    pVarsel?.journalpostId shouldBeEqualTo "1"
+                    pVarsel?.publishedAt shouldBeEqualTo null
+                    pVarsel!!.updatedAt shouldBeGreaterThan pVarsel.createdAt
+                }
+            }
+
+            it("journalfører ikke når ingen forhåndsvarsler") {
+                runBlocking {
+                    val journalforteVarsler = varselService.journalforVarsler()
+
+                    val (success, failed) = journalforteVarsler.partition { it.isSuccess }
+                    failed.size shouldBeEqualTo 0
+                    success.size shouldBeEqualTo 0
+                }
+            }
+
+            it("journalfører ikke når forhåndsvarsel allerede er journalført") {
+                vurderingRepository.createForhandsvarsel(
+                    pdf = UserConstants.PDF_FORHANDSVARSEL,
+                    vurdering = vurdering,
+                )
+                val journalfortVarsel = vurdering.varsel!!.journalfor(journalpostId = "1")
+                varselRepository.update(journalfortVarsel)
+
+                runBlocking {
+                    val journalforteVarsler = varselService.journalforVarsler()
+
+                    val (success, failed) = journalforteVarsler.partition { it.isSuccess }
+                    failed.size shouldBeEqualTo 0
+                    success.size shouldBeEqualTo 0
+                }
+            }
+
+            it("journalfører forhåndsvarsel selv om noen feiler") {
+                vurderingRepository.createForhandsvarsel(
+                    pdf = UserConstants.PDF_FORHANDSVARSEL,
+                    vurdering = vurdering,
+                )
+
+                val vurderingFails = generateForhandsvarselVurdering(
+                    personident = UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS,
+                )
+                vurderingRepository.createForhandsvarsel(
+                    pdf = UserConstants.PDF_FORHANDSVARSEL,
+                    vurdering = vurderingFails,
+                )
+
+                runBlocking {
+                    val journalforteVarsler = varselService.journalforVarsler()
+
+                    val (success, failed) = journalforteVarsler.partition { it.isSuccess }
+                    failed.size shouldBeEqualTo 1
+                    success.size shouldBeEqualTo 1
+                }
             }
         }
     }

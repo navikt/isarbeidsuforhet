@@ -30,6 +30,8 @@ data class Varsel private constructor(
 
     fun publishExpiredVarsel(): Varsel = this.copy(svarfristExpiredPublishedAt = nowUTC())
 
+    fun journalfor(journalpostId: String): Varsel = this.copy(journalpostId = journalpostId)
+
     companion object {
         fun createFromDatabase(
             uuid: UUID,

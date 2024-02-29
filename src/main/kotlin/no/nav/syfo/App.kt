@@ -14,6 +14,8 @@ import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
+import no.nav.syfo.infrastructure.dokarkiv.DokarkivClient
+import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
@@ -44,6 +46,10 @@ fun main() {
         azureAdClient = azureAdClient,
         pdlEnvironment = environment.clients.pdl,
     )
+    val dokarkivClient = DokarkivClient(
+        azureAdClient = azureAdClient,
+        dokarkivEnvironment = environment.clients.dokarkiv,
+    )
     val veilederTilgangskontrollClient =
         VeilederTilgangskontrollClient(
             azureAdClient = azureAdClient,
@@ -52,6 +58,11 @@ fun main() {
 
     val pdfGenClient = PdfGenClient(
         pdfGenBaseUrl = environment.clients.isarbeidsuforhetpdfgen.baseUrl,
+    )
+
+    val journalforingService = JournalforingService(
+        dokarkivClient = dokarkivClient,
+        pdlClient = pdlClient,
     )
 
     val varselPdfService = VarselPdfService(
@@ -95,6 +106,7 @@ fun main() {
                     varselRepository = varselRepository,
                     varselProducer = arbeidstakerForhandsvarselProducer,
                     expiredForhandsvarselProducer = expiredForhandsvarselProducer,
+                    journalforingService = journalforingService,
                 )
 
                 apiModule(
@@ -111,9 +123,10 @@ fun main() {
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
         applicationState.ready = true
         logger.info("Application is ready, running Java VM ${Runtime.version()}")
+
         launchCronjobs(
-            environment = environment,
             applicationState = applicationState,
+            environment = environment,
             varselService = varselService,
         )
     }

@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import no.nav.syfo.domain.PersonIdent
+import java.util.*
 
 object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT = PersonIdent("12345678910")
@@ -17,4 +18,6 @@ object UserConstants {
     const val PERSON_ETTERNAVN = "Etternavnesen"
     const val PERSON_FORNAVN_DASH = "For-Navn"
     const val PERSON_FULLNAME_DASH = "For-Navn Mellomnavn Etternavnesen"
+
+    val EXISTING_EKSTERN_REFERANSE_UUID: UUID = UUID.fromString("e7e8e9e0-e1e2-e3e4-e5e6-e7e8e9e0e1e2")
 }

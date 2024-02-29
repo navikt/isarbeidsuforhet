@@ -40,6 +40,10 @@ fun testEnvironment() = Environment(
         isarbeidsuforhetpdfgen = OpenClientEnvironment(
             baseUrl = "isarbeidsuforhetpdfgenUrl",
         ),
+        dokarkiv = ClientEnvironment(
+            baseUrl = "dokarkivUrl",
+            clientId = "dokarkivClientId",
+        ),
     ),
     electorPath = "electorPath",
     publishForhandsvarselEnabled = true,

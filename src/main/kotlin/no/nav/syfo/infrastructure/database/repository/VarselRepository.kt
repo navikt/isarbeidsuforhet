@@ -46,6 +46,20 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         connection.commit()
     }
 
+    override fun getNotJournalforteVarsler(): List<Triple<PersonIdent, Varsel, ByteArray>> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_NOT_JOURNALFORT_VARSEL).use {
+                it.executeQuery()
+                    .toList {
+                        Triple(
+                            PersonIdent(getString("personident")),
+                            toPVarsel(),
+                            getBytes("pdf"),
+                        )
+                    }
+            }.map { (personident, pVarsel, pdf) -> Triple(personident, pVarsel.toVarsel(), pdf) }
+        }
+
     companion object {
         private const val GET_UNPUBLISHED_VARSEL =
             """
@@ -69,6 +83,15 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                 INNER JOIN vurdering vu
                 ON v.vurdering_id = vu.id
                 WHERE svarfrist <= NOW() AND svarfrist_expired_published_at is null
+            """
+
+        private const val GET_NOT_JOURNALFORT_VARSEL =
+            """
+                 SELECT vu.personident, va.*, vap.pdf
+                 FROM varsel va
+                 INNER JOIN vurdering vu ON va.vurdering_id = vu.id
+                 INNER JOIN varsel_pdf vap ON va.id = vap.varsel_id
+                 WHERE va.journalpost_id IS NULL
             """
     }
 }
