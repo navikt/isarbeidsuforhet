@@ -73,3 +73,5 @@ spec:
       value: "dev-fss.pdl.pdl-api"
     - name: PDL_URL
       value: "https://pdl-api.dev-fss-pub.nais.io/graphql"
+    - name: TOGGLE_PUBLISH_FORHANDSVARSEL
+      value: "true"

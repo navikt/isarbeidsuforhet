@@ -36,7 +36,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
             it.setObject(1, varsel.publishedAt)
             it.setString(2, varsel.journalpostId)
             it.setObject(3, nowUTC())
-            it.setObject(4, varsel.expiredPublishedAt)
+            it.setObject(4, varsel.svarfristExpiredPublishedAt)
             it.setString(5, varsel.uuid.toString())
             val updated = it.executeUpdate()
             if (updated != 1) {
@@ -58,7 +58,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         private const val UPDATE_VARSEL =
             """
                  UPDATE varsel
-                 SET published_at = ?, journalpost_id = ?, updated_at = ?, expired_varsel_published_at = ?
+                 SET published_at = ?, journalpost_id = ?, updated_at = ?, svarfrist_expired_published_at = ?
                  WHERE uuid = ?
             """
 
@@ -85,8 +85,8 @@ internal fun ResultSet.toPVarsel(): PVarsel = PVarsel(
     ),
     journalpostId = getString("journalpost_id"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
-    expiresAt = getObject("expires_at", OffsetDateTime::class.java),
-    expiredPublishedAt = getObject("expired_varsel_published_at", OffsetDateTime::class.java),
+    svarfrist = getObject("svarfrist", OffsetDateTime::class.java),
+    svarfristExpiredPublishedAt = getObject("svarfrist_expired_published_at", OffsetDateTime::class.java),
 )
 
 internal fun ResultSet.toPVarselPdf(): PVarselPdf = PVarselPdf(

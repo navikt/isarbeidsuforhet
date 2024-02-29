@@ -59,8 +59,8 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setObject(3, now)
             it.setInt(4, vurderingId)
             it.setObject(5, mapper.writeValueAsString(varsel.document))
-            it.setObject(6, varsel.expiresAt)
-            it.setObject(7, varsel.expiredPublishedAt)
+            it.setObject(6, varsel.svarfrist)
+            it.setObject(7, varsel.svarfristExpiredPublishedAt)
             it.executeQuery().toList { toPVarsel() }.single()
         }
     }
@@ -101,8 +101,8 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 updated_at,
                 vurdering_id,
                 document,
-                expires_at,
-                expired_varsel_published_at             
+                svarfrist,
+                svarfrist_expired_published_at             
             ) values (DEFAULT, ?, ?, ?, ?, ?::jsonb, ?, ?)
             RETURNING *
             """

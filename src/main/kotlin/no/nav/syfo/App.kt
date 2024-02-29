@@ -6,17 +6,23 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
-import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.application.service.ForhandsvarselService
+import no.nav.syfo.application.service.VarselService
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
+import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
+import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
+import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
 import no.nav.syfo.infrastructure.pdl.PdlClient
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.wellknown.getWellKnown
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
@@ -52,8 +58,14 @@ fun main() {
         pdlClient = pdlClient,
     )
 
+    val arbeidstakerForhandsvarselProducer = ArbeidstakerForhandsvarselProducer(
+        kafkaProducer = KafkaProducer(
+            kafkaAivenProducerConfig<KafkaArbeidstakervarselSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
+
     lateinit var forhandsvarselService: ForhandsvarselService
-    lateinit var vurderingRepository: IVurderingRepository
+    lateinit var varselService: VarselService
 
     val applicationEngineEnvironment =
         applicationEngineEnvironment {
@@ -67,10 +79,15 @@ fun main() {
                     databaseEnvironment = environment.database,
                 )
 
-                vurderingRepository = VurderingRepository(applicationDatabase)
+                val vurderingRepository = VurderingRepository(database = applicationDatabase)
                 forhandsvarselService = ForhandsvarselService(
                     vurderingRepository = vurderingRepository,
                     varselPdfService = varselPdfService,
+                )
+                val varselRepository = VarselRepository(database = applicationDatabase)
+                varselService = VarselService(
+                    varselRepository = varselRepository,
+                    varselProducer = arbeidstakerForhandsvarselProducer,
                 )
 
                 apiModule(
@@ -87,6 +104,11 @@ fun main() {
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) {
         applicationState.ready = true
         logger.info("Application is ready, running Java VM ${Runtime.version()}")
+        launchCronjobs(
+            environment = environment,
+            applicationState = applicationState,
+            varselService = varselService,
+        )
     }
 
     val server = embeddedServer(

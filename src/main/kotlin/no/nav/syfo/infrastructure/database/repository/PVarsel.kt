@@ -14,8 +14,8 @@ data class PVarsel(
     val document: List<DocumentComponent>,
     val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
-    val expiresAt: OffsetDateTime,
-    val expiredPublishedAt: OffsetDateTime?,
+    val svarfrist: OffsetDateTime,
+    val svarfristExpiredPublishedAt: OffsetDateTime?,
 ) {
     fun toVarsel(): Varsel = Varsel.createFromDatabase(
         uuid = uuid,
@@ -23,7 +23,7 @@ data class PVarsel(
         createdAt = createdAt,
         journalpostId = journalpostId,
         publishedAt = publishedAt,
-        expiresAt = expiresAt,
-        expiredPublishedAt = expiredPublishedAt,
+        svarfrist = svarfrist,
+        svarfristExpiredPublishedAt = svarfristExpiredPublishedAt,
     )
 }
