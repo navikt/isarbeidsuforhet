@@ -25,7 +25,9 @@ class VarselService(
     fun publishExpiredForhandsvarsler(): List<Result<Varsel>> {
         val expiredVarsler = varselRepository.getExpiredVarsler()
         return expiredVarsler.map { (personIdent, expiredVarsel) ->
-            expiredForhandsvarslerProducer.send(personIdent, expiredVarsel)
+            expiredForhandsvarslerProducer.send(
+                personIdent = personIdent, varsel = expiredVarsel
+            )
         }
     }
 }

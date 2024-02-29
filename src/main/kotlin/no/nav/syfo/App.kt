@@ -14,6 +14,7 @@ import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
+import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
@@ -63,6 +64,11 @@ fun main() {
             kafkaAivenProducerConfig<KafkaArbeidstakervarselSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
+    val expiredForhandsvarselProducer = ExpiredForhandsvarselProducer(
+        producer = KafkaProducer(
+            kafkaAivenProducerConfig<KafkaArbeidstakervarselSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
 
     lateinit var forhandsvarselService: ForhandsvarselService
     lateinit var varselService: VarselService
@@ -88,6 +94,7 @@ fun main() {
                 varselService = VarselService(
                     varselRepository = varselRepository,
                     varselProducer = arbeidstakerForhandsvarselProducer,
+                    expiredForhandsvarslerProducer = expiredForhandsvarselProducer,
                 )
 
                 apiModule(

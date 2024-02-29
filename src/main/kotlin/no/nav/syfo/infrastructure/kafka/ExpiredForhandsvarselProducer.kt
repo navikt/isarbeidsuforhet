@@ -22,7 +22,7 @@ class ExpiredForhandsvarselProducer(private val producer: KafkaProducer<String, 
             ).get()
             Result.success(varsel)
         } catch (e: Exception) {
-            log.error("Exception was thrown when attempting to send forhandsvarsel to syfooversiktsrv: ${e.message}")
+            log.error("Exception was thrown when attempting to send expired forhandsvarsel: ${e.message}")
             Result.failure(e)
         }
 
