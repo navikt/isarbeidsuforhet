@@ -21,7 +21,6 @@ import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVarsel
 import no.nav.syfo.infrastructure.database.getVarselPdf
-import no.nav.syfo.infrastructure.database.getVurdering
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
 import no.nav.syfo.util.configuredJacksonMapper
@@ -45,8 +44,9 @@ object ArbeidsuforhetEndpointsSpek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
             )
+            val vurderingRepository = VurderingRepository(database)
             val forhandsvarselService = ForhandsvarselService(
-                vurderingRepository = VurderingRepository(database),
+                vurderingRepository = vurderingRepository,
                 varselPdfService = VarselPdfService(
                     pdfGenClient = externalMockEnvironment.pdfgenClient,
                     pdlClient = externalMockEnvironment.pdlClient,
@@ -91,7 +91,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.varsel?.document shouldBeEqualTo document
 
-                            val pVurdering = database.getVurdering(responseDTO.uuid)
+                            val pVurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
                             pVurdering?.begrunnelse shouldBeEqualTo begrunnelse
                             pVurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
 
@@ -203,6 +203,18 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
                         testInvalidPersonIdent(urlForhandsvarsel, validToken, HttpMethod.Post)
+                    }
+                    it("Returns status Unauthorized if no token is supplied") {
+                        testMissingToken(urlVurdering, HttpMethod.Get)
+                    }
+                    it("Returns status Forbidden if denied access to person") {
+                        testDeniedPersonAccess(urlVurdering, validToken, HttpMethod.Get)
+                    }
+                    it("Returns status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
+                        testMissingPersonIdent(urlVurdering, validToken, HttpMethod.Get)
+                    }
+                    it("Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
+                        testInvalidPersonIdent(urlVurdering, validToken, HttpMethod.Get)
                     }
                 }
             }

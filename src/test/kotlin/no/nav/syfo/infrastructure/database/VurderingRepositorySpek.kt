@@ -29,7 +29,7 @@ class VurderingRepositorySpek : Spek({
                     vurdering = vurdering,
                 )
 
-                val pVurdering = database.getVurdering(uuid = vurdering.uuid)
+                val pVurdering = vurderingRepository.getVurderinger(vurdering.personident).firstOrNull()
                 pVurdering.shouldNotBeNull()
                 // TODO: Sjekk varsel og pdf lagret når vi har implementert spørringer
             }
