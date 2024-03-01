@@ -2,7 +2,7 @@ apiVersion: kafka.nais.io/v1
 kind: Topic
 metadata:
   annotations:
-    dcat.data.nav.no/title: "Utgatt forhåndsvarsel om stopp på sykepenger for arbeidsuforhet sykmeldte personer"
+    dcat.data.nav.no/title: "Utgatt forhåndsvarsel om avslag på sykepenger for arbeidsuforhet sykmeldte personer"
     dcat.data.nav.no/description: >-
       Topic inneholder informasjon om et forhåndsvarsel der svarfrist har gatt ut.
   name: arbeidsuforhet-expired-forhandsvarsel
