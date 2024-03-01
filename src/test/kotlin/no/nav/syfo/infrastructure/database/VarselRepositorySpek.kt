@@ -26,30 +26,20 @@ class VarselRepositorySpek : Spek({
             }
 
             val expiredVarselOneWeekAgo =
-                Varsel(
-                    generateDocumentComponent("En begrunnelse"),
-                    svarfrist = OffsetDateTime.now().minusWeeks(1)
-                )
+                Varsel(generateDocumentComponent("En begrunnelse"))
+                    .copy(svarfrist = OffsetDateTime.now().minusWeeks(1))
             val expiredVarselYesterday =
-                Varsel(
-                    generateDocumentComponent("En begrunnelse"),
-                    svarfrist = OffsetDateTime.now().minusDays(1)
-                )
+                Varsel(generateDocumentComponent("En begrunnelse"))
+                    .copy(svarfrist = OffsetDateTime.now().minusDays(1))
             val expiredVarselToday =
-                Varsel(
-                    generateDocumentComponent("En begrunnelse"),
-                    svarfrist = OffsetDateTime.now()
-                )
+                Varsel(generateDocumentComponent("En begrunnelse"))
+                    .copy(svarfrist = OffsetDateTime.now())
             val expiredVarselTomorrow =
-                Varsel(
-                    generateDocumentComponent("En begrunnelse"),
-                    svarfrist = OffsetDateTime.now().plusDays(1)
-                )
+                Varsel(generateDocumentComponent("En begrunnelse"))
+                    .copy(svarfrist = OffsetDateTime.now().plusDays(1))
             val expiredVarselInOneWeek =
-                Varsel(
-                    generateDocumentComponent("En begrunnelse"),
-                    svarfrist = OffsetDateTime.now().plusWeeks(1)
-                )
+                Varsel(generateDocumentComponent("En begrunnelse"))
+                    .copy(svarfrist = OffsetDateTime.now().plusWeeks(1))
 
             it("retrieves expired varsler") {
                 val vurderinger = listOf(
@@ -72,7 +62,7 @@ class VarselRepositorySpek : Spek({
 
             it("retrieves expired varsel that is not published") {
                 val expiredVarselNotPublished = expiredVarselOneWeekAgo
-                val expiredVarselPublished = expiredVarselYesterday.publishExpiredVarsel()
+                val expiredVarselPublished = expiredVarselYesterday.publishSvarfristExpired()
                 val vurderinger = listOf(
                     generateForhandsvarselVurdering().copy(varsel = expiredVarselNotPublished),
                     generateForhandsvarselVurdering().copy(varsel = expiredVarselPublished),

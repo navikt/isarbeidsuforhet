@@ -1,7 +1,7 @@
 package no.nav.syfo.application.service
 
-import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IExpiredForhandsvarselProducer
+import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVarselProducer
 import no.nav.syfo.application.IVarselRepository
 import no.nav.syfo.domain.Varsel
@@ -31,7 +31,7 @@ class VarselService(
                 val result =
                     expiredForhandsvarselProducer.send(personIdent = personIdent, varsel = expiredUnpublishedVarsel)
                 result.map {
-                    val expiredPublishedVarsel = it.publishExpiredVarsel()
+                    val expiredPublishedVarsel = it.publishSvarfristExpired()
                     varselRepository.update(expiredPublishedVarsel)
                     expiredPublishedVarsel
                 }

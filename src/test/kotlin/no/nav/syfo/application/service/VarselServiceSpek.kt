@@ -58,8 +58,7 @@ class VarselServiceSpek : Spek({
         )
 
         beforeEachTest {
-            clearMocks(mockEsyfoVarselHendelseProducer)
-            clearMocks(mockExpiredForhandsvarselProducer)
+            clearAllMocks()
             coEvery { mockEsyfoVarselHendelseProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
             coEvery { mockExpiredForhandsvarselProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
         }
@@ -82,10 +81,8 @@ class VarselServiceSpek : Spek({
 
         fun createExpiredUnpublishedVarsel(): Varsel {
             val varselUnpublishedExpiredYesterday =
-                Varsel(
-                    generateDocumentComponent("En begrunnelse"),
-                    svarfrist = OffsetDateTime.now().minusDays(1)
-                )
+                Varsel(generateDocumentComponent("En begrunnelse"))
+                    .copy(svarfrist = OffsetDateTime.now().minusDays(1))
             val vurderingWithExpiredVarsel =
                 generateForhandsvarselVurdering().copy(varsel = varselUnpublishedExpiredYesterday)
 
@@ -170,7 +167,7 @@ class VarselServiceSpek : Spek({
             }
 
             it("publishes nothing when no expired unpublished varsel") {
-                val publishedExpiredVarsel = createExpiredUnpublishedVarsel().publishExpiredVarsel()
+                val publishedExpiredVarsel = createExpiredUnpublishedVarsel().publishSvarfristExpired()
                 varselRepository.update(publishedExpiredVarsel)
 
                 val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }

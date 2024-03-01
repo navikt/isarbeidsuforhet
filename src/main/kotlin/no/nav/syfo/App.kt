@@ -17,6 +17,7 @@ import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
+import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselRecordSerializer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
@@ -77,7 +78,7 @@ fun main() {
     )
     val expiredForhandsvarselProducer = ExpiredForhandsvarselProducer(
         producer = KafkaProducer(
-            kafkaAivenProducerConfig<KafkaArbeidstakervarselSerializer>(kafkaEnvironment = environment.kafka)
+            kafkaAivenProducerConfig<ExpiredForhandsvarselRecordSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
 
