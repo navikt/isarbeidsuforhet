@@ -24,6 +24,13 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         }
     }.map { (personident, pVarsel) -> Pair(personident, pVarsel.toVarsel()) }
 
+    override fun getUnpublishedExpiredVarsler(): List<Pair<PersonIdent, Varsel>> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPUBLISHED_EXPIRED_VARSLER).use {
+                it.executeQuery().toList { Pair(PersonIdent(getString("personident")), toPVarsel()) }
+            }
+        }.map { (personident, pVarsel) -> Pair(personident, pVarsel.toVarsel()) }
+
     override fun update(varsel: Varsel) = database.connection.use { connection ->
         connection.prepareStatement(UPDATE_VARSEL).use {
             it.setObject(1, varsel.publishedAt)
@@ -67,6 +74,15 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                  UPDATE varsel
                  SET published_at = ?, journalpost_id = ?, updated_at = ?, svarfrist_expired_published_at = ?
                  WHERE uuid = ?
+            """
+
+        private const val GET_UNPUBLISHED_EXPIRED_VARSLER =
+            """
+                SELECT vu.personident, v.*
+                FROM varsel v
+                INNER JOIN vurdering vu
+                ON v.vurdering_id = vu.id
+                WHERE svarfrist <= NOW() AND svarfrist_expired_published_at IS NULL
             """
 
         private const val GET_NOT_JOURNALFORT_VARSEL =

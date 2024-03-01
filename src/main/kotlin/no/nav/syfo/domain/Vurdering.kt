@@ -27,7 +27,7 @@ data class Vurdering private constructor(
             veilederident = veilederident,
             type = VurderingType.FORHANDSVARSEL,
             begrunnelse = begrunnelse,
-            varsel = Varsel.create(document),
+            varsel = Varsel(document),
         )
     }
 }

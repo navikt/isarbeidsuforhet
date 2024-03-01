@@ -10,18 +10,20 @@ import no.nav.syfo.application.service.ForhandsvarselService
 import no.nav.syfo.application.service.VarselService
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
-import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.database.repository.VarselRepository
-import no.nav.syfo.infrastructure.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
+import no.nav.syfo.infrastructure.database.repository.VarselRepository
+import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
+import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselRecordSerializer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.pdl.PdlClient
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.wellknown.getWellKnown
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -74,6 +76,11 @@ fun main() {
             kafkaAivenProducerConfig<KafkaArbeidstakervarselSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
+    val expiredForhandsvarselProducer = ExpiredForhandsvarselProducer(
+        producer = KafkaProducer(
+            kafkaAivenProducerConfig<ExpiredForhandsvarselRecordSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
 
     lateinit var forhandsvarselService: ForhandsvarselService
     lateinit var varselService: VarselService
@@ -99,6 +106,7 @@ fun main() {
                 varselService = VarselService(
                     varselRepository = varselRepository,
                     varselProducer = arbeidstakerForhandsvarselProducer,
+                    expiredForhandsvarselProducer = expiredForhandsvarselProducer,
                     journalforingService = journalforingService,
                 )
 

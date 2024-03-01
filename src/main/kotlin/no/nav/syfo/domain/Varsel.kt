@@ -13,21 +13,23 @@ data class Varsel private constructor(
     val svarfrist: OffsetDateTime,
     val svarfristExpiredPublishedAt: OffsetDateTime?,
 ) {
+    constructor(document: List<DocumentComponent>) : this(
+        uuid = UUID.randomUUID(),
+        document = document,
+        createdAt = nowUTC(),
+        journalpostId = null,
+        publishedAt = null,
+        svarfrist = OffsetDateTime.now().plusWeeks(3),
+        svarfristExpiredPublishedAt = null,
+    )
+
     fun publish(): Varsel = this.copy(publishedAt = nowUTC())
+
+    fun publishSvarfristExpired(): Varsel = this.copy(svarfristExpiredPublishedAt = nowUTC())
 
     fun journalfor(journalpostId: String): Varsel = this.copy(journalpostId = journalpostId)
 
     companion object {
-        fun create(document: List<DocumentComponent>) = Varsel(
-            uuid = UUID.randomUUID(),
-            document = document,
-            createdAt = nowUTC(),
-            journalpostId = null,
-            publishedAt = null,
-            svarfrist = nowUTC().plusWeeks(3),
-            svarfristExpiredPublishedAt = null,
-        )
-
         fun createFromDatabase(
             uuid: UUID,
             document: List<DocumentComponent>,
