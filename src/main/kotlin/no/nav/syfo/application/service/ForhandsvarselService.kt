@@ -10,9 +10,9 @@ class ForhandsvarselService(
     private val vurderingRepository: IVurderingRepository,
     private val varselPdfService: IVarselPdfService,
 ) {
-    fun getForhandsvarsel(
+    fun getVurderinger(
         personident: PersonIdent,
-    ) = vurderingRepository.getForhandsvarsel(personident)
+    ): List<Vurdering> = vurderingRepository.getVurderinger(personident)
 
     suspend fun createForhandsvarsel(
         personident: PersonIdent,

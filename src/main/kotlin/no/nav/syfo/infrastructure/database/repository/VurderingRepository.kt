@@ -13,7 +13,7 @@ import java.time.OffsetDateTime
 import java.util.*
 
 class VurderingRepository(private val database: DatabaseInterface) : IVurderingRepository {
-    override fun getForhandsvarsel(
+    override fun getVurderinger(
         personident: PersonIdent,
     ): List<Vurdering> =
         database.connection.use { connection ->

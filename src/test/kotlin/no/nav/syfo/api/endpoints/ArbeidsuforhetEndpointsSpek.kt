@@ -14,6 +14,7 @@ import no.nav.syfo.api.model.ForhandsvarselRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.application.service.ForhandsvarselService
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
@@ -33,6 +34,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
 
     val objectMapper: ObjectMapper = configuredJacksonMapper()
     val urlForhandsvarsel = "$arbeidsuforhetApiBasePath/$forhandsvarselPath"
+    val urlVurdering = "$arbeidsuforhetApiBasePath/$vurderingPath"
 
     describe(ArbeidsuforhetEndpointsSpek::class.java.simpleName) {
         with(TestApplicationEngine()) {
@@ -103,7 +105,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             pVarselPdf?.pdf?.get(1) shouldBeEqualTo PDF_FORHANDSVARSEL[1]
                         }
                     }
-                    it("Successfully gets an existsing forhandsvarsel") {
+                    it("Successfully gets an existing vurdering") {
                         runBlocking {
                             forhandsvarselService.createForhandsvarsel(
                                 personident = PersonIdent(personIdent),
@@ -114,7 +116,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             )
                         }
                         with(
-                            handleRequest(HttpMethod.Get, urlForhandsvarsel) {
+                            handleRequest(HttpMethod.Get, urlVurdering) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, personIdent)
                             }
@@ -129,24 +131,12 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.varsel?.document shouldBeEqualTo document
-
-                            val pVurdering = database.getVurdering(responseDTO.uuid)
-                            pVurdering?.begrunnelse shouldBeEqualTo begrunnelse
-                            pVurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-
-                            val pVarsel = database.getVarsel(responseDTO.varsel!!.uuid)
-                            pVarsel?.document shouldBeEqualTo document
-                            pVarsel?.journalpostId shouldBeEqualTo null
-
-                            val pVarselPdf = database.getVarselPdf(pVarsel!!.id)
-                            pVarselPdf?.pdf?.size shouldBeEqualTo PDF_FORHANDSVARSEL.size
-                            pVarselPdf?.pdf?.get(0) shouldBeEqualTo PDF_FORHANDSVARSEL[0]
-                            pVarselPdf?.pdf?.get(1) shouldBeEqualTo PDF_FORHANDSVARSEL[1]
+                            responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                         }
                     }
-                    it("Successfully gets empty list of forhandsvarsel") {
+                    it("Successfully gets empty list of vurderinger") {
                         with(
-                            handleRequest(HttpMethod.Get, urlForhandsvarsel) {
+                            handleRequest(HttpMethod.Get, urlVurdering) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, personIdent)
                             }
@@ -157,7 +147,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTOs.size shouldBeEqualTo 0
                         }
                     }
-                    it("Successfully gets multiple forhandsvarsel") {
+                    it("Successfully gets multiple vurderinger") {
                         runBlocking {
                             forhandsvarselService.createForhandsvarsel(
                                 personident = PersonIdent(personIdent),
@@ -175,7 +165,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             )
                         }
                         with(
-                            handleRequest(HttpMethod.Get, urlForhandsvarsel) {
+                            handleRequest(HttpMethod.Get, urlVurdering) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, personIdent)
                             }

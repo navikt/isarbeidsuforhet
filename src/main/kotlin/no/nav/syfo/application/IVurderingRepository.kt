@@ -4,7 +4,7 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Vurdering
 
 interface IVurderingRepository {
-    fun getForhandsvarsel(
+    fun getVurderinger(
         personident: PersonIdent,
     ): List<Vurdering>
 
