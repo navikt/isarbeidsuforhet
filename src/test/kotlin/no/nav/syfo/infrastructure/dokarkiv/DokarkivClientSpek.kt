@@ -5,7 +5,8 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.EXISTING_EKSTERN_REFERANSE_UUID
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.generator.generateJournalpostRequest
-import no.nav.syfo.infrastructure.dokarkiv.dto.BrevkodeType
+import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
 import no.nav.syfo.infrastructure.mock.dokarkivConflictResponse
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek

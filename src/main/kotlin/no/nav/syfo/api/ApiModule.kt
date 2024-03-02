@@ -24,9 +24,9 @@ import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
-import no.nav.syfo.infrastructure.veiledertilgang.ForbiddenAccessVeilederException
-import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.infrastructure.wellknown.WellKnown
+import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.util.configure
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getConsumerClientId

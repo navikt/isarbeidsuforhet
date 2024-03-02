@@ -9,8 +9,8 @@ import no.nav.syfo.api.model.ForhandsvarselRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollPlugin
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollPlugin
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getNAVIdent
 import no.nav.syfo.util.getPersonIdent

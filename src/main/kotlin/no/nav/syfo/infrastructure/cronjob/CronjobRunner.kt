@@ -5,7 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.ApplicationState
-import no.nav.syfo.infrastructure.leaderelection.LeaderPodClient
+import no.nav.syfo.infrastructure.clients.leaderelection.LeaderPodClient
 import org.slf4j.LoggerFactory
 import java.time.Duration
 

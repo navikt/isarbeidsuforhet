@@ -22,7 +22,7 @@ import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVarsel
 import no.nav.syfo.infrastructure.database.getVarselPdf
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.clients.pdfgen.VarselPdfService
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek

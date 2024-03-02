@@ -4,8 +4,8 @@ import io.ktor.server.application.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
-import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.clients.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,

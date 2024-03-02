@@ -1,12 +1,12 @@
 package no.nav.syfo
 
-import no.nav.syfo.infrastructure.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.database.TestDatabase
-import no.nav.syfo.infrastructure.dokarkiv.DokarkivClient
+import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.mock.mockHttpClient
-import no.nav.syfo.infrastructure.pdfgen.PdfGenClient
-import no.nav.syfo.infrastructure.pdl.PdlClient
-import no.nav.syfo.infrastructure.wellknown.WellKnown
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
+import no.nav.syfo.infrastructure.clients.pdl.PdlClient
+import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import java.nio.file.Paths
 
 fun wellKnownInternalAzureAD(): WellKnown {
