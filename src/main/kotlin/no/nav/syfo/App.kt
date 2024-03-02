@@ -6,7 +6,7 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
-import no.nav.syfo.application.service.ForhandsvarselService
+import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.application.service.VarselService
 import no.nav.syfo.infrastructure.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
@@ -82,7 +82,7 @@ fun main() {
         )
     )
 
-    lateinit var forhandsvarselService: ForhandsvarselService
+    lateinit var vurderingService: VurderingService
     lateinit var varselService: VarselService
 
     val applicationEngineEnvironment =
@@ -98,7 +98,7 @@ fun main() {
                 )
 
                 val vurderingRepository = VurderingRepository(database = applicationDatabase)
-                forhandsvarselService = ForhandsvarselService(
+                vurderingService = VurderingService(
                     vurderingRepository = vurderingRepository,
                     varselPdfService = varselPdfService,
                 )
@@ -116,7 +116,7 @@ fun main() {
                     environment = environment,
                     wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                     veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-                    forhandsvarselService = forhandsvarselService,
+                    vurderingService = vurderingService,
                 )
             }
         }

@@ -6,7 +6,7 @@ import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.PersonIdent
 
-class ForhandsvarselService(
+class VurderingService(
     private val vurderingRepository: IVurderingRepository,
     private val varselPdfService: IVarselPdfService,
 ) {

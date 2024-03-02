@@ -7,7 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.model.ForhandsvarselRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
-import no.nav.syfo.application.service.ForhandsvarselService
+import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollPlugin
@@ -23,7 +23,7 @@ private const val API_ACTION = "access arbeidsuforhet for person"
 
 fun Route.registerArbeidsuforhetEndpoints(
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
-    forhandsvarselService: ForhandsvarselService,
+    vurderingService: VurderingService,
 ) {
     route(arbeidsuforhetApiBasePath) {
         install(VeilederTilgangskontrollPlugin) {
@@ -35,7 +35,7 @@ fun Route.registerArbeidsuforhetEndpoints(
             val personIdent = call.getPersonIdent()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
 
-            val vurderinger = forhandsvarselService.getVurderinger(
+            val vurderinger = vurderingService.getVurderinger(
                 personident = personIdent,
             )
             val responseDTO = vurderinger.map { vurdering -> VurderingResponseDTO.createFromVurdering(vurdering) }
@@ -53,7 +53,7 @@ fun Route.registerArbeidsuforhetEndpoints(
             val navIdent = call.getNAVIdent()
             val callId = call.getCallId()
 
-            val newForhandsvarselVurdering = forhandsvarselService.createForhandsvarsel(
+            val newForhandsvarselVurdering = vurderingService.createForhandsvarsel(
                 personident = personIdent,
                 veilederident = navIdent,
                 begrunnelse = requestDTO.begrunnelse,

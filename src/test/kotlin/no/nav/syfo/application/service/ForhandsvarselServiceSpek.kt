@@ -20,7 +20,7 @@ object ForhandsvarselServiceSpek : Spek({
     describe(ForhandsvarselServiceSpek::class.java.simpleName) {
         val vurderingRepositoryMock = mockk<IVurderingRepository>(relaxed = true)
         val varselPdfServiceMock = mockk<IVarselPdfService>(relaxed = true)
-        val forhandsvarselService = ForhandsvarselService(
+        val vurderingService = VurderingService(
             vurderingRepository = vurderingRepositoryMock,
             varselPdfService = varselPdfServiceMock,
         )
@@ -41,7 +41,7 @@ object ForhandsvarselServiceSpek : Spek({
             describe("Happy path") {
                 it("Creates forhåndsvarsel") {
                     runBlocking {
-                        val vurdering = forhandsvarselService.createForhandsvarsel(
+                        val vurdering = vurderingService.createForhandsvarsel(
                             personident = ARBEIDSTAKER_PERSONIDENT,
                             veilederident = VEILEDER_IDENT,
                             begrunnelse = begrunnelse,
@@ -79,7 +79,7 @@ object ForhandsvarselServiceSpek : Spek({
 
                     runBlocking {
                         assertFailsWith(Exception::class) {
-                            forhandsvarselService.createForhandsvarsel(
+                            vurderingService.createForhandsvarsel(
                                 personident = ARBEIDSTAKER_PERSONIDENT,
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,
@@ -104,7 +104,7 @@ object ForhandsvarselServiceSpek : Spek({
 
                     runBlocking {
                         assertFailsWith(RuntimeException::class) {
-                            forhandsvarselService.createForhandsvarsel(
+                            vurderingService.createForhandsvarsel(
                                 personident = ARBEIDSTAKER_PERSONIDENT,
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,
