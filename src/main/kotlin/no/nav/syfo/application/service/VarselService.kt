@@ -13,8 +13,8 @@ class VarselService(
     fun publishUnpublishedVarsler(): List<Result<Varsel>> {
         val unpublishedVarsler = varselRepository.getUnpublishedVarsler()
         return unpublishedVarsler.map { (personident, varsel) ->
-            runCatching {
-                varselProducer.sendArbeidstakerForhandsvarsel(personIdent = personident, varsel = varsel)
+            val result = varselProducer.sendArbeidstakerForhandsvarsel(personIdent = personident, varsel = varsel)
+            result.map {
                 val publishedVarsel = varsel.publish()
                 varselRepository.update(publishedVarsel)
                 publishedVarsel

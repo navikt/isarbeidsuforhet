@@ -10,8 +10,8 @@ class VarselProducer(
     private val expiredForhandsvarselProducer: ExpiredForhandsvarselProducer
 ) : IVarselProducer {
 
-    override fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, varsel: Varsel) {
-        arbeidstakerForhandsvarselProducer.sendArbeidstakerForhandsvarsel(personIdent = personIdent, varsel = varsel)
+    override fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, varsel: Varsel): Result<Varsel> {
+        return arbeidstakerForhandsvarselProducer.sendArbeidstakerForhandsvarsel(personIdent = personIdent, varsel = varsel)
     }
 
     override fun sendExpiredForhandsvarsel(personIdent: PersonIdent, varsel: Varsel): Result<Varsel> {
