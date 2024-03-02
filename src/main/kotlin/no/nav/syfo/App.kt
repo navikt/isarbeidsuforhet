@@ -18,6 +18,7 @@ import no.nav.syfo.infrastructure.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselRecordSerializer
+import no.nav.syfo.infrastructure.kafka.VarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
@@ -103,10 +104,13 @@ fun main() {
                     varselPdfService = varselPdfService,
                 )
                 val varselRepository = VarselRepository(database = applicationDatabase)
+                val varselProducer = VarselProducer(
+                    arbeidstakerForhandsvarselProducer = arbeidstakerForhandsvarselProducer,
+                    expiredForhandsvarselProducer = expiredForhandsvarselProducer
+                )
                 varselService = VarselService(
                     varselRepository = varselRepository,
-                    varselProducer = arbeidstakerForhandsvarselProducer,
-                    expiredForhandsvarselProducer = expiredForhandsvarselProducer,
+                    varselProducer = varselProducer,
                     journalforingService = journalforingService,
                 )
 

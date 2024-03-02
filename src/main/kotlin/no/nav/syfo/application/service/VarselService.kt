@@ -1,6 +1,5 @@
 package no.nav.syfo.application.service
 
-import no.nav.syfo.application.IExpiredForhandsvarselProducer
 import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVarselProducer
 import no.nav.syfo.application.IVarselRepository
@@ -9,7 +8,6 @@ import no.nav.syfo.domain.Varsel
 class VarselService(
     private val varselRepository: IVarselRepository,
     private val varselProducer: IVarselProducer,
-    private val expiredForhandsvarselProducer: IExpiredForhandsvarselProducer,
     private val journalforingService: IJournalforingService,
 ) {
     fun publishUnpublishedVarsler(): List<Result<Varsel>> {
@@ -29,7 +27,7 @@ class VarselService(
         return expiredUnpublishedVarsler
             .map { (personIdent, expiredUnpublishedVarsel) ->
                 val result =
-                    expiredForhandsvarselProducer.send(personIdent = personIdent, varsel = expiredUnpublishedVarsel)
+                    varselProducer.sendExpiredForhandsvarsel(personIdent = personIdent, varsel = expiredUnpublishedVarsel)
                 result.map {
                     val expiredPublishedVarsel = it.publishSvarfristExpired()
                     varselRepository.update(expiredPublishedVarsel)

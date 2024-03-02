@@ -5,4 +5,5 @@ import no.nav.syfo.domain.Varsel
 
 interface IVarselProducer {
     fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, varsel: Varsel)
+    fun sendExpiredForhandsvarsel(personIdent: PersonIdent, varsel: Varsel): Result<Varsel>
 }
