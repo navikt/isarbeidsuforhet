@@ -13,6 +13,7 @@ import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
+import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselRecord
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
@@ -41,7 +42,7 @@ class VarselServiceSpek : Spek({
         val varselRepository = VarselRepository(database = database)
         val vurderingRepository = VurderingRepository(database = database)
         val mockEsyfoVarselHendelseProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
-        val mockExpiredForhandsvarselProducer = mockk<KafkaProducer<String, Varsel>>()
+        val mockExpiredForhandsvarselProducer = mockk<KafkaProducer<String, ExpiredForhandsvarselRecord>>()
 
         val varselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = mockEsyfoVarselHendelseProducer)
         val expiredForhandsvarselProducer =
@@ -152,7 +153,7 @@ class VarselServiceSpek : Spek({
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 1
 
-                val producerRecordSlot = slot<ProducerRecord<String, Varsel>>()
+                val producerRecordSlot = slot<ProducerRecord<String, ExpiredForhandsvarselRecord>>()
                 verify(exactly = 1) { mockExpiredForhandsvarselProducer.send(capture(producerRecordSlot)) }
 
                 val publishedExpiredVarsel = success.first().getOrThrow()
@@ -162,7 +163,7 @@ class VarselServiceSpek : Spek({
 
                 varselRepository.getUnpublishedVarsler().shouldBeEmpty()
 
-                val publishedExpiredVarselRecord = producerRecordSlot.captured.value() as Varsel
+                val publishedExpiredVarselRecord = producerRecordSlot.captured.value() as ExpiredForhandsvarselRecord
                 publishedExpiredVarselRecord.uuid shouldBeEqualTo expiredUnpublishedVarsel.uuid
             }
 

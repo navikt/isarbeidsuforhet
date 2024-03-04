@@ -1,0 +1,40 @@
+name: kafka
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/kafka-arbeidsuforhet.yaml'
+      - '.nais/kafka/**'
+
+permissions:
+  id-token: write
+
+jobs:
+  deploy-kafka-arbeidsuforhet-dev:
+    name: Deploy Kafka topics to dev-gcp
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy arbeidsuforhet-expired-varsel topic to dev
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/kafka/arbeidsuforhet-expired-varsel.yaml
+          VARS: .nais/kafka/dev.json
+
+  deploy-kafka-arbeidsuforhet-prod:
+    name: Deploy Kafka topics to prod-gcp
+    needs: deploy-kafka-arbeidsuforhet-dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy arbeidsuforhet-expired-varsel topic to prod
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: .nais/kafka/arbeidsuforhet-expired-varsel.yaml
+          VARS: .nais/kafka/prod.json
