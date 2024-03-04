@@ -17,6 +17,7 @@ import no.nav.syfo.util.getPersonIdent
 
 const val arbeidsuforhetApiBasePath = "/api/internad/v1/arbeidsuforhet"
 const val forhandsvarselPath = "/forhandsvarsel"
+const val vurderingPath = "/vurdering"
 
 private const val API_ACTION = "access arbeidsuforhet for person"
 
@@ -28,6 +29,17 @@ fun Route.registerArbeidsuforhetEndpoints(
         install(VeilederTilgangskontrollPlugin) {
             this.action = API_ACTION
             this.veilederTilgangskontrollClient = veilederTilgangskontrollClient
+        }
+
+        get(vurderingPath) {
+            val personIdent = call.getPersonIdent()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+
+            val vurderinger = forhandsvarselService.getVurderinger(
+                personident = personIdent,
+            )
+            val responseDTO = vurderinger.map { vurdering -> VurderingResponseDTO.createFromVurdering(vurdering) }
+            call.respond(HttpStatusCode.OK, responseDTO)
         }
 
         post(forhandsvarselPath) {

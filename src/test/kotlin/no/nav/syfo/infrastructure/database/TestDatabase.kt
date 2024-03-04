@@ -50,25 +50,6 @@ fun TestDatabase.dropData() {
     }
 }
 
-private const val queryGetVurdering =
-    """
-        SELECT *
-        FROM vurdering
-        WHERE uuid = ?
-    """
-
-fun TestDatabase.getVurdering(
-    uuid: UUID,
-): PVurdering? =
-    this.connection.use { connection ->
-        connection.prepareStatement(queryGetVurdering).use {
-            it.setString(1, uuid.toString())
-            it.executeQuery()
-                .toList { toPVurdering() }
-                .firstOrNull()
-        }
-    }
-
 private const val queryGetVarsel =
     """
         SELECT *

@@ -29,6 +29,24 @@ data class Vurdering private constructor(
             begrunnelse = begrunnelse,
             varsel = Varsel(document),
         )
+
+        fun createFromDatabase(
+            uuid: UUID,
+            personident: PersonIdent,
+            createdAt: OffsetDateTime,
+            veilederident: String,
+            type: String,
+            begrunnelse: String,
+            varsel: Varsel?,
+        ) = Vurdering(
+            uuid = uuid,
+            personident = personident,
+            createdAt = createdAt,
+            veilederident = veilederident,
+            type = VurderingType.valueOf(type),
+            begrunnelse = begrunnelse,
+            varsel = varsel,
+        )
     }
 }
 
