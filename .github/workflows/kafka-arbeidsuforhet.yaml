@@ -3,7 +3,7 @@ name: kafka
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - '.github/workflows/kafka-arbeidsuforhet.yaml'
       - '.nais/kafka/**'
