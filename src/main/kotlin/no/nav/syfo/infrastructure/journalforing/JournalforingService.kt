@@ -2,9 +2,9 @@ package no.nav.syfo.infrastructure.journalforing
 
 import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.infrastructure.dokarkiv.DokarkivClient
-import no.nav.syfo.infrastructure.dokarkiv.dto.*
-import no.nav.syfo.infrastructure.pdl.PdlClient
+import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.*
+import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import java.util.*
 
 class JournalforingService(

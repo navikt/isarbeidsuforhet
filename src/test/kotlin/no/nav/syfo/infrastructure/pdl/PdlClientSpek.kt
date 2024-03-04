@@ -6,9 +6,10 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
-import no.nav.syfo.infrastructure.azuread.AzureAdClient
-import no.nav.syfo.infrastructure.pdl.dto.PdlPerson
-import no.nav.syfo.infrastructure.pdl.dto.PdlPersonNavn
+import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.pdl.PdlClient
+import no.nav.syfo.infrastructure.clients.pdl.dto.PdlPerson
+import no.nav.syfo.infrastructure.clients.pdl.dto.PdlPersonNavn
 import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek

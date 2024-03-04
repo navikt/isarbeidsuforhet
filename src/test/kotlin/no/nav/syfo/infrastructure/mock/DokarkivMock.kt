@@ -4,8 +4,8 @@ import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import no.nav.syfo.UserConstants
-import no.nav.syfo.infrastructure.dokarkiv.dto.JournalpostRequest
-import no.nav.syfo.infrastructure.dokarkiv.dto.JournalpostResponse
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostRequest
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostResponse
 
 val dokarkivResponse = JournalpostResponse(
     journalpostId = 1,

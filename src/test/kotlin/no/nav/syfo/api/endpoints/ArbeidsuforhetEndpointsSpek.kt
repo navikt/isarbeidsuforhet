@@ -12,7 +12,7 @@ import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.ForhandsvarselRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
-import no.nav.syfo.application.service.ForhandsvarselService
+import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
@@ -22,7 +22,7 @@ import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVarsel
 import no.nav.syfo.infrastructure.database.getVarselPdf
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.clients.pdfgen.VarselPdfService
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -45,7 +45,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 externalMockEnvironment = externalMockEnvironment,
             )
             val vurderingRepository = VurderingRepository(database)
-            val forhandsvarselService = ForhandsvarselService(
+            val vurderingService = VurderingService(
                 vurderingRepository = vurderingRepository,
                 varselPdfService = VarselPdfService(
                     pdfGenClient = externalMockEnvironment.pdfgenClient,
@@ -107,7 +107,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Successfully gets an existing vurdering") {
                         runBlocking {
-                            forhandsvarselService.createForhandsvarsel(
+                            vurderingService.createForhandsvarsel(
                                 personident = PersonIdent(personIdent),
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,
@@ -149,14 +149,14 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Successfully gets multiple vurderinger") {
                         runBlocking {
-                            forhandsvarselService.createForhandsvarsel(
+                            vurderingService.createForhandsvarsel(
                                 personident = PersonIdent(personIdent),
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,
                                 document = document,
                                 callId = UUID.randomUUID().toString(),
                             )
-                            forhandsvarselService.createForhandsvarsel(
+                            vurderingService.createForhandsvarsel(
                                 personident = PersonIdent(personIdent),
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,

@@ -3,7 +3,7 @@ package no.nav.syfo.infrastructure.cronjob
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
 import no.nav.syfo.application.service.VarselService
-import no.nav.syfo.infrastructure.leaderelection.LeaderPodClient
+import no.nav.syfo.infrastructure.clients.leaderelection.LeaderPodClient
 import no.nav.syfo.launchBackgroundTask
 
 fun launchCronjobs(

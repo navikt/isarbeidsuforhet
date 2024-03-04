@@ -7,8 +7,8 @@ import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.generator.generatePdlError
 import no.nav.syfo.generator.generatePdlPersonNavn
 import no.nav.syfo.generator.generatePdlPersonResponse
-import no.nav.syfo.infrastructure.pdl.dto.PdlHentPersonRequest
-import no.nav.syfo.infrastructure.pdl.dto.PdlPersonNavn
+import no.nav.syfo.infrastructure.clients.pdl.dto.PdlHentPersonRequest
+import no.nav.syfo.infrastructure.clients.pdl.dto.PdlPersonNavn
 
 suspend fun MockRequestHandleScope.pdlMockResponse(request: HttpRequestData): HttpResponseData {
     val pdlRequest = request.receiveBody<PdlHentPersonRequest>()

@@ -1,6 +1,5 @@
 package no.nav.syfo.infrastructure.kafka.esyfovarsel
 
-import no.nav.syfo.application.IVarselProducer
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.*
@@ -9,9 +8,9 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 
-class ArbeidstakerForhandsvarselProducer(private val kafkaProducer: KafkaProducer<String, EsyfovarselHendelse>) : IVarselProducer {
+class ArbeidstakerForhandsvarselProducer(private val kafkaProducer: KafkaProducer<String, EsyfovarselHendelse>) {
 
-    override fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, varsel: Varsel) {
+    fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, varsel: Varsel): Result<Varsel> {
         val varselHendelse = ArbeidstakerHendelse(
             type = HendelseType.SM_ARBEIDSUFORHET_FORHANDSVARSEL,
             arbeidstakerFnr = personIdent.value,
@@ -32,9 +31,10 @@ class ArbeidstakerForhandsvarselProducer(private val kafkaProducer: KafkaProduce
                     varselHendelse,
                 )
             ).get()
+            return Result.success(varsel)
         } catch (e: Exception) {
             log.error("Exception was thrown when attempting to send hendelse to esyfovarsel: ${e.message}")
-            throw e
+            return Result.failure(e)
         }
     }
 
