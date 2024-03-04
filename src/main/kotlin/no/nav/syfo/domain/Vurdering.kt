@@ -51,5 +51,5 @@ data class Vurdering private constructor(
 }
 
 enum class VurderingType {
-    FORHANDSVARSEL, OPPFYLT, STANS
+    FORHANDSVARSEL, OPPFYLT, AVSLAG
 }

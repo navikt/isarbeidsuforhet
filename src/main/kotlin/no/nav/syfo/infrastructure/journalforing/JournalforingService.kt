@@ -43,7 +43,7 @@ class JournalforingService(
             idType = BrukerIdType.PERSON_IDENT,
         )
 
-        val dokumentTittel = "Forhåndsvarsel om stans av sykepenger"
+        val dokumentTittel = "Forhåndsvarsel om avslag på sykepenger"
 
         val dokumenter = listOf(
             Dokument.create(
