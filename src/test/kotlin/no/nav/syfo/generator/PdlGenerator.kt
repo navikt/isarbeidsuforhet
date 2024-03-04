@@ -1,7 +1,7 @@
 package no.nav.syfo.generator
 
 import no.nav.syfo.UserConstants
-import no.nav.syfo.infrastructure.pdl.dto.*
+import no.nav.syfo.infrastructure.clients.pdl.dto.*
 
 fun generatePdlPersonResponse(pdlPersonNavn: PdlPersonNavn? = null, errors: List<PdlError>? = null) = PdlPersonResponse(
     errors = errors,

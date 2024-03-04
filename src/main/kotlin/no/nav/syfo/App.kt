@@ -6,26 +6,27 @@ import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
-import no.nav.syfo.application.service.ForhandsvarselService
+import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.application.service.VarselService
-import no.nav.syfo.infrastructure.azuread.AzureAdClient
+import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
 import no.nav.syfo.infrastructure.database.databaseModule
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.dokarkiv.DokarkivClient
+import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselRecordSerializer
+import no.nav.syfo.infrastructure.kafka.VarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
-import no.nav.syfo.infrastructure.pdfgen.PdfGenClient
-import no.nav.syfo.infrastructure.pdfgen.VarselPdfService
-import no.nav.syfo.infrastructure.pdl.PdlClient
-import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.infrastructure.wellknown.getWellKnown
+import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
+import no.nav.syfo.infrastructure.clients.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.clients.pdl.PdlClient
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -82,7 +83,7 @@ fun main() {
         )
     )
 
-    lateinit var forhandsvarselService: ForhandsvarselService
+    lateinit var vurderingService: VurderingService
     lateinit var varselService: VarselService
 
     val applicationEngineEnvironment =
@@ -98,15 +99,18 @@ fun main() {
                 )
 
                 val vurderingRepository = VurderingRepository(database = applicationDatabase)
-                forhandsvarselService = ForhandsvarselService(
+                vurderingService = VurderingService(
                     vurderingRepository = vurderingRepository,
                     varselPdfService = varselPdfService,
                 )
                 val varselRepository = VarselRepository(database = applicationDatabase)
+                val varselProducer = VarselProducer(
+                    arbeidstakerForhandsvarselProducer = arbeidstakerForhandsvarselProducer,
+                    expiredForhandsvarselProducer = expiredForhandsvarselProducer
+                )
                 varselService = VarselService(
                     varselRepository = varselRepository,
-                    varselProducer = arbeidstakerForhandsvarselProducer,
-                    expiredForhandsvarselProducer = expiredForhandsvarselProducer,
+                    varselProducer = varselProducer,
                     journalforingService = journalforingService,
                 )
 
@@ -116,7 +120,7 @@ fun main() {
                     environment = environment,
                     wellKnownInternalAzureAD = wellKnownInternalAzureAD,
                     veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-                    forhandsvarselService = forhandsvarselService,
+                    vurderingService = vurderingService,
                 )
             }
         }

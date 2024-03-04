@@ -20,13 +20,13 @@ import no.nav.syfo.api.auth.installJwtAuthentication
 import no.nav.syfo.api.endpoints.metricEndpoints
 import no.nav.syfo.api.endpoints.podEndpoints
 import no.nav.syfo.api.endpoints.registerArbeidsuforhetEndpoints
-import no.nav.syfo.application.service.ForhandsvarselService
+import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
-import no.nav.syfo.infrastructure.veiledertilgang.ForbiddenAccessVeilederException
-import no.nav.syfo.infrastructure.veiledertilgang.VeilederTilgangskontrollClient
-import no.nav.syfo.infrastructure.wellknown.WellKnown
+import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
+import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.clients.wellknown.WellKnown
 import no.nav.syfo.util.configure
 import no.nav.syfo.util.getCallId
 import no.nav.syfo.util.getConsumerClientId
@@ -39,7 +39,7 @@ fun Application.apiModule(
     wellKnownInternalAzureAD: WellKnown,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
     database: DatabaseInterface,
-    forhandsvarselService: ForhandsvarselService,
+    vurderingService: VurderingService,
 ) {
     installMetrics()
     installCallId()
@@ -62,7 +62,7 @@ fun Application.apiModule(
         authenticate(JwtIssuerType.INTERNAL_AZUREAD.name) {
             registerArbeidsuforhetEndpoints(
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
-                forhandsvarselService = forhandsvarselService,
+                vurderingService = vurderingService,
             )
         }
     }

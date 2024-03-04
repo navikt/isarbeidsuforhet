@@ -13,6 +13,7 @@ import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
+import no.nav.syfo.infrastructure.kafka.VarselProducer
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselRecord
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
@@ -44,17 +45,20 @@ class VarselServiceSpek : Spek({
         val mockEsyfoVarselHendelseProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
         val mockExpiredForhandsvarselProducer = mockk<KafkaProducer<String, ExpiredForhandsvarselRecord>>()
 
-        val varselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = mockEsyfoVarselHendelseProducer)
+        val arbeidstakerForhandsvarselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = mockEsyfoVarselHendelseProducer)
         val expiredForhandsvarselProducer =
             ExpiredForhandsvarselProducer(producer = mockExpiredForhandsvarselProducer)
         val journalforingService = JournalforingService(
             dokarkivClient = externalMockEnvironment.dokarkivClient,
             pdlClient = externalMockEnvironment.pdlClient,
         )
+        val varselProducer = VarselProducer(
+            arbeidstakerForhandsvarselProducer = arbeidstakerForhandsvarselProducer,
+            expiredForhandsvarselProducer = expiredForhandsvarselProducer,
+        )
         val varselService = VarselService(
             varselRepository = varselRepository,
             varselProducer = varselProducer,
-            expiredForhandsvarselProducer = expiredForhandsvarselProducer,
             journalforingService = journalforingService,
         )
 

@@ -1,7 +1,7 @@
 package no.nav.syfo.generator
 
 import no.nav.syfo.UserConstants
-import no.nav.syfo.infrastructure.dokarkiv.dto.*
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.*
 import java.util.UUID
 
 fun generateJournalpostRequest(
