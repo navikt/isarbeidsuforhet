@@ -1,6 +1,7 @@
 package no.nav.syfo.domain
 
 import no.nav.syfo.util.nowUTC
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -10,7 +11,7 @@ data class Varsel private constructor(
     val createdAt: OffsetDateTime,
     val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
-    val svarfrist: OffsetDateTime,
+    val svarfrist: LocalDate,
     val svarfristExpiredPublishedAt: OffsetDateTime?,
 ) {
     constructor(document: List<DocumentComponent>) : this(
@@ -19,7 +20,7 @@ data class Varsel private constructor(
         createdAt = nowUTC(),
         journalpostId = null,
         publishedAt = null,
-        svarfrist = OffsetDateTime.now().plusWeeks(3),
+        svarfrist = LocalDate.now().plusWeeks(3),
         svarfristExpiredPublishedAt = null,
     )
 
@@ -36,7 +37,7 @@ data class Varsel private constructor(
             createdAt: OffsetDateTime,
             journalpostId: String?,
             publishedAt: OffsetDateTime?,
-            svarfrist: OffsetDateTime,
+            svarfrist: LocalDate,
             svarfristExpiredPublishedAt: OffsetDateTime?,
         ) = Varsel(
             uuid = uuid,

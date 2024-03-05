@@ -8,6 +8,7 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
 import java.sql.Connection
+import java.sql.Date
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*
@@ -73,7 +74,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setObject(3, now)
             it.setInt(4, vurderingId)
             it.setObject(5, mapper.writeValueAsString(varsel.document))
-            it.setObject(6, varsel.svarfrist)
+            it.setDate(6, Date.valueOf(varsel.svarfrist))
             it.setObject(7, varsel.svarfristExpiredPublishedAt)
             it.executeQuery().toList { toPVarsel() }.single()
         }

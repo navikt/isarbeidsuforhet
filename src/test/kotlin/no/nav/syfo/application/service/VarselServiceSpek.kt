@@ -13,8 +13,8 @@ import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
-import no.nav.syfo.infrastructure.kafka.VarselProducer
 import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselRecord
+import no.nav.syfo.infrastructure.kafka.VarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
@@ -29,7 +29,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.OffsetDateTime
+import java.time.LocalDate
 import java.util.concurrent.Future
 
 private const val journalpostId = "123"
@@ -45,7 +45,8 @@ class VarselServiceSpek : Spek({
         val mockEsyfoVarselHendelseProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
         val mockExpiredForhandsvarselProducer = mockk<KafkaProducer<String, ExpiredForhandsvarselRecord>>()
 
-        val arbeidstakerForhandsvarselProducer = ArbeidstakerForhandsvarselProducer(kafkaProducer = mockEsyfoVarselHendelseProducer)
+        val arbeidstakerForhandsvarselProducer =
+            ArbeidstakerForhandsvarselProducer(kafkaProducer = mockEsyfoVarselHendelseProducer)
         val expiredForhandsvarselProducer =
             ExpiredForhandsvarselProducer(producer = mockExpiredForhandsvarselProducer)
         val journalforingService = JournalforingService(
@@ -87,7 +88,7 @@ class VarselServiceSpek : Spek({
         fun createExpiredUnpublishedVarsel(): Varsel {
             val varselUnpublishedExpiredYesterday =
                 Varsel(generateDocumentComponent("En begrunnelse"))
-                    .copy(svarfrist = OffsetDateTime.now().minusDays(1))
+                    .copy(svarfrist = LocalDate.now().minusDays(1))
             val vurderingWithExpiredVarsel =
                 generateForhandsvarselVurdering().copy(varsel = varselUnpublishedExpiredYesterday)
 
