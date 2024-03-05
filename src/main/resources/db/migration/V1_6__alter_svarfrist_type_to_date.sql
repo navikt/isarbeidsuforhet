@@ -16,4 +16,7 @@ SET svarfrist = DATE(svarfrist_temp)
 WHERE true;
 
 ALTER TABLE varsel
+    ALTER COLUMN svarfrist SET NOT NULL;
+
+ALTER TABLE varsel
     DROP COLUMN svarfrist_temp;
