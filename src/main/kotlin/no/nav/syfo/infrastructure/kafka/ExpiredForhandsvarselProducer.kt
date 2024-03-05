@@ -6,6 +6,7 @@ import no.nav.syfo.domain.Varsel
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -37,7 +38,7 @@ data class ExpiredForhandsvarselRecord(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
     val personIdent: PersonIdent,
-    val svarfrist: OffsetDateTime,
+    val svarfrist: LocalDate,
 ) {
     companion object {
         fun fromVarsel(personIdent: PersonIdent, varsel: Varsel): ExpiredForhandsvarselRecord =

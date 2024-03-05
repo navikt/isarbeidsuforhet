@@ -108,7 +108,7 @@ internal fun ResultSet.toPVarsel(): PVarsel = PVarsel(
     ),
     journalpostId = getString("journalpost_id"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
-    svarfrist = getObject("svarfrist", OffsetDateTime::class.java),
+    svarfrist = getDate("svarfrist").toLocalDate(),
     svarfristExpiredPublishedAt = getObject("svarfrist_expired_published_at", OffsetDateTime::class.java),
 )
 
