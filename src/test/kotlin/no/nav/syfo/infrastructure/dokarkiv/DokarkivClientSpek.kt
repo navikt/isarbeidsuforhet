@@ -21,7 +21,7 @@ class DokarkivClientSpek : Spek({
 
         it("journalfører aktivitetskrav") {
             val journalpostRequestForhandsvarsel = generateJournalpostRequest(
-                tittel = "Forhåndsvarsel om stans av sykepenger",
+                tittel = "Forhåndsvarsel om avslag på sykepenger",
                 brevkodeType = BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL,
                 pdf = PDF_FORHANDSVARSEL,
                 varselId = UUID.randomUUID(),
@@ -38,14 +38,15 @@ class DokarkivClientSpek : Spek({
 
         it("handles conflict from api when eksternRefeanseId exists, and uses the existing journalpostId") {
             val journalpostRequestForhandsvarsel = generateJournalpostRequest(
-                tittel = "Forhåndsvarsel om stans av sykepenger",
+                tittel = "Forhåndsvarsel om avslag på sykepenger",
                 brevkodeType = BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL,
                 pdf = PDF_FORHANDSVARSEL,
                 varselId = EXISTING_EKSTERN_REFERANSE_UUID,
             )
 
             runBlocking {
-                val journalpostResponse = dokarkivClient.journalfor(journalpostRequest = journalpostRequestForhandsvarsel)
+                val journalpostResponse =
+                    dokarkivClient.journalfor(journalpostRequest = journalpostRequestForhandsvarsel)
 
                 journalpostResponse.journalpostId shouldBeEqualTo dokarkivConflictResponse.journalpostId
                 journalpostResponse.journalstatus shouldBeEqualTo dokarkivConflictResponse.journalstatus
