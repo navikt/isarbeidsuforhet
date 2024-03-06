@@ -14,7 +14,7 @@ import org.amshove.kluent.shouldBeGreaterThan
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-class VurderingServiceSpek : Spek ({
+class VurderingServiceSpek : Spek({
     describe(VurderingService::class.java.simpleName) {
 
         val externalMockEnvironment = ExternalMockEnvironment.instance
