@@ -37,7 +37,7 @@ fun TestDatabase.dropData() {
         DELETE FROM VARSEL
         """.trimIndent(),
         """
-        DELETE FROM VARSEL_PDF
+        DELETE FROM VURDERING_PDF
         """.trimIndent(),
     )
 
