@@ -2,6 +2,7 @@ package no.nav.syfo.infrastructure.kafka.esyfovarsel
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
+import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.*
 import java.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -10,14 +11,14 @@ import org.slf4j.LoggerFactory
 
 class ArbeidstakerForhandsvarselProducer(private val kafkaProducer: KafkaProducer<String, EsyfovarselHendelse>) {
 
-    fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, varsel: Varsel): Result<Varsel> {
+    fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, vurdering: Vurdering): Result<Varsel> {
         val varselHendelse = ArbeidstakerHendelse(
             type = HendelseType.SM_ARBEIDSUFORHET_FORHANDSVARSEL,
             arbeidstakerFnr = personIdent.value,
             data = VarselData(
                 journalpost = VarselDataJournalpost(
-                    uuid = varsel.uuid.toString(),
-                    id = varsel.journalpostId,
+                    uuid = vurdering.varsel!!.uuid.toString(),
+                    id = vurdering.journalpostId,
                 ),
             ),
             orgnummer = null,
@@ -31,7 +32,7 @@ class ArbeidstakerForhandsvarselProducer(private val kafkaProducer: KafkaProduce
                     varselHendelse,
                 )
             ).get()
-            return Result.success(varsel)
+            return Result.success(vurdering.varsel)
         } catch (e: Exception) {
             log.error("Exception was thrown when attempting to send hendelse to esyfovarsel: ${e.message}")
             return Result.failure(e)

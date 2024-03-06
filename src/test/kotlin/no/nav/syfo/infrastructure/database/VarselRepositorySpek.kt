@@ -3,7 +3,6 @@ package no.nav.syfo.infrastructure.database
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.Varsel
-import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
@@ -26,19 +25,19 @@ class VarselRepositorySpek : Spek({
             }
 
             val expiredVarselOneWeekAgo =
-                Varsel(generateDocumentComponent("En begrunnelse"))
+                Varsel()
                     .copy(svarfrist = LocalDate.now().minusWeeks(1))
             val expiredVarselYesterday =
-                Varsel(generateDocumentComponent("En begrunnelse"))
+                Varsel()
                     .copy(svarfrist = LocalDate.now().minusDays(1))
             val expiredVarselToday =
-                Varsel(generateDocumentComponent("En begrunnelse"))
+                Varsel()
                     .copy(svarfrist = LocalDate.now())
             val expiredVarselTomorrow =
-                Varsel(generateDocumentComponent("En begrunnelse"))
+                Varsel()
                     .copy(svarfrist = LocalDate.now().plusDays(1))
             val expiredVarselInOneWeek =
-                Varsel(generateDocumentComponent("En begrunnelse"))
+                Varsel()
                     .copy(svarfrist = LocalDate.now().plusWeeks(1))
 
             it("retrieves expired varsler") {

@@ -4,8 +4,9 @@ import io.ktor.server.application.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.clients.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.clients.pdfgen.VurderingPdfService
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
+import no.nav.syfo.infrastructure.journalforing.JournalforingService
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
@@ -17,14 +18,19 @@ fun Application.testApiModule(
         httpClient = externalMockEnvironment.mockHttpClient,
     )
     val vurderingRepository = VurderingRepository(database)
-    val varselPdfService = VarselPdfService(
+    val varselPdfService = VurderingPdfService(
         pdfGenClient = externalMockEnvironment.pdfgenClient,
+        pdlClient = externalMockEnvironment.pdlClient,
+    )
+    val journalforingService = JournalforingService(
+        dokarkivClient = externalMockEnvironment.dokarkivClient,
         pdlClient = externalMockEnvironment.pdlClient,
     )
 
     val vurderingService = VurderingService(
         vurderingRepository = vurderingRepository,
-        varselPdfService = varselPdfService,
+        vurderingPdfService = varselPdfService,
+        journalforingService = journalforingService,
     )
 
     this.apiModule(

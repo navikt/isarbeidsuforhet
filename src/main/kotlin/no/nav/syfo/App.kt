@@ -23,7 +23,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselPr
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
 import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
-import no.nav.syfo.infrastructure.clients.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.clients.pdfgen.VurderingPdfService
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
@@ -67,7 +67,7 @@ fun main() {
         pdlClient = pdlClient,
     )
 
-    val varselPdfService = VarselPdfService(
+    val vurderingPdfService = VurderingPdfService(
         pdfGenClient = pdfGenClient,
         pdlClient = pdlClient,
     )
@@ -101,7 +101,8 @@ fun main() {
                 val vurderingRepository = VurderingRepository(database = applicationDatabase)
                 vurderingService = VurderingService(
                     vurderingRepository = vurderingRepository,
-                    varselPdfService = varselPdfService,
+                    vurderingPdfService = vurderingPdfService,
+                    journalforingService = journalforingService,
                 )
                 val varselRepository = VarselRepository(database = applicationDatabase)
                 val varselProducer = VarselProducer(
@@ -111,7 +112,6 @@ fun main() {
                 varselService = VarselService(
                     varselRepository = varselRepository,
                     varselProducer = varselProducer,
-                    journalforingService = journalforingService,
                 )
 
                 apiModule(
@@ -132,6 +132,7 @@ fun main() {
         launchCronjobs(
             applicationState = applicationState,
             environment = environment,
+            vurderingService = vurderingService,
             varselService = varselService,
         )
     }

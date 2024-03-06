@@ -19,10 +19,10 @@ import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.database.dropData
-import no.nav.syfo.infrastructure.database.getVarsel
-import no.nav.syfo.infrastructure.database.getVarselPdf
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.clients.pdfgen.VarselPdfService
+import no.nav.syfo.infrastructure.clients.pdfgen.VurderingPdfService
+import no.nav.syfo.infrastructure.database.getVurderingPdf
+import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -44,13 +44,19 @@ object ArbeidsuforhetEndpointsSpek : Spek({
             application.testApiModule(
                 externalMockEnvironment = externalMockEnvironment,
             )
+            val journalforingService = JournalforingService(
+                dokarkivClient = externalMockEnvironment.dokarkivClient,
+                pdlClient = externalMockEnvironment.pdlClient,
+            )
+
             val vurderingRepository = VurderingRepository(database)
             val vurderingService = VurderingService(
                 vurderingRepository = vurderingRepository,
-                varselPdfService = VarselPdfService(
+                vurderingPdfService = VurderingPdfService(
                     pdfGenClient = externalMockEnvironment.pdfgenClient,
                     pdlClient = externalMockEnvironment.pdlClient,
-                )
+                ),
+                journalforingService = journalforingService,
             )
             val validToken = generateJWT(
                 audience = externalMockEnvironment.environment.azure.appClientId,
@@ -89,20 +95,16 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.begrunnelse shouldBeEqualTo begrunnelse
                             responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                            responseDTO.varsel?.document shouldBeEqualTo document
+                            responseDTO.document shouldBeEqualTo document
 
-                            val pVurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
-                            pVurdering?.begrunnelse shouldBeEqualTo begrunnelse
-                            pVurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
+                            vurdering?.begrunnelse shouldBeEqualTo begrunnelse
+                            vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
 
-                            val pVarsel = database.getVarsel(responseDTO.varsel!!.uuid)
-                            pVarsel?.document shouldBeEqualTo document
-                            pVarsel?.journalpostId shouldBeEqualTo null
-
-                            val pVarselPdf = database.getVarselPdf(pVarsel!!.id)
-                            pVarselPdf?.pdf?.size shouldBeEqualTo PDF_FORHANDSVARSEL.size
-                            pVarselPdf?.pdf?.get(0) shouldBeEqualTo PDF_FORHANDSVARSEL[0]
-                            pVarselPdf?.pdf?.get(1) shouldBeEqualTo PDF_FORHANDSVARSEL[1]
+                            val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
+                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_FORHANDSVARSEL.size
+                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_FORHANDSVARSEL[0]
+                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_FORHANDSVARSEL[1]
                         }
                     }
                     it("Successfully gets an existing vurdering") {
@@ -130,7 +132,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.begrunnelse shouldBeEqualTo begrunnelse
                             responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                            responseDTO.varsel?.document shouldBeEqualTo document
+                            responseDTO.document shouldBeEqualTo document
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                         }
                     }

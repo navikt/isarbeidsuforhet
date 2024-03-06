@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.database.repository
 
+import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.domain.Vurdering
@@ -15,6 +16,8 @@ data class PVurdering(
     val veilederident: String,
     val type: String,
     val begrunnelse: String,
+    val document: List<DocumentComponent>,
+    val journalpostId: String?,
 ) {
 
     fun toVurdering(
@@ -26,6 +29,8 @@ data class PVurdering(
         veilederident = veilederident,
         type = type,
         begrunnelse = begrunnelse,
+        document = document,
+        journalpostId = journalpostId,
         varsel = varsel,
     )
 }

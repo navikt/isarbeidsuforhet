@@ -7,18 +7,14 @@ import java.util.*
 
 data class Varsel private constructor(
     val uuid: UUID,
-    val document: List<DocumentComponent>,
     val createdAt: OffsetDateTime,
-    val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
     val svarfrist: LocalDate,
     val svarfristExpiredPublishedAt: OffsetDateTime?,
 ) {
-    constructor(document: List<DocumentComponent>) : this(
+    constructor() : this(
         uuid = UUID.randomUUID(),
-        document = document,
         createdAt = nowUTC(),
-        journalpostId = null,
         publishedAt = null,
         svarfrist = LocalDate.now().plusWeeks(3),
         svarfristExpiredPublishedAt = null,
@@ -28,22 +24,16 @@ data class Varsel private constructor(
 
     fun publishSvarfristExpired(): Varsel = this.copy(svarfristExpiredPublishedAt = nowUTC())
 
-    fun journalfor(journalpostId: String): Varsel = this.copy(journalpostId = journalpostId)
-
     companion object {
         fun createFromDatabase(
             uuid: UUID,
-            document: List<DocumentComponent>,
             createdAt: OffsetDateTime,
-            journalpostId: String?,
             publishedAt: OffsetDateTime?,
             svarfrist: LocalDate,
             svarfristExpiredPublishedAt: OffsetDateTime?,
         ) = Varsel(
             uuid = uuid,
-            document = document,
             createdAt = createdAt,
-            journalpostId = journalpostId,
             publishedAt = publishedAt,
             svarfrist = svarfrist,
             svarfristExpiredPublishedAt = svarfristExpiredPublishedAt,

@@ -12,7 +12,11 @@ data class Vurdering private constructor(
     val type: VurderingType,
     val begrunnelse: String,
     val varsel: Varsel?,
+    val document: List<DocumentComponent>,
+    val journalpostId: String?,
+
 ) {
+    fun journalfor(journalpostId: String): Vurdering = this.copy(journalpostId = journalpostId)
 
     companion object {
         fun createForhandsvarsel(
@@ -27,7 +31,9 @@ data class Vurdering private constructor(
             veilederident = veilederident,
             type = VurderingType.FORHANDSVARSEL,
             begrunnelse = begrunnelse,
-            varsel = Varsel(document),
+            document = document,
+            journalpostId = null,
+            varsel = Varsel(),
         )
 
         fun createFromDatabase(
@@ -37,6 +43,8 @@ data class Vurdering private constructor(
             veilederident: String,
             type: String,
             begrunnelse: String,
+            document: List<DocumentComponent>,
+            journalpostId: String?,
             varsel: Varsel?,
         ) = Vurdering(
             uuid = uuid,
@@ -45,6 +53,8 @@ data class Vurdering private constructor(
             veilederident = veilederident,
             type = VurderingType.valueOf(type),
             begrunnelse = begrunnelse,
+            document = document,
+            journalpostId = journalpostId,
             varsel = varsel,
         )
     }

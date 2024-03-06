@@ -14,6 +14,7 @@ data class VurderingResponseDTO private constructor(
     val veilederident: String,
     val type: VurderingType,
     val begrunnelse: String,
+    val document: List<DocumentComponent>,
     val varsel: VarselDTO?,
 ) {
     companion object {
@@ -24,6 +25,7 @@ data class VurderingResponseDTO private constructor(
             veilederident = vurdering.veilederident,
             type = vurdering.type,
             begrunnelse = vurdering.begrunnelse,
+            document = vurdering.document,
             varsel = if (vurdering.varsel == null) null else VarselDTO.createFromVarsel(vurdering.varsel),
         )
     }
@@ -31,13 +33,11 @@ data class VurderingResponseDTO private constructor(
 
 data class VarselDTO private constructor(
     val uuid: UUID,
-    val document: List<DocumentComponent>,
     val createdAt: LocalDateTime,
 ) {
     companion object {
         fun createFromVarsel(varsel: Varsel) = VarselDTO(
             uuid = varsel.uuid,
-            document = varsel.document,
             createdAt = varsel.createdAt.toLocalDateTime(),
         )
     }
