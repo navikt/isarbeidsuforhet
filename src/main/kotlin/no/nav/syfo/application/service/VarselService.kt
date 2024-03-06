@@ -1,6 +1,5 @@
 package no.nav.syfo.application.service
 
-import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVarselProducer
 import no.nav.syfo.application.IVarselRepository
 import no.nav.syfo.domain.Varsel

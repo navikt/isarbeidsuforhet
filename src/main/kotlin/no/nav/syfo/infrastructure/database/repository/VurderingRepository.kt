@@ -81,8 +81,6 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             }.map { (personident, pVurdering, pdf) -> Triple(personident, pVurdering.toVurdering(null), pdf) }
         }
 
-
-
     private fun Connection.createVurdering(
         vurdering: Vurdering,
     ): PVurdering {
@@ -197,7 +195,6 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                  INNER JOIN vurdering_pdf vup ON vu.id = vup.vurdering_id
                  WHERE vu.journalpost_id IS NULL
             """
-
     }
 }
 

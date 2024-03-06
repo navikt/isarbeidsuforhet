@@ -1,6 +1,5 @@
 package no.nav.syfo.infrastructure.database.repository
 
-import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Varsel
 import java.time.LocalDate
 import java.time.OffsetDateTime

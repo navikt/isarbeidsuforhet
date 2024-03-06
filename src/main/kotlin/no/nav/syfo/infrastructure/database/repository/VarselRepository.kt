@@ -80,7 +80,6 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                 INNER JOIN varsel v ON v.vurdering_id=vu.id 
                 WHERE v.uuid=?
             """
-
     }
 }
 
