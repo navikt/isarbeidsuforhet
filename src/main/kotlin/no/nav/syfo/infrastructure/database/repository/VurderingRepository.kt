@@ -67,18 +67,17 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         connection.commit()
     }
 
-    override fun getNotJournalforteVurderinger(): List<Triple<PersonIdent, Vurdering, ByteArray>> =
+    override fun getNotJournalforteVurderinger(): List<Pair<Vurdering, ByteArray>> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_NOT_JOURNALFORT_VURDERING).use {
                 it.executeQuery()
                     .toList {
-                        Triple(
-                            PersonIdent(getString("personident")),
+                        Pair(
                             toPVurdering(),
                             getBytes("pdf"),
                         )
                     }
-            }.map { (personident, pVurdering, pdf) -> Triple(personident, pVurdering.toVurdering(null), pdf) }
+            }.map { (pVurdering, pdf) -> Pair(pVurdering.toVurdering(null), pdf) }
         }
 
     private fun Connection.createVurdering(
@@ -190,7 +189,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
 
         private const val GET_NOT_JOURNALFORT_VURDERING =
             """
-                 SELECT vu.personident, vup.pdf
+                 SELECT vu.*, vup.pdf
                  FROM vurdering vu
                  INNER JOIN vurdering_pdf vup ON vu.id = vup.vurdering_id
                  WHERE vu.journalpost_id IS NULL

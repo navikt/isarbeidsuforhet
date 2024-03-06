@@ -15,5 +15,5 @@ interface IVurderingRepository {
 
     fun update(vurdering: Vurdering)
 
-    fun getNotJournalforteVurderinger(): List<Triple<PersonIdent, Vurdering, ByteArray>>
+    fun getNotJournalforteVurderinger(): List<Pair<Vurdering, ByteArray>>
 }

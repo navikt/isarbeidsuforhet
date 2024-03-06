@@ -46,10 +46,10 @@ class VurderingService(
     suspend fun journalforVurderinger(): List<Result<Vurdering>> {
         val notJournalforteVurderinger = vurderingRepository.getNotJournalforteVurderinger()
 
-        return notJournalforteVurderinger.map { (personident, vurdering, pdf) ->
+        return notJournalforteVurderinger.map { (vurdering, pdf) ->
             runCatching {
                 val journalpostId = journalforingService.journalfor(
-                    personident = personident,
+                    personident = vurdering.personident,
                     pdf = pdf,
                     vurderingUUID = vurdering.uuid,
                 )
