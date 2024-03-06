@@ -41,4 +41,4 @@ CREATE TABLE VURDERING_PDF
     pdf                      bytea       NOT NULL
 );
 
-CREATE INDEX IX_VURDERING_PDF_VARSEL_ID on VARSEL_PDF (vurdering_id);
+CREATE INDEX IX_VURDERING_PDF_VARSEL_ID on VURDERING_PDF (vurdering_id);
