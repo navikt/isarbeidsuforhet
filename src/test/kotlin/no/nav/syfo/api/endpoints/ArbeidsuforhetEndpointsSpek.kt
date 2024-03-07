@@ -107,6 +107,27 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_FORHANDSVARSEL[1]
                         }
                     }
+                    it("Does not allow duplicate forhandsvarsel") {
+                        runBlocking {
+                            vurderingService.createForhandsvarsel(
+                                personident = PersonIdent(personIdent),
+                                veilederident = VEILEDER_IDENT,
+                                begrunnelse = begrunnelse,
+                                document = document,
+                                callId = UUID.randomUUID().toString(),
+                            )
+                        }
+                        with(
+                            handleRequest(HttpMethod.Post, urlForhandsvarsel) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
+                                setBody(objectMapper.writeValueAsString(forhandsvarselRequestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                        }
+                    }
                     it("Successfully gets an existing vurdering") {
                         runBlocking {
                             vurderingService.createForhandsvarsel(
