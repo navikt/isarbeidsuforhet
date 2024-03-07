@@ -25,7 +25,7 @@ CREATE TABLE VARSEL
     created_at                     timestamptz NOT NULL,
     updated_at                     timestamptz NOT NULL,
     vurdering_id                   INTEGER     NOT NULL UNIQUE REFERENCES VURDERING (id) ON DELETE CASCADE,
-    svarfrist                      DATE NOT NULL,
+    svarfrist                      DATE        NOT NULL,
     published_at                   TIMESTAMPTZ,
     svarfrist_expired_published_at TIMESTAMPTZ
 );
@@ -37,8 +37,8 @@ CREATE TABLE VURDERING_PDF
     id                       SERIAL PRIMARY KEY,
     uuid                     VARCHAR(50) NOT NULL UNIQUE,
     created_at               timestamptz NOT NULL,
-    vurdering_id                INTEGER     NOT NULL UNIQUE REFERENCES VURDERING (id) ON DELETE CASCADE,
+    vurdering_id             INTEGER     NOT NULL UNIQUE REFERENCES VURDERING (id) ON DELETE CASCADE,
     pdf                      bytea       NOT NULL
 );
 
-CREATE INDEX IX_VURDERING_PDF_VARSEL_ID on VURDERING_PDF (vurdering_id);
+CREATE INDEX IX_VURDERING_PDF_VURDERING_ID on VURDERING_PDF (vurdering_id);

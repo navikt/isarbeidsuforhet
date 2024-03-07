@@ -16,7 +16,7 @@ class VurderingPdfService(
         callId: String,
     ): ByteArray {
         val personNavn = pdlClient.getPerson(personident).fullName
-        val varselPdfDTO = VarselPdfDTO.create(
+        val vurderingPdfDTO = VurderingPdfDTO.create(
             documentComponents = document,
             mottakerNavn = personNavn,
             mottakerPersonident = personident,
@@ -24,7 +24,7 @@ class VurderingPdfService(
 
         return pdfGenClient.createForhandsvarselPdf(
             callId = callId,
-            forhandsvarselPdfDTO = varselPdfDTO,
+            forhandsvarselPdfDTO = vurderingPdfDTO,
         )
     }
 }

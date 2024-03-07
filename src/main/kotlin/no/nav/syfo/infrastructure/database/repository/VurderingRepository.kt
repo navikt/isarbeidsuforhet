@@ -128,8 +128,6 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         }.map { it.toVarsel() }.firstOrNull()
 
     companion object {
-        private val mapper = configuredJacksonMapper()
-
         private const val GET_VURDERING =
             """
                 SELECT * FROM VURDERING WHERE personident=? ORDER BY created_at DESC
