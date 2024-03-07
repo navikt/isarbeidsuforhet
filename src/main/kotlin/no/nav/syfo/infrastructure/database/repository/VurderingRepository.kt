@@ -1,17 +1,23 @@
 package no.nav.syfo.infrastructure.database.repository
 
+import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.IVurderingRepository
+import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.util.nowUTC
 import java.sql.Connection
 import java.sql.Date
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.time.OffsetDateTime
 import java.util.*
+
+private val mapper = configuredJacksonMapper()
 
 class VurderingRepository(private val database: DatabaseInterface) : IVurderingRepository {
     override fun getVurderinger(
@@ -36,17 +42,43 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
 
         database.connection.use { connection ->
             val pVurdering = connection.createVurdering(vurdering)
-            val pVarsel = connection.createVarsel(
+            connection.createVarsel(
                 vurderingId = pVurdering.id,
                 varsel = vurdering.varsel,
             )
             connection.createPdf(
-                varselId = pVarsel.id,
+                vurderingId = pVurdering.id,
                 pdf = pdf,
             )
             connection.commit()
         }
     }
+
+    override fun update(vurdering: Vurdering) = database.connection.use { connection ->
+        connection.prepareStatement(UPDATE_VURDERING).use {
+            it.setString(1, vurdering.journalpostId)
+            it.setObject(2, nowUTC())
+            it.setString(3, vurdering.uuid.toString())
+            val updated = it.executeUpdate()
+            if (updated != 1) {
+                throw SQLException("Expected a single row to be updated, got update count $updated")
+            }
+        }
+        connection.commit()
+    }
+
+    override fun getNotJournalforteVurderinger(): List<Pair<Vurdering, ByteArray>> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_NOT_JOURNALFORT_VURDERING).use {
+                it.executeQuery()
+                    .toList {
+                        Pair(
+                            toPVurdering(),
+                            getBytes("pdf"),
+                        )
+                    }
+            }.map { (pVurdering, pdf) -> Pair(pVurdering.toVurdering(null), pdf) }
+        }
 
     private fun Connection.createVurdering(
         vurdering: Vurdering,
@@ -61,6 +93,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setString(5, vurdering.veilederident)
             it.setString(6, vurdering.type.name)
             it.setString(7, vurdering.begrunnelse)
+            it.setObject(8, mapper.writeValueAsString(vurdering.document))
             it.executeQuery().toList { toPVurdering() }
         }.single()
     }
@@ -73,20 +106,19 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setObject(2, varsel.createdAt)
             it.setObject(3, now)
             it.setInt(4, vurderingId)
-            it.setObject(5, mapper.writeValueAsString(varsel.document))
-            it.setDate(6, Date.valueOf(varsel.svarfrist))
-            it.setObject(7, varsel.svarfristExpiredPublishedAt)
+            it.setDate(5, Date.valueOf(varsel.svarfrist))
+            it.setObject(6, varsel.svarfristExpiredPublishedAt)
             it.executeQuery().toList { toPVarsel() }.single()
         }
     }
 
-    private fun Connection.createPdf(varselId: Int, pdf: ByteArray): PVarselPdf =
-        prepareStatement(CREATE_VARSEL_PDF).use {
+    private fun Connection.createPdf(vurderingId: Int, pdf: ByteArray): PVurderingPdf =
+        prepareStatement(CREATE_VURDERING_PDF).use {
             it.setString(1, UUID.randomUUID().toString())
             it.setObject(2, OffsetDateTime.now())
-            it.setInt(3, varselId)
+            it.setInt(3, vurderingId)
             it.setBytes(4, pdf)
-            it.executeQuery().toList { toPVarselPdf() }.single()
+            it.executeQuery().toList { toPVurderingPdf() }.single()
         }
 
     private fun Connection.getVarselForVurdering(vurdering: PVurdering): Varsel? =
@@ -96,8 +128,6 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         }.map { it.toVarsel() }.firstOrNull()
 
     companion object {
-        private val mapper = configuredJacksonMapper()
-
         private const val GET_VURDERING =
             """
                 SELECT * FROM VURDERING WHERE personident=? ORDER BY created_at DESC
@@ -118,9 +148,15 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 updated_at,
                 veilederident,
                 type,
-                begrunnelse
-            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?)
+                begrunnelse,
+                document
+            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb)
             RETURNING *
+            """
+
+        private const val UPDATE_VURDERING =
+            """
+                UPDATE VURDERING SET journalpost_id=?, updated_at=? WHERE uuid=? 
             """
 
         private const val CREATE_VARSEL =
@@ -131,23 +167,30 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 created_at,
                 updated_at,
                 vurdering_id,
-                document,
                 svarfrist,
                 svarfrist_expired_published_at             
-            ) values (DEFAULT, ?, ?, ?, ?, ?::jsonb, ?, ?)
+            ) values (DEFAULT, ?, ?, ?, ?, ?, ?)
             RETURNING *
             """
 
-        private const val CREATE_VARSEL_PDF =
+        private const val CREATE_VURDERING_PDF =
             """
-            INSERT INTO VARSEL_PDF (
+            INSERT INTO VURDERING_PDF (
                 id,
                 uuid,
                 created_at,
-                varsel_id,
+                vurdering_id,
                 pdf
             ) values (DEFAULT, ?, ?, ?, ?)
             RETURNING *
+            """
+
+        private const val GET_NOT_JOURNALFORT_VURDERING =
+            """
+                 SELECT vu.*, vup.pdf
+                 FROM vurdering vu
+                 INNER JOIN vurdering_pdf vup ON vu.id = vup.vurdering_id
+                 WHERE vu.journalpost_id IS NULL
             """
     }
 }
@@ -160,5 +203,18 @@ internal fun ResultSet.toPVurdering(): PVurdering = PVurdering(
     updatedAt = getObject("updated_at", OffsetDateTime::class.java),
     veilederident = getString("veilederident"),
     type = getString("type"),
-    begrunnelse = getString("begrunnelse")
+    begrunnelse = getString("begrunnelse"),
+    document = mapper.readValue(
+        getString("document"),
+        object : TypeReference<List<DocumentComponent>>() {}
+    ),
+    journalpostId = getString("journalpost_id"),
+)
+
+internal fun ResultSet.toPVurderingPdf(): PVurderingPdf = PVurderingPdf(
+    id = getInt("id"),
+    uuid = UUID.fromString(getString("uuid")),
+    createdAt = getObject("created_at", OffsetDateTime::class.java),
+    vurderingId = getInt("vurdering_id"),
+    pdf = getBytes("pdf"),
 )

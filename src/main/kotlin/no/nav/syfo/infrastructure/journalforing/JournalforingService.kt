@@ -14,14 +14,14 @@ class JournalforingService(
     override suspend fun journalfor(
         personident: PersonIdent,
         pdf: ByteArray,
-        varselUUID: UUID,
+        vurderingUUID: UUID,
     ): Int {
         val navn = pdlClient.getPerson(personident).fullName
         val journalpostRequest = createJournalpostRequest(
             personIdent = personident,
             navn = navn,
             pdf = pdf,
-            varselUuid = varselUUID,
+            vurderingUuid = vurderingUUID,
         )
 
         return dokarkivClient.journalfor(journalpostRequest).journalpostId
@@ -31,7 +31,7 @@ class JournalforingService(
         personIdent: PersonIdent,
         navn: String,
         pdf: ByteArray,
-        varselUuid: UUID,
+        vurderingUuid: UUID,
     ): JournalpostRequest {
         val avsenderMottaker = AvsenderMottaker.create(
             id = personIdent.value,
@@ -66,7 +66,7 @@ class JournalforingService(
             tittel = dokumentTittel,
             bruker = bruker,
             dokumenter = dokumenter,
-            eksternReferanseId = varselUuid.toString(),
+            eksternReferanseId = vurderingUuid.toString(),
         )
     }
 }

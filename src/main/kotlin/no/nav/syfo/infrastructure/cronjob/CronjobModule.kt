@@ -3,12 +3,14 @@ package no.nav.syfo.infrastructure.cronjob
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.Environment
 import no.nav.syfo.application.service.VarselService
+import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.infrastructure.clients.leaderelection.LeaderPodClient
 import no.nav.syfo.launchBackgroundTask
 
 fun launchCronjobs(
     applicationState: ApplicationState,
     environment: Environment,
+    vurderingService: VurderingService,
     varselService: VarselService,
 ) {
     val leaderPodClient = LeaderPodClient(
@@ -20,7 +22,7 @@ fun launchCronjobs(
     )
     val cronjobs = mutableListOf<Cronjob>()
 
-    val journalforForhandsvarselCronjob = JournalforForhandsvarselCronjob(varselService)
+    val journalforForhandsvarselCronjob = JournalforForhandsvarselCronjob(vurderingService)
     cronjobs.add(journalforForhandsvarselCronjob)
 
     if (environment.publishForhandsvarselEnabled) {

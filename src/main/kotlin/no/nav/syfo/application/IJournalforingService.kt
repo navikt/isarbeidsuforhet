@@ -7,6 +7,6 @@ interface IJournalforingService {
     suspend fun journalfor(
         personident: PersonIdent,
         pdf: ByteArray,
-        varselUUID: UUID,
+        vurderingUUID: UUID,
     ): Int
 }

@@ -2,7 +2,6 @@ package no.nav.syfo.infrastructure.database
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.infrastructure.database.repository.*
-import no.nav.syfo.infrastructure.database.repository.toPVarsel
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.util.*
@@ -38,7 +37,7 @@ fun TestDatabase.dropData() {
         DELETE FROM VARSEL
         """.trimIndent(),
         """
-        DELETE FROM VARSEL_PDF
+        DELETE FROM VURDERING_PDF
         """.trimIndent(),
     )
 
@@ -50,40 +49,40 @@ fun TestDatabase.dropData() {
     }
 }
 
-private const val queryGetVarsel =
+private const val queryGetVurdering =
     """
         SELECT *
-        FROM varsel
+        FROM vurdering
         WHERE uuid = ?
     """
 
-fun TestDatabase.getVarsel(
+fun TestDatabase.getVurdering(
     uuid: UUID,
-): PVarsel? =
+): PVurdering? =
     this.connection.use { connection ->
-        connection.prepareStatement(queryGetVarsel).use {
+        connection.prepareStatement(queryGetVurdering).use {
             it.setString(1, uuid.toString())
             it.executeQuery()
-                .toList { toPVarsel() }
+                .toList { toPVurdering() }
                 .firstOrNull()
         }
     }
 
-private const val queryGetVarselPdf =
+private const val queryGetVurderingPdf =
     """
-        SELECT *
-        FROM varsel_pdf
-        WHERE varsel_id = ?
+        SELECT pdf.*
+        FROM vurdering_pdf pdf INNER JOIN vurdering vu ON vu.id=pdf.vurdering_id 
+        WHERE vu.uuid = ?
     """
 
-fun TestDatabase.getVarselPdf(
-    varselId: Int,
-): PVarselPdf? =
+fun TestDatabase.getVurderingPdf(
+    vurderingUuid: UUID,
+): PVurderingPdf? =
     this.connection.use { connection ->
-        connection.prepareStatement(queryGetVarselPdf).use {
-            it.setInt(1, varselId)
+        connection.prepareStatement(queryGetVurderingPdf).use {
+            it.setString(1, vurderingUuid.toString())
             it.executeQuery()
-                .toList { toPVarselPdf() }
+                .toList { toPVurderingPdf() }
                 .firstOrNull()
         }
     }

@@ -21,7 +21,7 @@ class PdfGenClient(
 
     suspend fun createForhandsvarselPdf(
         callId: String,
-        forhandsvarselPdfDTO: VarselPdfDTO,
+        forhandsvarselPdfDTO: VurderingPdfDTO,
     ): ByteArray =
         getPdf(
             callId = callId,
