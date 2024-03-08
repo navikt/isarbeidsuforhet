@@ -10,6 +10,11 @@ interface IVurderingRepository {
 
     fun getUnpublishedVurderinger(): List<Vurdering>
 
+    fun createVurdering(
+        vurdering: Vurdering,
+        pdf: ByteArray?
+    ): Vurdering
+
     fun createForhandsvarsel(
         pdf: ByteArray,
         vurdering: Vurdering,

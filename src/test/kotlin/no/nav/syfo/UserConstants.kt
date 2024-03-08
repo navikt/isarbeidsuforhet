@@ -11,11 +11,13 @@ object UserConstants {
     val ARBEIDSTAKER_PERSONIDENT_PDL_FAILS = PersonIdent("11111111666")
 
     val PDF_FORHANDSVARSEL = byteArrayOf(0x2E, 0x28)
+    val PDF_OPPFYLT = byteArrayOf(0x2E, 0x30)
     const val VEILEDER_IDENT = "Z999999"
 
     const val PERSON_FORNAVN = "Fornavn"
     const val PERSON_MELLOMNAVN = "Mellomnavn"
     const val PERSON_ETTERNAVN = "Etternavnesen"
+    const val PERSON_FULLNAME = "Fornavn Mellomnavn Etternavnesen"
     const val PERSON_FORNAVN_DASH = "For-Navn"
     const val PERSON_FULLNAME_DASH = "For-Navn Mellomnavn Etternavnesen"
 

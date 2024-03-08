@@ -1,5 +1,7 @@
 package no.nav.syfo.domain
 
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostType
 import no.nav.syfo.util.nowUTC
 import java.time.OffsetDateTime
 import java.util.*
@@ -15,11 +17,36 @@ data class Vurdering private constructor(
     val document: List<DocumentComponent>,
     val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
-
 ) {
+
+    constructor(
+        personident: PersonIdent,
+        veilederident: String,
+        begrunnelse: String,
+        document: List<DocumentComponent>,
+        type: VurderingType,
+        varsel: Varsel? = null,
+    ) : this(
+        uuid = UUID.randomUUID(),
+        personident = personident,
+        createdAt = nowUTC(),
+        veilederident = veilederident,
+        type = type,
+        begrunnelse = begrunnelse,
+        document = document,
+        journalpostId = null,
+        varsel = varsel,
+        publishedAt = null,
+    )
+
     fun journalfor(journalpostId: String): Vurdering = this.copy(journalpostId = journalpostId)
 
     fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
+
+    fun shouldJournalfores(): Boolean = when (type) {
+        VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, -> true
+        VurderingType.AVSLAG -> false
+    }
 
     companion object {
         fun createForhandsvarsel(
@@ -69,4 +96,22 @@ data class Vurdering private constructor(
 
 enum class VurderingType {
     FORHANDSVARSEL, OPPFYLT, AVSLAG
+}
+
+fun VurderingType.getDokumentTittel(): String = when (this) {
+    VurderingType.FORHANDSVARSEL -> "Forhåndsvarsel om avslag på sykepenger"
+    VurderingType.OPPFYLT -> "Vurdering av §8-4 arbeidsuførhet"
+    else -> throw IllegalStateException("Should not create journalføring-pdf for type $this")
+}
+
+fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
+    VurderingType.FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
+    VurderingType.OPPFYLT -> BrevkodeType.ARBEIDSUFORHET_VURDERING
+    else -> throw IllegalStateException("Should not create journalføring-pdf for type $this")
+}
+
+fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
+    VurderingType.FORHANDSVARSEL -> JournalpostType.UTGAAENDE
+    VurderingType.OPPFYLT -> JournalpostType.NOTAT
+    else -> throw IllegalStateException("Should not create journalføring-pdf for type $this")
 }

@@ -21,11 +21,11 @@ object ForhandsvarselServiceSpek : Spek({
 
     describe(ForhandsvarselServiceSpek::class.java.simpleName) {
         val vurderingRepositoryMock = mockk<IVurderingRepository>(relaxed = true)
-        val varselPdfServiceMock = mockk<IVurderingPdfService>(relaxed = true)
+        val vurderingPdfServiceMock = mockk<IVurderingPdfService>(relaxed = true)
         val journalforingServiceMock = mockk<IJournalforingService>(relaxed = true)
         val vurderingService = VurderingService(
             vurderingRepository = vurderingRepositoryMock,
-            vurderingPdfService = varselPdfServiceMock,
+            vurderingPdfService = vurderingPdfServiceMock,
             journalforingService = journalforingServiceMock,
             vurderingProducer = mockk<IVurderingProducer>(),
             svarfristDager = 21,
@@ -37,7 +37,7 @@ object ForhandsvarselServiceSpek : Spek({
                 vurderingRepositoryMock.createForhandsvarsel(any(), any())
             } returns Unit
             coEvery {
-                varselPdfServiceMock.createVurderingPdf(any(), any(), any())
+                vurderingPdfServiceMock.createVurderingPdf(any(), any())
             } returns PDF_FORHANDSVARSEL
             coEvery {
                 journalforingServiceMock.journalfor(any(), any(), any())
@@ -64,9 +64,8 @@ object ForhandsvarselServiceSpek : Spek({
                         vurdering.veilederident shouldBeEqualTo VEILEDER_IDENT
 
                         coVerify(exactly = 1) {
-                            varselPdfServiceMock.createVurderingPdf(
-                                personident = ARBEIDSTAKER_PERSONIDENT,
-                                document = document,
+                            vurderingPdfServiceMock.createVurderingPdf(
+                                vurdering = vurdering,
                                 callId = "",
                             )
                         }
@@ -98,7 +97,7 @@ object ForhandsvarselServiceSpek : Spek({
                         }
 
                         coVerify(exactly = 1) {
-                            varselPdfServiceMock.createVurderingPdf(any(), any(), any())
+                            vurderingPdfServiceMock.createVurderingPdf(any(), any())
                         }
                         coVerify(exactly = 1) {
                             vurderingRepositoryMock.createForhandsvarsel(any(), any())
@@ -108,7 +107,7 @@ object ForhandsvarselServiceSpek : Spek({
 
                 it("Fails when pdfGen fails") {
                     coEvery {
-                        varselPdfServiceMock.createVurderingPdf(any(), any(), any())
+                        vurderingPdfServiceMock.createVurderingPdf(any(), any())
                     } throws RuntimeException("Could not create pdf")
 
                     runBlocking {
@@ -123,7 +122,7 @@ object ForhandsvarselServiceSpek : Spek({
                         }
 
                         coVerify(exactly = 1) {
-                            varselPdfServiceMock.createVurderingPdf(any(), any(), any())
+                            vurderingPdfServiceMock.createVurderingPdf(any(), any())
                         }
                         coVerify(exactly = 0) {
                             vurderingRepositoryMock.createForhandsvarsel(any(), any())

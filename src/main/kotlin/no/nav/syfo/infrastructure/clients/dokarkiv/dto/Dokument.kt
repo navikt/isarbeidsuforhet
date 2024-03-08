@@ -4,6 +4,7 @@ enum class BrevkodeType(
     val value: String,
 ) {
     ARBEIDSUFORHET_FORHANDSVARSEL("OPPF_ARBEIDSUFORHET_FORHANDSVARSEL"),
+    ARBEIDSUFORHET_VURDERING("OPPF_ARBEIDSUFORHET_VURDERING")
 }
 
 data class Dokument private constructor(

@@ -1,11 +1,10 @@
 package no.nav.syfo.infrastructure.journalforing
 
 import no.nav.syfo.application.IJournalforingService
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.*
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
-import java.util.*
 
 class JournalforingService(
     private val dokarkivClient: DokarkivClient,
@@ -14,14 +13,14 @@ class JournalforingService(
     override suspend fun journalfor(
         personident: PersonIdent,
         pdf: ByteArray,
-        vurderingUUID: UUID,
+        vurdering: Vurdering,
     ): Int {
         val navn = pdlClient.getPerson(personident).fullName
         val journalpostRequest = createJournalpostRequest(
             personIdent = personident,
             navn = navn,
             pdf = pdf,
-            vurderingUuid = vurderingUUID,
+            vurdering = vurdering,
         )
 
         return dokarkivClient.journalfor(journalpostRequest).journalpostId
@@ -31,7 +30,7 @@ class JournalforingService(
         personIdent: PersonIdent,
         navn: String,
         pdf: ByteArray,
-        vurderingUuid: UUID,
+        vurdering: Vurdering,
     ): JournalpostRequest {
         val avsenderMottaker = AvsenderMottaker.create(
             id = personIdent.value,
@@ -43,11 +42,11 @@ class JournalforingService(
             idType = BrukerIdType.PERSON_IDENT,
         )
 
-        val dokumentTittel = "Forhåndsvarsel om avslag på sykepenger"
+        val dokumentTittel = vurdering.type.getDokumentTittel()
 
         val dokumenter = listOf(
             Dokument.create(
-                brevkode = BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL,
+                brevkode = vurdering.type.getBrevkode(),
                 dokumentvarianter = listOf(
                     Dokumentvariant.create(
                         filnavn = dokumentTittel,
@@ -61,12 +60,12 @@ class JournalforingService(
         )
 
         return JournalpostRequest(
-            journalpostType = JournalpostType.UTGAAENDE.name,
+            journalpostType = vurdering.type.getJournalpostType().name,
             avsenderMottaker = avsenderMottaker,
             tittel = dokumentTittel,
             bruker = bruker,
             dokumenter = dokumenter,
-            eksternReferanseId = vurderingUuid.toString(),
+            eksternReferanseId = vurdering.uuid.toString(),
         )
     }
 }

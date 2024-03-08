@@ -1,12 +1,12 @@
 package no.nav.syfo.application
 
 import no.nav.syfo.domain.PersonIdent
-import java.util.*
+import no.nav.syfo.domain.Vurdering
 
 interface IJournalforingService {
     suspend fun journalfor(
         personident: PersonIdent,
         pdf: ByteArray,
-        vurderingUUID: UUID,
+        vurdering: Vurdering,
     ): Int
 }

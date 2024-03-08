@@ -8,13 +8,13 @@ fun generateJournalpostRequest(
     tittel: String,
     brevkodeType: BrevkodeType,
     pdf: ByteArray,
-    varselId: UUID,
+    vurderingUuid: UUID,
     journalpostType: String = JournalpostType.UTGAAENDE.name,
 ) = JournalpostRequest(
     avsenderMottaker = AvsenderMottaker.create(
         id = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
         idType = BrukerIdType.PERSON_IDENT,
-        navn = UserConstants.PERSON_FULLNAME_DASH,
+        navn = UserConstants.PERSON_FULLNAME,
     ),
     bruker = Bruker.create(
         id = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
@@ -36,5 +36,5 @@ fun generateJournalpostRequest(
         )
     ),
     journalpostType = journalpostType,
-    eksternReferanseId = varselId.toString(),
+    eksternReferanseId = vurderingUuid.toString(),
 )

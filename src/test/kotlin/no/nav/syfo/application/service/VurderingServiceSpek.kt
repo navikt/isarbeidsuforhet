@@ -4,12 +4,21 @@ import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.UserConstants.PDF_OPPFYLT
+import no.nav.syfo.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.domain.VurderingType
+import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
+import no.nav.syfo.generator.generateVurdering
 import no.nav.syfo.infrastructure.clients.pdfgen.VurderingPdfService
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.getVurdering
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
+import no.nav.syfo.infrastructure.mock.mockedJournalpostId
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeGreaterThan
 import no.nav.syfo.infrastructure.kafka.VurderingProducer
 import no.nav.syfo.infrastructure.kafka.VurderingRecord
 import org.amshove.kluent.*
@@ -59,61 +68,87 @@ class VurderingServiceSpek : Spek({
             database.dropData()
         }
 
-        val vurdering = generateForhandsvarselVurdering()
+        val vurderingForhandsvarsel = generateForhandsvarselVurdering()
 
         describe("Journalføring") {
             it("journalfører forhåndsvarsel") {
                 vurderingRepository.createForhandsvarsel(
                     pdf = UserConstants.PDF_FORHANDSVARSEL,
-                    vurdering = vurdering,
+                    vurdering = vurderingForhandsvarsel,
                 )
 
-                runBlocking {
-                    val journalforteVurderinger = vurderingService.journalforVurderinger()
-
-                    val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
-                    failed.size shouldBeEqualTo 0
-                    success.size shouldBeEqualTo 1
-
-                    val journalfortVurdering = success.first().getOrThrow()
-                    journalfortVurdering.journalpostId shouldBeEqualTo "1"
-
-                    val pVurdering = database.getVurdering(journalfortVurdering.uuid)
-                    pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
                 }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val journalfortVurdering = success.first().getOrThrow()
+                journalfortVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+
+                val pVurdering = database.getVurdering(journalfortVurdering.uuid)
+                pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
+                pVurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL.name
+                pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+            }
+
+            it("journalfører OPPFYLT vurdering") {
+                val vurderingOppfylt = generateVurdering(type = VurderingType.OPPFYLT)
+                vurderingRepository.createVurdering(
+                    vurdering = vurderingOppfylt,
+                    pdf = PDF_OPPFYLT,
+                )
+
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
+                }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val journalfortVurdering = success.first().getOrThrow()
+                journalfortVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+
+                val pVurdering = database.getVurdering(journalfortVurdering.uuid)
+                pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
+                pVurdering.type shouldBeEqualTo VurderingType.OPPFYLT.name
+                pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
             }
 
             it("journalfører ikke når ingen forhåndsvarsler") {
-                runBlocking {
-                    val journalforteVurderinger = vurderingService.journalforVurderinger()
-
-                    val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
-                    failed.size shouldBeEqualTo 0
-                    success.size shouldBeEqualTo 0
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
                 }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 0
             }
 
             it("journalfører ikke når forhåndsvarsel allerede er journalført") {
                 vurderingRepository.createForhandsvarsel(
                     pdf = UserConstants.PDF_FORHANDSVARSEL,
-                    vurdering = vurdering,
+                    vurdering = vurderingForhandsvarsel,
                 )
-                val journalfortVarsel = vurdering.journalfor(journalpostId = "1")
+                val journalfortVarsel = vurderingForhandsvarsel.journalfor(journalpostId = mockedJournalpostId.toString())
                 vurderingRepository.update(journalfortVarsel)
 
-                runBlocking {
-                    val journalforteVurderinger = vurderingService.journalforVurderinger()
-
-                    val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
-                    failed.size shouldBeEqualTo 0
-                    success.size shouldBeEqualTo 0
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
                 }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 0
             }
 
             it("journalfører forhåndsvarsel selv om noen feiler") {
                 vurderingRepository.createForhandsvarsel(
                     pdf = UserConstants.PDF_FORHANDSVARSEL,
-                    vurdering = vurdering,
+                    vurdering = vurderingForhandsvarsel,
                 )
 
                 val vurderingFails = generateForhandsvarselVurdering(
@@ -124,13 +159,13 @@ class VurderingServiceSpek : Spek({
                     vurdering = vurderingFails,
                 )
 
-                runBlocking {
-                    val journalforteVurderinger = vurderingService.journalforVurderinger()
-
-                    val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
-                    failed.size shouldBeEqualTo 1
-                    success.size shouldBeEqualTo 1
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
                 }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 1
+                success.size shouldBeEqualTo 1
             }
         }
         describe("publishUnpublishedVurderinger") {
@@ -138,8 +173,8 @@ class VurderingServiceSpek : Spek({
             it("publishes unpublished vurdering") {
                 val unpublishedVurdering = runBlocking {
                     vurderingService.createForhandsvarsel(
-                        personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                        veilederident = UserConstants.VEILEDER_IDENT,
+                        personident = ARBEIDSTAKER_PERSONIDENT,
+                        veilederident = VEILEDER_IDENT,
                         begrunnelse = "",
                         document = emptyList(),
                         callId = UUID.randomUUID().toString(),
@@ -156,7 +191,7 @@ class VurderingServiceSpek : Spek({
                 val publishedVurdering = success.first().getOrThrow()
                 publishedVurdering.uuid.shouldBeEqualTo(unpublishedVurdering.uuid)
 
-                val persistedVurderinger = vurderingService.getVurderinger(UserConstants.ARBEIDSTAKER_PERSONIDENT)
+                val persistedVurderinger = vurderingService.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
                 persistedVurderinger.size shouldBeEqualTo 1
                 val persistedVurdering = persistedVurderinger.first()
                 persistedVurdering.uuid shouldBeEqualTo unpublishedVurdering.uuid
@@ -174,13 +209,14 @@ class VurderingServiceSpek : Spek({
             it("fails publishing when kafka-producer fails") {
                 val unpublishedVurdering = runBlocking {
                     vurderingService.createForhandsvarsel(
-                        personident = UserConstants.ARBEIDSTAKER_PERSONIDENT,
-                        veilederident = UserConstants.VEILEDER_IDENT,
+                        personident = ARBEIDSTAKER_PERSONIDENT,
+                        veilederident = VEILEDER_IDENT,
                         begrunnelse = "",
                         document = emptyList(),
                         callId = UUID.randomUUID().toString(),
                     )
                 }
+
                 every { mockVurderingProducer.send(any()) } throws Exception("Error producing to kafka")
 
                 val (success, failed) = vurderingService.publishUnpublishedVurderinger().partition { it.isSuccess }
@@ -192,6 +228,83 @@ class VurderingServiceSpek : Spek({
                 val vurderingList = vurderingRepository.getUnpublishedVurderinger()
                 vurderingList.size shouldBeEqualTo 1
                 vurderingList.first().uuid.shouldBeEqualTo(unpublishedVurdering.uuid)
+            }
+
+            it("journalfører ikke når kun AVSLAG vurderinger") {
+                val vurderingAvslag = generateVurdering(type = VurderingType.AVSLAG)
+                vurderingRepository.createVurdering(
+                    vurdering = vurderingAvslag,
+                    pdf = null,
+                )
+
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
+                }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 0
+
+                val pVurdering = database.getVurdering(vurderingAvslag.uuid)
+                pVurdering?.type shouldBeEqualTo VurderingType.AVSLAG.name
+                pVurdering?.journalpostId shouldBeEqualTo null
+            }
+        }
+
+        describe("Vurdering") {
+            val vurderingPdfServiceMock = mockk<VurderingPdfService>(relaxed = true)
+            val vurderingServiceWithMock = VurderingService(
+                vurderingRepository = vurderingRepository,
+                vurderingPdfService = vurderingPdfServiceMock,
+                journalforingService = journalforingService,
+                vurderingProducer = vurderingProducer,
+                svarfristDager = externalMockEnvironment.environment.svarfristDager
+            )
+            it("lager vurdering OPPFYLT med pdf") {
+                coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_OPPFYLT
+
+                val vurdering = runBlocking {
+                    vurderingServiceWithMock.createVurdering(
+                        personident = ARBEIDSTAKER_PERSONIDENT,
+                        veilederident = VEILEDER_IDENT,
+                        type = VurderingType.OPPFYLT,
+                        begrunnelse = "En begrunnelse",
+                        document = generateDocumentComponent("En begrunnelse"),
+                        callId = "",
+                    )
+                }
+
+                vurdering.varsel shouldBeEqualTo null
+                vurdering.type shouldBeEqualTo VurderingType.OPPFYLT
+                vurdering.journalpostId shouldBeEqualTo null
+                vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+
+                coVerify(exactly = 1) {
+                    vurderingPdfServiceMock.createVurderingPdf(
+                        vurdering = vurdering,
+                        callId = "",
+                    )
+                }
+            }
+
+            it("lager vurdering AVSLAG uten pdf") {
+                val vurdering = runBlocking {
+                    vurderingServiceWithMock.createVurdering(
+                        personident = ARBEIDSTAKER_PERSONIDENT,
+                        veilederident = VEILEDER_IDENT,
+                        type = VurderingType.AVSLAG,
+                        begrunnelse = "En begrunnelse",
+                        document = generateDocumentComponent("En begrunnelse"),
+                        callId = "",
+                    )
+                }
+
+                vurdering.varsel shouldBeEqualTo null
+                vurdering.type shouldBeEqualTo VurderingType.AVSLAG
+                vurdering.journalpostId shouldBeEqualTo null
+                vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+
+                coVerify(exactly = 0) { vurderingPdfServiceMock.createVurderingPdf(any(), any()) }
             }
         }
     }
