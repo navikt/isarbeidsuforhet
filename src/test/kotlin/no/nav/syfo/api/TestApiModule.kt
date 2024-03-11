@@ -1,7 +1,9 @@
 package no.nav.syfo.api
 
 import io.ktor.server.application.*
+import io.mockk.mockk
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.clients.pdfgen.VurderingPdfService
@@ -31,6 +33,7 @@ fun Application.testApiModule(
         vurderingRepository = vurderingRepository,
         vurderingPdfService = varselPdfService,
         journalforingService = journalforingService,
+        vurderingProducer = mockk<IVurderingProducer>(),
     )
 
     this.apiModule(

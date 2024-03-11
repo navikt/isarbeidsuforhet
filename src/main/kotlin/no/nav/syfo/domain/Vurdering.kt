@@ -14,9 +14,12 @@ data class Vurdering private constructor(
     val varsel: Varsel?,
     val document: List<DocumentComponent>,
     val journalpostId: String?,
+    val publishedAt: OffsetDateTime?,
 
 ) {
     fun journalfor(journalpostId: String): Vurdering = this.copy(journalpostId = journalpostId)
+
+    fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
 
     companion object {
         fun createForhandsvarsel(
@@ -34,6 +37,7 @@ data class Vurdering private constructor(
             document = document,
             journalpostId = null,
             varsel = Varsel(),
+            publishedAt = null,
         )
 
         fun createFromDatabase(
@@ -46,6 +50,7 @@ data class Vurdering private constructor(
             document: List<DocumentComponent>,
             journalpostId: String?,
             varsel: Varsel?,
+            publishedAt: OffsetDateTime?,
         ) = Vurdering(
             uuid = uuid,
             personident = personident,
@@ -56,6 +61,7 @@ data class Vurdering private constructor(
             document = document,
             journalpostId = journalpostId,
             varsel = varsel,
+            publishedAt = publishedAt,
         )
     }
 }

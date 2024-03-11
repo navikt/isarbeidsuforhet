@@ -34,6 +34,17 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             }
         }
 
+    override fun getUnpublishedVurderinger(): List<Vurdering> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_UNPUBLISHED_VURDERING).use {
+                it.executeQuery().toList { toPVurdering() }
+            }.map {
+                it.toVurdering(
+                    varsel = connection.getVarselForVurdering(it)
+                )
+            }
+        }
+
     override fun createForhandsvarsel(
         pdf: ByteArray,
         vurdering: Vurdering,
@@ -58,7 +69,8 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         connection.prepareStatement(UPDATE_VURDERING).use {
             it.setString(1, vurdering.journalpostId)
             it.setObject(2, nowUTC())
-            it.setString(3, vurdering.uuid.toString())
+            it.setObject(3, vurdering.publishedAt)
+            it.setString(4, vurdering.uuid.toString())
             val updated = it.executeUpdate()
             if (updated != 1) {
                 throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -133,6 +145,11 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 SELECT * FROM VURDERING WHERE personident=? ORDER BY created_at DESC
             """
 
+        private const val GET_UNPUBLISHED_VURDERING =
+            """
+                SELECT * FROM VURDERING WHERE published_at IS NULL ORDER BY created_at ASC
+            """
+
         private const val GET_VARSEL_FOR_VURDERING =
             """
                 SELECT * FROM VARSEL WHERE vurdering_id = ?
@@ -156,7 +173,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
 
         private const val UPDATE_VURDERING =
             """
-                UPDATE VURDERING SET journalpost_id=?, updated_at=? WHERE uuid=? 
+                UPDATE VURDERING SET journalpost_id=?, updated_at=?, published_at=? WHERE uuid=? 
             """
 
         private const val CREATE_VARSEL =
@@ -209,6 +226,7 @@ internal fun ResultSet.toPVurdering(): PVurdering = PVurdering(
         object : TypeReference<List<DocumentComponent>>() {}
     ),
     journalpostId = getString("journalpost_id"),
+    publishedAt = getObject("published_at", OffsetDateTime::class.java),
 )
 
 internal fun ResultSet.toPVurderingPdf(): PVurderingPdf = PVurderingPdf(

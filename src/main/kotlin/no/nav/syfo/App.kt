@@ -16,17 +16,14 @@ import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselProducer
-import no.nav.syfo.infrastructure.kafka.ExpiredForhandsvarselRecordSerializer
-import no.nav.syfo.infrastructure.kafka.VarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
-import no.nav.syfo.infrastructure.kafka.kafkaAivenProducerConfig
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdfgen.VurderingPdfService
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
+import no.nav.syfo.infrastructure.kafka.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -82,6 +79,11 @@ fun main() {
             kafkaAivenProducerConfig<ExpiredForhandsvarselRecordSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
+    val vurderingProducer = VurderingProducer(
+        producer = KafkaProducer(
+            kafkaAivenProducerConfig<VurderingRecordSerializer>(kafkaEnvironment = environment.kafka)
+        )
+    )
 
     lateinit var vurderingService: VurderingService
     lateinit var varselService: VarselService
@@ -103,6 +105,7 @@ fun main() {
                     vurderingRepository = vurderingRepository,
                     vurderingPdfService = vurderingPdfService,
                     journalforingService = journalforingService,
+                    vurderingProducer = vurderingProducer,
                 )
                 val varselRepository = VarselRepository(database = applicationDatabase)
                 val varselProducer = VarselProducer(
