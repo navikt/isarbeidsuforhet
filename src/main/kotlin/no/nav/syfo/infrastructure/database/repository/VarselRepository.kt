@@ -71,7 +71,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                 FROM varsel v
                 INNER JOIN vurdering vu
                 ON v.vurdering_id = vu.id
-                WHERE svarfrist <= NOW() AND svarfrist_expired_published_at IS NULL
+                WHERE svarfrist <= NOW() AND v.published_at IS NOT NULL AND svarfrist_expired_published_at IS NULL
             """
 
         private const val GET_VURDERING =
