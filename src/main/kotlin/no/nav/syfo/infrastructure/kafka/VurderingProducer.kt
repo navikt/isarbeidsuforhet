@@ -1,7 +1,6 @@
 package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.application.IVurderingProducer
-import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.VurderingType
 import org.apache.kafka.clients.producer.KafkaProducer
