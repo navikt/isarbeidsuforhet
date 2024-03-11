@@ -8,6 +8,8 @@ interface IVurderingRepository {
         personident: PersonIdent,
     ): List<Vurdering>
 
+    fun getUnpublishedVurderinger(): List<Vurdering>
+
     fun createForhandsvarsel(
         pdf: ByteArray,
         vurdering: Vurdering,

@@ -2,6 +2,7 @@ package no.nav.syfo.application.service
 
 import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVurderingPdfService
+import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.DocumentComponent
@@ -11,6 +12,7 @@ class VurderingService(
     private val vurderingRepository: IVurderingRepository,
     private val vurderingPdfService: IVurderingPdfService,
     private val journalforingService: IJournalforingService,
+    private val vurderingProducer: IVurderingProducer,
 ) {
     fun getVurderinger(
         personident: PersonIdent,
@@ -59,6 +61,18 @@ class VurderingService(
                 vurderingRepository.update(journalfortVurdering)
 
                 journalfortVurdering
+            }
+        }
+    }
+
+    fun publishUnpublishedVurderinger(): List<Result<Vurdering>> {
+        val unpublished = vurderingRepository.getUnpublishedVurderinger()
+        return unpublished.map { vurdering ->
+            val producerResult = vurderingProducer.send(vurdering = vurdering)
+            producerResult.map {
+                val publishedVurdering = it.publish()
+                vurderingRepository.update(publishedVurdering)
+                publishedVurdering
             }
         }
     }

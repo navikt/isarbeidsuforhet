@@ -7,6 +7,7 @@ import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVurderingPdfService
+import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.generator.generateDocumentComponent
 import org.amshove.kluent.internal.assertFailsWith
@@ -26,6 +27,7 @@ object ForhandsvarselServiceSpek : Spek({
             vurderingRepository = vurderingRepositoryMock,
             vurderingPdfService = varselPdfServiceMock,
             journalforingService = journalforingServiceMock,
+            vurderingProducer = mockk<IVurderingProducer>(),
         )
 
         beforeEachTest {

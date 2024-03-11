@@ -18,6 +18,7 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -174,13 +175,16 @@ class VarselServiceSpek : Spek({
 
             it("fails publishing when kafka-producer fails") {
                 val unpublishedExpiredVarsel = createExpiredUnpublishedVarsel()
-                every { mockExpiredForhandsvarselProducer.send(any()) } throws Exception("Error producing to kafka")
+                val unpublishedExpiredVarselAnother = createExpiredUnpublishedVarsel()
+                unpublishedExpiredVarsel.uuid shouldNotBeEqualTo unpublishedExpiredVarselAnother.uuid
+
+                every { mockExpiredForhandsvarselProducer.send(match { it.value().uuid == unpublishedExpiredVarsel.uuid }) } throws Exception("Error producing to kafka")
 
                 val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 1
-                success.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
 
-                verify(exactly = 1) { mockExpiredForhandsvarselProducer.send(any()) }
+                verify(exactly = 2) { mockExpiredForhandsvarselProducer.send(any()) }
 
                 val (_, varsel) = varselRepository.getUnpublishedExpiredVarsler().first()
                 varsel.uuid.shouldBeEqualTo(unpublishedExpiredVarsel.uuid)

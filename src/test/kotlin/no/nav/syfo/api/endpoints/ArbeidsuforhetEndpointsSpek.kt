@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
@@ -12,6 +13,7 @@ import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.ForhandsvarselRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
+import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.VurderingType
@@ -57,6 +59,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     pdlClient = externalMockEnvironment.pdlClient,
                 ),
                 journalforingService = journalforingService,
+                vurderingProducer = mockk<IVurderingProducer>(),
             )
             val validToken = generateJWT(
                 audience = externalMockEnvironment.environment.azure.appClientId,

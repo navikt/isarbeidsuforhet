@@ -18,6 +18,7 @@ data class PVurdering(
     val begrunnelse: String,
     val document: List<DocumentComponent>,
     val journalpostId: String?,
+    val publishedAt: OffsetDateTime?,
 ) {
 
     fun toVurdering(
@@ -32,5 +33,6 @@ data class PVurdering(
         document = document,
         journalpostId = journalpostId,
         varsel = varsel,
+        publishedAt = publishedAt,
     )
 }
