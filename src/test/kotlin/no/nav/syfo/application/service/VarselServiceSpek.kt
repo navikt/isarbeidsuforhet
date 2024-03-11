@@ -173,7 +173,7 @@ class VarselServiceSpek : Spek({
                 verify(exactly = 0) { mockExpiredForhandsvarselProducer.send(any()) }
             }
 
-            it("fails publishing when kafka-producer fails") {
+            it("fails publishing for varsler for which kafka-producer fails, others are published") {
                 val unpublishedExpiredVarsel = createExpiredUnpublishedVarsel()
                 val unpublishedExpiredVarselAnother = createExpiredUnpublishedVarsel()
                 unpublishedExpiredVarsel.uuid shouldNotBeEqualTo unpublishedExpiredVarselAnother.uuid
