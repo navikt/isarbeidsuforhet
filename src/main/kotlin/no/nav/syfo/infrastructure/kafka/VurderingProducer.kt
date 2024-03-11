@@ -37,7 +37,7 @@ class VurderingProducer(private val producer: KafkaProducer<String, VurderingRec
 data class VurderingRecord(
     val uuid: UUID,
     val createdAt: OffsetDateTime,
-    val personident: PersonIdent,
+    val personident: String,
     val veilederident: String,
     val type: VurderingType,
     val begrunnelse: String,
@@ -47,7 +47,7 @@ data class VurderingRecord(
             VurderingRecord(
                 uuid = vurdering.uuid,
                 createdAt = vurdering.createdAt,
-                personident = vurdering.personident,
+                personident = vurdering.personident.value,
                 veilederident = vurdering.veilederident,
                 type = vurdering.type,
                 begrunnelse = vurdering.begrunnelse,
