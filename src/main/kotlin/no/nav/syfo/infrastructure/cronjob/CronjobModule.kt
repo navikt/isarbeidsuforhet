@@ -25,10 +25,11 @@ fun launchCronjobs(
     val journalforForhandsvarselCronjob = JournalforForhandsvarselCronjob(vurderingService)
     cronjobs.add(journalforForhandsvarselCronjob)
 
-    if (environment.publishForhandsvarselEnabled) {
-        val publiserForhandsvarselCronjob = PubliserForhandsvarselCronjob(varselService = varselService)
-        cronjobs.add(publiserForhandsvarselCronjob)
-    }
+    val publiserForhandsvarselCronjob = PubliserForhandsvarselCronjob(varselService = varselService)
+    cronjobs.add(publiserForhandsvarselCronjob)
+
+    val publishExpiredForhandsvarslerCronjob = PublishExpiredForhandsvarslerCronjob(varselService = varselService)
+    cronjobs.add(publishExpiredForhandsvarslerCronjob)
 
     cronjobs.forEach {
         launchBackgroundTask(

@@ -79,5 +79,3 @@ spec:
       value: "dev-fss.teamdokumenthandtering.dokarkiv-q1"
     - name: DOKARKIV_URL
       value: "https://dokarkiv.dev-fss-pub.nais.io"
-    - name: TOGGLE_PUBLISH_FORHANDSVARSEL
-      value: "true"
