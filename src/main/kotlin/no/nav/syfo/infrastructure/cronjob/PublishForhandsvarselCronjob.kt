@@ -4,7 +4,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.service.VarselService
 import org.slf4j.LoggerFactory
 
-class PubliserForhandsvarselCronjob(
+class PublishForhandsvarselCronjob(
     private val varselService: VarselService,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 5
@@ -23,6 +23,6 @@ class PubliserForhandsvarselCronjob(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(PubliserForhandsvarselCronjob::class.java)
+        private val log = LoggerFactory.getLogger(PublishForhandsvarselCronjob::class.java)
     }
 }

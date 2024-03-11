@@ -50,7 +50,6 @@ data class Environment(
                 clientId = getEnvVar("DOKARKIV_CLIENT_ID"),
             ),
         ),
-    val publishForhandsvarselEnabled: Boolean = getEnvVar("TOGGLE_PUBLISH_FORHANDSVARSEL").toBoolean()
 )
 
 fun getEnvVar(
