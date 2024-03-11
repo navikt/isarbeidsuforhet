@@ -22,6 +22,9 @@ spec:
     - team: teamsykefravr
       application: isarbeidsuforhet
       access: readwrite
+    - team: teamsykefravr
+      application: ispersonoppgave
+      access: read
     - team: disykefravar
       application: dvh-sykefravar-airflow-kafka
       access: read

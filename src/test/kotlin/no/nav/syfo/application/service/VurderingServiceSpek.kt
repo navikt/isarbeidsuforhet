@@ -163,7 +163,7 @@ class VurderingServiceSpek : Spek({
                 vurderingRepository.getUnpublishedVurderinger().shouldBeEmpty()
             }
 
-            it("publishes nothing when no unpublished varsel") {
+            it("publishes nothing when no unpublished vurdering") {
                 val (success, failed) = vurderingService.publishUnpublishedVurderinger().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
                 success.size shouldBeEqualTo 0
