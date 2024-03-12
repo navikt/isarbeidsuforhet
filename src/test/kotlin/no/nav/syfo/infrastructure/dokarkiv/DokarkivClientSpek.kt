@@ -19,12 +19,12 @@ class DokarkivClientSpek : Spek({
 
     describe(DokarkivClient::class.java.simpleName) {
 
-        it("journalfører aktivitetskrav") {
+        it("journalfører forhåndsvarsel") {
             val journalpostRequestForhandsvarsel = generateJournalpostRequest(
                 tittel = "Forhåndsvarsel om avslag på sykepenger",
                 brevkodeType = BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL,
                 pdf = PDF_FORHANDSVARSEL,
-                varselId = UUID.randomUUID(),
+                vurderingUuid = UUID.randomUUID(),
             )
 
             runBlocking {
@@ -41,7 +41,7 @@ class DokarkivClientSpek : Spek({
                 tittel = "Forhåndsvarsel om avslag på sykepenger",
                 brevkodeType = BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL,
                 pdf = PDF_FORHANDSVARSEL,
-                varselId = EXISTING_EKSTERN_REFERANSE_UUID,
+                vurderingUuid = EXISTING_EKSTERN_REFERANSE_UUID,
             )
 
             runBlocking {

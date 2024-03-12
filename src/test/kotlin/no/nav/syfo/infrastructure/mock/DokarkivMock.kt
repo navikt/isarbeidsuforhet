@@ -7,8 +7,9 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostRequest
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostResponse
 
+const val mockedJournalpostId = 1
 val dokarkivResponse = JournalpostResponse(
-    journalpostId = 1,
+    journalpostId = mockedJournalpostId,
     journalpostferdigstilt = true,
     journalstatus = "status",
 )

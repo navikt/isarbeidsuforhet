@@ -1,8 +1,8 @@
 package no.nav.syfo.infrastructure.clients.pdfgen
 
 import no.nav.syfo.application.IVurderingPdfService
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Vurdering
+import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 
 class VurderingPdfService(
@@ -11,20 +11,26 @@ class VurderingPdfService(
 ) : IVurderingPdfService {
 
     override suspend fun createVurderingPdf(
-        personident: PersonIdent,
-        document: List<DocumentComponent>,
+        vurdering: Vurdering,
         callId: String,
     ): ByteArray {
-        val personNavn = pdlClient.getPerson(personident).fullName
+        val personNavn = pdlClient.getPerson(vurdering.personident).fullName
         val vurderingPdfDTO = VurderingPdfDTO.create(
-            documentComponents = document,
+            documentComponents = vurdering.document,
             mottakerNavn = personNavn,
-            mottakerPersonident = personident,
+            mottakerPersonident = vurdering.personident,
         )
 
-        return pdfGenClient.createForhandsvarselPdf(
-            callId = callId,
-            forhandsvarselPdfDTO = vurderingPdfDTO,
-        )
+        return when (vurdering.type) {
+            VurderingType.FORHANDSVARSEL -> pdfGenClient.createForhandsvarselPdf(
+                callId = callId,
+                forhandsvarselPdfDTO = vurderingPdfDTO,
+            )
+            VurderingType.OPPFYLT -> pdfGenClient.createOppfyltPdf(
+                callId = callId,
+                oppfyltPdfDTO = vurderingPdfDTO,
+            )
+            else -> throw IllegalStateException("Should not create pdf for vurdering ${vurdering.type}")
+        }
     }
 }

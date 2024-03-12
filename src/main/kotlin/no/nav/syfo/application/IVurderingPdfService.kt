@@ -1,12 +1,10 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Vurdering
 
 interface IVurderingPdfService {
     suspend fun createVurderingPdf(
-        personident: PersonIdent,
-        document: List<DocumentComponent>,
+        vurdering: Vurdering,
         callId: String,
     ): ByteArray
 }
