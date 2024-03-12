@@ -45,6 +45,23 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             }
         }
 
+    override fun createVurdering(vurdering: Vurdering, pdf: ByteArray?): Vurdering {
+        database.connection.use { connection ->
+            val pVurdering = connection.createVurdering(vurdering)
+            if (pdf != null) {
+                connection.createPdf(
+                    vurderingId = pVurdering.id,
+                    pdf = pdf,
+                )
+            }
+            connection.commit()
+
+            return pVurdering.toVurdering(
+                varsel = connection.getVarselForVurdering(pVurdering)
+            )
+        }
+    }
+
     override fun createForhandsvarsel(
         pdf: ByteArray,
         vurdering: Vurdering,
@@ -173,7 +190,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
 
         private const val UPDATE_VURDERING =
             """
-                UPDATE VURDERING SET journalpost_id=?, updated_at=?, published_at=? WHERE uuid=? 
+                UPDATE VURDERING SET journalpost_id=?, updated_at=?, published_at=? WHERE uuid=?
             """
 
         private const val CREATE_VARSEL =

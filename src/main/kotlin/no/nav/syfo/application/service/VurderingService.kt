@@ -7,16 +7,48 @@ import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.VurderingType
 
 class VurderingService(
     private val vurderingRepository: IVurderingRepository,
     private val vurderingPdfService: IVurderingPdfService,
     private val journalforingService: IJournalforingService,
     private val vurderingProducer: IVurderingProducer,
+    private val svarfristDager: Long,
 ) {
     fun getVurderinger(
         personident: PersonIdent,
     ): List<Vurdering> = vurderingRepository.getVurderinger(personident)
+
+    suspend fun createVurdering(
+        personident: PersonIdent,
+        veilederident: String,
+        type: VurderingType,
+        begrunnelse: String,
+        document: List<DocumentComponent>,
+        callId: String,
+    ): Vurdering {
+        val vurdering = Vurdering(
+            personident = personident,
+            veilederident = veilederident,
+            begrunnelse = begrunnelse,
+            document = document,
+            type = type,
+        )
+        val pdf = if (vurdering.shouldJournalfores()) {
+            vurderingPdfService.createVurderingPdf(
+                vurdering = vurdering,
+                callId = callId,
+            )
+        } else null
+
+        vurderingRepository.createVurdering(
+            vurdering = vurdering,
+            pdf = pdf,
+        )
+
+        return vurdering
+    }
 
     suspend fun createForhandsvarsel(
         personident: PersonIdent,
@@ -25,16 +57,16 @@ class VurderingService(
         document: List<DocumentComponent>,
         callId: String,
     ): Vurdering {
-        val pdf = vurderingPdfService.createVurderingPdf(
-            personident = personident,
-            document = document,
-            callId = callId,
-        )
         val vurdering = Vurdering.createForhandsvarsel(
             personident = personident,
             veilederident = veilederident,
             begrunnelse = begrunnelse,
             document = document,
+            svarfristDager = svarfristDager,
+        )
+        val pdf = vurderingPdfService.createVurderingPdf(
+            vurdering = vurdering,
+            callId = callId,
         )
 
         vurderingRepository.createForhandsvarsel(
@@ -53,7 +85,7 @@ class VurderingService(
                 val journalpostId = journalforingService.journalfor(
                     personident = vurdering.personident,
                     pdf = pdf,
-                    vurderingUUID = vurdering.uuid,
+                    vurdering = vurdering,
                 )
                 val journalfortVurdering = vurdering.journalfor(
                     journalpostId = journalpostId.toString(),

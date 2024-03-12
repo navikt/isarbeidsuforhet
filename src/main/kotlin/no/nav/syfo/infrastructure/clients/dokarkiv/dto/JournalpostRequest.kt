@@ -4,6 +4,7 @@ const val JOURNALFORENDE_ENHET = 9999
 
 enum class JournalpostType {
     UTGAAENDE,
+    NOTAT,
 }
 
 enum class JournalpostTema(val value: String) {

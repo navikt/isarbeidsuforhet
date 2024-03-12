@@ -12,6 +12,10 @@ fun MockRequestHandleScope.pdfGenClientMockResponse(request: HttpRequestData): H
         requestUrl.endsWith(PdfGenClient.Companion.FORHANDSVARSEL_PATH) -> {
             respond(content = UserConstants.PDF_FORHANDSVARSEL)
         }
+        requestUrl.endsWith(PdfGenClient.Companion.OPPFYLT_PATH) -> {
+            respond(content = UserConstants.PDF_OPPFYLT)
+        }
+
         else -> error("Unhandled pdf ${request.url.encodedPath}")
     }
 }

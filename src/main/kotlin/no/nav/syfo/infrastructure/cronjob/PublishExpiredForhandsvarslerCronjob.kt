@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory
 class PublishExpiredForhandsvarslerCronjob(
     private val varselService: VarselService,
 ) : Cronjob {
-    override val initialDelayMinutes: Long = 5
-    override val intervalDelayMinutes: Long = 60 * 12
+    override val initialDelayMinutes: Long = 3
+    override val intervalDelayMinutes: Long = 10
 
     override suspend fun run() {
         val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }

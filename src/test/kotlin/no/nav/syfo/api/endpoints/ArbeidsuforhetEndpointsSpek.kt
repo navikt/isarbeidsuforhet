@@ -9,9 +9,11 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
+import no.nav.syfo.UserConstants.PDF_OPPFYLT
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.ForhandsvarselRequestDTO
+import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
@@ -62,20 +64,21 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 ),
                 journalforingService = journalforingService,
                 vurderingProducer = mockk<IVurderingProducer>(),
+                svarfristDager = externalMockEnvironment.environment.svarfristDager,
             )
             val validToken = generateJWT(
                 audience = externalMockEnvironment.environment.azure.appClientId,
                 issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
                 navIdent = VEILEDER_IDENT,
             )
-            val begrunnelse = "Dette er en begrunnelse for forhåndsvarsel 8-4"
-            val document = generateDocumentComponent(
+            val begrunnelse = "Dette er en begrunnelse for vurdering av 8-4"
+            val forhandsvarselDocument = generateDocumentComponent(
                 fritekst = begrunnelse,
                 header = "Forhåndsvarsel"
             )
             val forhandsvarselRequestDTO = ForhandsvarselRequestDTO(
                 begrunnelse = begrunnelse,
-                document = document,
+                document = forhandsvarselDocument,
             )
             val personIdent = ARBEIDSTAKER_PERSONIDENT.value
 
@@ -100,11 +103,13 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.begrunnelse shouldBeEqualTo begrunnelse
                             responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                            responseDTO.document shouldBeEqualTo document
+                            responseDTO.document shouldBeEqualTo forhandsvarselDocument
+                            responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
 
                             val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
                             vurdering?.begrunnelse shouldBeEqualTo begrunnelse
                             vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            vurdering?.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
 
                             val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
                             pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_FORHANDSVARSEL.size
@@ -118,7 +123,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                                 personident = PersonIdent(personIdent),
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,
-                                document = document,
+                                document = forhandsvarselDocument,
                                 callId = UUID.randomUUID().toString(),
                             )
                         }
@@ -139,7 +144,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                                 personident = PersonIdent(personIdent),
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,
-                                document = document,
+                                document = forhandsvarselDocument,
                                 callId = UUID.randomUUID().toString(),
                             )
                         }
@@ -158,7 +163,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.begrunnelse shouldBeEqualTo begrunnelse
                             responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                            responseDTO.document shouldBeEqualTo document
+                            responseDTO.document shouldBeEqualTo forhandsvarselDocument
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                             responseDTO.varsel.shouldNotBeNull()
                             responseDTO.varsel?.svarFrist shouldBeEqualTo LocalDate.now().plusWeeks(3)
@@ -183,14 +188,14 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                                 personident = PersonIdent(personIdent),
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,
-                                document = document,
+                                document = forhandsvarselDocument,
                                 callId = UUID.randomUUID().toString(),
                             )
                             vurderingService.createForhandsvarsel(
                                 personident = PersonIdent(personIdent),
                                 veilederident = VEILEDER_IDENT,
                                 begrunnelse = begrunnelse,
-                                document = document,
+                                document = forhandsvarselDocument,
                                 callId = UUID.randomUUID().toString(),
                             )
                         }
@@ -245,6 +250,116 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
                         testInvalidPersonIdent(urlVurdering, validToken, HttpMethod.Get)
+                    }
+                }
+            }
+
+            describe("Vurdering") {
+                val vurderingDocumentOppfylt = generateDocumentComponent(
+                    fritekst = begrunnelse,
+                    header = "Oppfylt",
+                )
+                val vurderingRequestDTO = VurderingRequestDTO(
+                    type = VurderingType.OPPFYLT,
+                    begrunnelse = begrunnelse,
+                    document = vurderingDocumentOppfylt,
+                )
+                describe("Happy path") {
+                    it("Creates new vurdering OPPFYLT and creates PDF") {
+                        with(
+                            handleRequest(HttpMethod.Post, urlVurdering) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
+                                setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Created
+
+                            val responseDTO = objectMapper.readValue<VurderingResponseDTO>(response.content!!)
+                            responseDTO.begrunnelse shouldBeEqualTo begrunnelse
+                            responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
+                            responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
+                            responseDTO.document shouldBeEqualTo vurderingDocumentOppfylt
+                            responseDTO.type shouldBeEqualTo VurderingType.OPPFYLT
+
+                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
+                            vurdering?.begrunnelse shouldBeEqualTo begrunnelse
+                            vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            vurdering?.type shouldBeEqualTo VurderingType.OPPFYLT
+
+                            val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
+                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_OPPFYLT.size
+                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_OPPFYLT[0]
+                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_OPPFYLT[1]
+                        }
+                    }
+
+                    it("Creates new vurdering AVSLAG and does not create PDF") {
+                        val vurderingDocumentAvslag = generateDocumentComponent(
+                            fritekst = begrunnelse,
+                            header = "Avslag",
+                        )
+                        val vurderingAvslagRequestDTO = VurderingRequestDTO(
+                            type = VurderingType.AVSLAG,
+                            begrunnelse = begrunnelse,
+                            document = vurderingDocumentAvslag,
+                        )
+                        with(
+                            handleRequest(HttpMethod.Post, urlVurdering) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
+                                setBody(objectMapper.writeValueAsString(vurderingAvslagRequestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Created
+
+                            val responseDTO = objectMapper.readValue<VurderingResponseDTO>(response.content!!)
+                            responseDTO.begrunnelse shouldBeEqualTo begrunnelse
+                            responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
+                            responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
+                            responseDTO.document shouldBeEqualTo vurderingDocumentAvslag
+                            responseDTO.type shouldBeEqualTo VurderingType.AVSLAG
+
+                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
+                            vurdering?.begrunnelse shouldBeEqualTo begrunnelse
+                            vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            vurdering?.type shouldBeEqualTo VurderingType.AVSLAG
+
+                            val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
+                            pVurderingPdf shouldBeEqualTo null
+                        }
+                    }
+                }
+
+                describe("Unhappy path") {
+                    it("Throws error when document is empty") {
+                        val vurderingWithoutDocument = vurderingRequestDTO.copy(document = emptyList())
+                        with(
+                            handleRequest(HttpMethod.Post, urlVurdering) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
+                                setBody(objectMapper.writeValueAsString(vurderingWithoutDocument))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                        }
+                    }
+
+                    it("Throws error when begrunnelse is empty") {
+                        val vurderingWithoutBegrunnelse = vurderingRequestDTO.copy(begrunnelse = "")
+                        with(
+                            handleRequest(HttpMethod.Post, urlVurdering) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
+                                setBody(objectMapper.writeValueAsString(vurderingWithoutBegrunnelse))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                        }
                     }
                 }
             }

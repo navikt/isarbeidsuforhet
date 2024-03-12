@@ -12,11 +12,11 @@ data class Varsel private constructor(
     val svarfrist: LocalDate,
     val svarfristExpiredPublishedAt: OffsetDateTime?,
 ) {
-    constructor() : this(
+    constructor(svarfristDager: Long) : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         publishedAt = null,
-        svarfrist = LocalDate.now().plusWeeks(3),
+        svarfrist = LocalDate.now().plusDays(svarfristDager),
         svarfristExpiredPublishedAt = null,
     )
 

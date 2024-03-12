@@ -6,6 +6,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.api.model.ForhandsvarselRequestDTO
+import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.domain.VurderingType
@@ -41,6 +42,39 @@ fun Route.registerArbeidsuforhetEndpoints(
             )
             val responseDTO = vurderinger.map { vurdering -> VurderingResponseDTO.createFromVurdering(vurdering) }
             call.respond(HttpStatusCode.OK, responseDTO)
+        }
+
+        post(vurderingPath) {
+            val requestDTO = call.receive<VurderingRequestDTO>()
+            if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
+                throw IllegalArgumentException("Vurdering can't have an empty begrunnelse or document")
+            }
+
+            val personIdent = call.getPersonIdent()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+            val navIdent = call.getNAVIdent()
+            val callId = call.getCallId()
+
+            val newVurdering = if (requestDTO.type == VurderingType.FORHANDSVARSEL) {
+                vurderingService.createForhandsvarsel(
+                    personident = personIdent,
+                    veilederident = navIdent,
+                    begrunnelse = requestDTO.begrunnelse,
+                    document = requestDTO.document,
+                    callId = callId,
+                )
+            } else {
+                vurderingService.createVurdering(
+                    personident = personIdent,
+                    veilederident = navIdent,
+                    type = requestDTO.type,
+                    begrunnelse = requestDTO.begrunnelse,
+                    document = requestDTO.document,
+                    callId = callId,
+                )
+            }
+
+            call.respond(HttpStatusCode.Created, VurderingResponseDTO.createFromVurdering(newVurdering))
         }
 
         post(forhandsvarselPath) {

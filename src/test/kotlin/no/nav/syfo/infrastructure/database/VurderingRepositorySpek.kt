@@ -1,14 +1,17 @@
 package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.ExternalMockEnvironment
-import no.nav.syfo.UserConstants
+import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
+import no.nav.syfo.UserConstants.PDF_OPPFYLT
+import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateForhandsvarselVurdering
+import no.nav.syfo.generator.generateVurdering
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import org.amshove.kluent.internal.assertFailsWith
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.lang.IllegalStateException
 
 class VurderingRepositorySpek : Spek({
     describe(VurderingRepository::class.java.simpleName) {
@@ -21,17 +24,23 @@ class VurderingRepositorySpek : Spek({
         }
 
         describe("createForhandsvarsel") {
-            val vurdering = generateForhandsvarselVurdering()
+            val vurderingForhandsvarsel = generateForhandsvarselVurdering()
 
             it("creates vurdering, varsel and pdf in database") {
                 vurderingRepository.createForhandsvarsel(
-                    pdf = UserConstants.PDF_FORHANDSVARSEL,
-                    vurdering = vurdering,
+                    pdf = PDF_FORHANDSVARSEL,
+                    vurdering = vurderingForhandsvarsel,
                 )
 
-                val pVurdering = vurderingRepository.getVurderinger(vurdering.personident).firstOrNull()
-                pVurdering.shouldNotBeNull()
-                // TODO: Sjekk varsel og pdf lagret når vi har implementert spørringer
+                val vurdering = vurderingRepository.getVurderinger(vurderingForhandsvarsel.personident).firstOrNull()
+                vurdering?.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                vurdering?.journalpostId shouldBeEqualTo null
+                vurdering?.varsel?.uuid shouldBeEqualTo vurderingForhandsvarsel.varsel?.uuid
+
+                val pdf = database.getVurderingPdf(vurdering!!.uuid)?.pdf
+                pdf shouldNotBeEqualTo null
+                pdf?.get(0) shouldBeEqualTo PDF_FORHANDSVARSEL[0]
+                pdf?.get(1) shouldBeEqualTo PDF_FORHANDSVARSEL[1]
             }
 
             it("fails if vurdering is missing a varsel") {
@@ -39,10 +48,47 @@ class VurderingRepositorySpek : Spek({
 
                 assertFailsWith(IllegalStateException::class) {
                     vurderingRepository.createForhandsvarsel(
-                        pdf = UserConstants.PDF_FORHANDSVARSEL,
+                        pdf = PDF_FORHANDSVARSEL,
                         vurdering = vurderingWithoutVarsel,
                     )
                 }
+            }
+        }
+
+        describe("Create vurdering") {
+            val vurderingOppfylt = generateVurdering(type = VurderingType.OPPFYLT)
+
+            it("Creates vurdering OPPFYLT and pdf without varsel") {
+                vurderingRepository.createVurdering(
+                    vurdering = vurderingOppfylt,
+                    pdf = PDF_OPPFYLT,
+                )
+
+                val vurdering = vurderingRepository.getVurderinger(vurderingOppfylt.personident).firstOrNull()
+                vurdering?.type shouldBeEqualTo VurderingType.OPPFYLT
+                vurdering?.journalpostId shouldBeEqualTo null
+                vurdering?.varsel shouldBeEqualTo null
+
+                val pdf = database.getVurderingPdf(vurdering!!.uuid)?.pdf
+                pdf shouldNotBeEqualTo null
+                pdf?.get(0) shouldBeEqualTo PDF_OPPFYLT[0]
+                pdf?.get(1) shouldBeEqualTo PDF_OPPFYLT[1]
+            }
+
+            it("Creates vurdering AVSLAG without pdf and varsel") {
+                val vurderingAvslag = generateVurdering(type = VurderingType.AVSLAG)
+                vurderingRepository.createVurdering(
+                    vurdering = vurderingAvslag.copy(type = VurderingType.AVSLAG),
+                    pdf = null,
+                )
+
+                val vurdering = vurderingRepository.getVurderinger(vurderingAvslag.personident).firstOrNull()
+                vurdering?.type shouldBeEqualTo VurderingType.AVSLAG
+                vurdering?.journalpostId shouldBeEqualTo null
+                vurdering?.varsel shouldBeEqualTo null
+
+                val pdf = database.getVurderingPdf(vurdering!!.uuid)?.pdf
+                pdf shouldBeEqualTo null
             }
         }
     }

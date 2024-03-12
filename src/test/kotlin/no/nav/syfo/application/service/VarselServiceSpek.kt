@@ -25,7 +25,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.concurrent.Future
 
@@ -80,8 +79,7 @@ class VarselServiceSpek : Spek({
         fun createExpiredUnpublishedVarsel(
             publishedAt: OffsetDateTime? = OffsetDateTime.now().minusDays(2)
         ): Varsel {
-            val varselUnpublishedExpiredYesterday =
-                Varsel().copy(svarfrist = LocalDate.now().minusDays(1))
+            val varselUnpublishedExpiredYesterday = Varsel(-1)
             val vurderingWithExpiredVarsel =
                 generateForhandsvarselVurdering().copy(
                     varsel = varselUnpublishedExpiredYesterday,

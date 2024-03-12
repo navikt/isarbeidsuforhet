@@ -79,7 +79,7 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                         FROM vurdering vu2
                         WHERE vu2.personident = vu.personident
                             AND vu2.created_at > v.created_at
-                            AND vu2.type IN ('OPPFYLT')
+                            AND vu2.type = 'OPPFYLT'
                 )
             """
 
