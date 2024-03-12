@@ -1,9 +1,6 @@
 package no.nav.syfo.infrastructure.database.repository
 
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.Varsel
-import no.nav.syfo.domain.Vurdering
+import no.nav.syfo.domain.*
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -31,7 +28,7 @@ data class PVurdering(
         type = type,
         begrunnelse = begrunnelse,
         document = document,
-        journalpostId = journalpostId,
+        journalpostId = journalpostId?.let { JournalpostId(it) },
         varsel = varsel,
         publishedAt = publishedAt,
     )

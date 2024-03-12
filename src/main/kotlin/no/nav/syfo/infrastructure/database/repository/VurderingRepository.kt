@@ -2,10 +2,7 @@ package no.nav.syfo.infrastructure.database.repository
 
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.IVurderingRepository
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.Varsel
-import no.nav.syfo.domain.Vurdering
+import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
@@ -84,7 +81,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
 
     override fun update(vurdering: Vurdering) = database.connection.use { connection ->
         connection.prepareStatement(UPDATE_VURDERING).use {
-            it.setString(1, vurdering.journalpostId)
+            it.setString(1, vurdering.journalpostId?.value)
             it.setObject(2, nowUTC())
             it.setObject(3, vurdering.publishedAt)
             it.setString(4, vurdering.uuid.toString())

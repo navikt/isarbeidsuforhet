@@ -3,6 +3,7 @@ package no.nav.syfo.application.service
 import io.mockk.*
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.database.dropData
@@ -28,7 +29,7 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.util.concurrent.Future
 
-private const val journalpostId = "123"
+private val journalpostId = JournalpostId("123")
 
 class VarselServiceSpek : Spek({
     describe(VarselService::class.java.simpleName) {
@@ -117,7 +118,7 @@ class VarselServiceSpek : Spek({
                 esyfovarselHendelse.arbeidstakerFnr.shouldBeEqualTo(UserConstants.ARBEIDSTAKER_PERSONIDENT.value)
                 val varselData = esyfovarselHendelse.data as VarselData
                 varselData.journalpost?.uuid.shouldBeEqualTo(publishedVarsel.uuid.toString())
-                varselData.journalpost?.id!!.shouldBeEqualTo(journalpostId)
+                varselData.journalpost?.id!!.shouldBeEqualTo(journalpostId.value)
             }
 
             it("publishes nothing when no unpublished varsel") {

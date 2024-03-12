@@ -4,10 +4,7 @@ import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVurderingPdfService
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
-import no.nav.syfo.domain.Vurdering
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.VurderingType
+import no.nav.syfo.domain.*
 
 class VurderingService(
     private val vurderingRepository: IVurderingRepository,
@@ -88,7 +85,7 @@ class VurderingService(
                     vurdering = vurdering,
                 )
                 val journalfortVurdering = vurdering.journalfor(
-                    journalpostId = journalpostId.toString(),
+                    journalpostId = JournalpostId(journalpostId.toString()),
                 )
                 vurderingRepository.update(journalfortVurdering)
 
