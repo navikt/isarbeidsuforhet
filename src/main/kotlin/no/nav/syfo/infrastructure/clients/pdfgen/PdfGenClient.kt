@@ -29,15 +29,15 @@ class PdfGenClient(
             pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$FORHANDSVARSEL_PATH"
         ) ?: throw RuntimeException("Failed to request pdf for forhandsvarsel, callId: $callId")
 
-    suspend fun createOppfyltPdf(
+    suspend fun createVurderingPdf(
         callId: String,
-        oppfyltPdfDTO: VurderingPdfDTO,
+        vurderingPdfDTO: VurderingPdfDTO,
     ): ByteArray =
         getPdf(
             callId = callId,
-            payload = oppfyltPdfDTO,
-            pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$OPPFYLT_PATH"
-        ) ?: throw RuntimeException("Failed to request pdf for vurdering oppfylt, callId: $callId")
+            payload = vurderingPdfDTO,
+            pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$VURDERING_PATH"
+        ) ?: throw RuntimeException("Failed to request pdf for vurdering, callId: $callId")
 
     private suspend inline fun <reified Payload> getPdf(
         callId: String,
@@ -77,7 +77,7 @@ class PdfGenClient(
     companion object {
         private const val API_BASE_PATH = "/api/v1/genpdf/isarbeidsuforhet"
         const val FORHANDSVARSEL_PATH = "/forhandsvarsel-om-avslag-pa-sykepenger"
-        const val OPPFYLT_PATH = "/vurdering-av-arbeidsuforhet"
+        const val VURDERING_PATH = "/vurdering-av-arbeidsuforhet"
 
         private val log = LoggerFactory.getLogger(PdfGenClient::class.java)
     }

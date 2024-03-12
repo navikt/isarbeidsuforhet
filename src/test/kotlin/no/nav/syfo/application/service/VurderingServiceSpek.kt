@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
-import no.nav.syfo.UserConstants.PDF_OPPFYLT
+import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.VurderingType
@@ -99,7 +99,7 @@ class VurderingServiceSpek : Spek({
                 val vurderingOppfylt = generateVurdering(type = VurderingType.OPPFYLT)
                 vurderingRepository.createVurdering(
                     vurdering = vurderingOppfylt,
-                    pdf = PDF_OPPFYLT,
+                    pdf = PDF_VURDERING,
                 )
 
                 val journalforteVurderinger = runBlocking {
@@ -116,6 +116,30 @@ class VurderingServiceSpek : Spek({
                 val pVurdering = database.getVurdering(journalfortVurdering.uuid)
                 pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
                 pVurdering.type shouldBeEqualTo VurderingType.OPPFYLT.name
+                pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+            }
+
+            it("journalfører AVSLAG vurdering") {
+                val vurderingAvslag = generateVurdering(type = VurderingType.AVSLAG)
+                vurderingRepository.createVurdering(
+                    vurdering = vurderingAvslag,
+                    pdf = PDF_VURDERING,
+                )
+
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
+                }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val journalfortVurdering = success.first().getOrThrow()
+                journalfortVurdering.journalpostId?.value shouldBeEqualTo mockedJournalpostId.toString()
+
+                val pVurdering = database.getVurdering(journalfortVurdering.uuid)
+                pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
+                pVurdering.type shouldBeEqualTo VurderingType.AVSLAG.name
                 pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
             }
 
@@ -262,7 +286,7 @@ class VurderingServiceSpek : Spek({
                 svarfristDager = externalMockEnvironment.environment.svarfristDager
             )
             it("lager vurdering OPPFYLT med pdf") {
-                coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_OPPFYLT
+                coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
 
                 val vurdering = runBlocking {
                     vurderingServiceWithMock.createVurdering(
@@ -288,7 +312,9 @@ class VurderingServiceSpek : Spek({
                 }
             }
 
-            it("lager vurdering AVSLAG uten pdf") {
+            it("lager vurdering AVSLAG med pdf") {
+                coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
+
                 val vurdering = runBlocking {
                     vurderingServiceWithMock.createVurdering(
                         personident = ARBEIDSTAKER_PERSONIDENT,
@@ -305,7 +331,12 @@ class VurderingServiceSpek : Spek({
                 vurdering.journalpostId shouldBeEqualTo null
                 vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
 
-                coVerify(exactly = 0) { vurderingPdfServiceMock.createVurderingPdf(any(), any()) }
+                coVerify(exactly = 1) {
+                    vurderingPdfServiceMock.createVurderingPdf(
+                        vurdering = vurdering,
+                        callId = "",
+                    )
+                }
             }
         }
     }
