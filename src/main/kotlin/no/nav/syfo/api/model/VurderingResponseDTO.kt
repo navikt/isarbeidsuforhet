@@ -4,6 +4,7 @@ import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.VurderingType
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -26,7 +27,7 @@ data class VurderingResponseDTO private constructor(
             type = vurdering.type,
             begrunnelse = vurdering.begrunnelse,
             document = vurdering.document,
-            varsel = if (vurdering.varsel == null) null else VarselDTO.createFromVarsel(vurdering.varsel),
+            varsel = vurdering.varsel?.let { VarselDTO.createFromVarsel(it) },
         )
     }
 }
@@ -34,11 +35,13 @@ data class VurderingResponseDTO private constructor(
 data class VarselDTO private constructor(
     val uuid: UUID,
     val createdAt: LocalDateTime,
+    val svarFrist: LocalDate,
 ) {
     companion object {
         fun createFromVarsel(varsel: Varsel) = VarselDTO(
             uuid = varsel.uuid,
             createdAt = varsel.createdAt.toLocalDateTime(),
+            svarFrist = varsel.svarfrist,
         )
     }
 }

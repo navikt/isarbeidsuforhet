@@ -27,8 +27,10 @@ import no.nav.syfo.infrastructure.database.getVurderingPdf
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 import java.util.*
 
 object ArbeidsuforhetEndpointsSpek : Spek({
@@ -158,6 +160,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.document shouldBeEqualTo document
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                            responseDTO.varsel.shouldNotBeNull()
+                            responseDTO.varsel?.svarFrist shouldBeEqualTo LocalDate.now().plusWeeks(3)
                         }
                     }
                     it("Successfully gets empty list of vurderinger") {
