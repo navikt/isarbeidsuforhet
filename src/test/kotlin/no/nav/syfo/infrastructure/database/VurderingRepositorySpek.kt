@@ -27,7 +27,7 @@ class VurderingRepositorySpek : Spek({
             val vurderingForhandsvarsel = generateForhandsvarselVurdering()
 
             it("creates vurdering, varsel and pdf in database") {
-                vurderingRepository.createForhandsvarsel(
+                vurderingRepository.createVurdering(
                     pdf = PDF_FORHANDSVARSEL,
                     vurdering = vurderingForhandsvarsel,
                 )
@@ -44,10 +44,10 @@ class VurderingRepositorySpek : Spek({
             }
 
             it("fails if vurdering is missing a varsel") {
-                val vurderingWithoutVarsel = generateForhandsvarselVurdering().copy(varsel = null)
+                val vurderingWithoutVarsel = vurderingForhandsvarsel.copy(varsel = null)
 
                 assertFailsWith(IllegalStateException::class) {
-                    vurderingRepository.createForhandsvarsel(
+                    vurderingRepository.createVurdering(
                         pdf = PDF_FORHANDSVARSEL,
                         vurdering = vurderingWithoutVarsel,
                     )

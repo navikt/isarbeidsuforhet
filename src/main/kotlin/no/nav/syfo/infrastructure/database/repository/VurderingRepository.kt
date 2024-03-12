@@ -51,31 +51,20 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                     pdf = pdf,
                 )
             }
+            if (vurdering.isForhandsvarsel()) {
+                if (vurdering.varsel == null)
+                    throw IllegalStateException("Vurdering should have Varsel when creating forhåndsvarsel")
+                connection.createVarsel(
+                    vurderingId = pVurdering.id,
+                    varsel = vurdering.varsel,
+                )
+            }
+
             connection.commit()
 
             return pVurdering.toVurdering(
                 varsel = connection.getVarselForVurdering(pVurdering)
             )
-        }
-    }
-
-    override fun createForhandsvarsel(
-        pdf: ByteArray,
-        vurdering: Vurdering,
-    ) {
-        if (vurdering.varsel == null) throw IllegalStateException("Vurdering should have Varsel when creating forhåndsvarsel")
-
-        database.connection.use { connection ->
-            val pVurdering = connection.createVurdering(vurdering)
-            connection.createVarsel(
-                vurderingId = pVurdering.id,
-                varsel = vurdering.varsel,
-            )
-            connection.createPdf(
-                vurderingId = pVurdering.id,
-                pdf = pdf,
-            )
-            connection.commit()
         }
     }
 
