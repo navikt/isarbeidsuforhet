@@ -179,8 +179,8 @@ class VarselServiceSpek : Spek({
             }
 
             it("publishes nothing when expired varsel has not been sent") {
-                val publishedExpiredVarsel = createExpiredUnpublishedVarsel(publishedAt = null)
-                varselRepository.update(publishedExpiredVarsel)
+                val unpublishedExpiredVarsel = createExpiredUnpublishedVarsel(publishedAt = null)
+                varselRepository.update(unpublishedExpiredVarsel)
 
                 val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
