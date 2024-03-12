@@ -67,7 +67,7 @@ spec:
   env:
     - name: KTOR_ENV
       value: "production"
-    - name: SVARFRIST_DAYS
+    - name: SVARFRIST_DAGER
       value: "21"
     - name: ISTILGANGSKONTROLL_CLIENT_ID
       value: "prod-gcp.teamsykefravr.istilgangskontroll"
