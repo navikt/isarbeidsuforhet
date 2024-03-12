@@ -3,7 +3,9 @@ package no.nav.syfo.infrastructure.database
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
 import no.nav.syfo.domain.Varsel
+import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateForhandsvarselVurdering
+import no.nav.syfo.generator.generateVurdering
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import org.amshove.kluent.shouldBeEqualTo
@@ -68,6 +70,24 @@ class VarselRepositorySpek : Spek({
                 val retrievedUnpublishedExpiredVarsler = varselRepository.getUnpublishedExpiredVarsler()
                 retrievedUnpublishedExpiredVarsler.size shouldBeEqualTo 1
                 retrievedUnpublishedExpiredVarsler.first().second.uuid shouldBeEqualTo expiredVarselNotPublished.uuid
+            }
+
+            it("does not retrieve expired varsel if new OPPFYLT vurdering on same person exists") {
+                val vurderinger = listOf(
+                    generateForhandsvarselVurdering().copy(varsel = expiredVarselOneWeekAgo),
+                    generateVurdering(type = VurderingType.OPPFYLT)
+                )
+                vurderingRepository.createForhandsvarsel(
+                    pdf = UserConstants.PDF_FORHANDSVARSEL,
+                    vurdering = vurderinger[0],
+                )
+                vurderingRepository.createVurdering(
+                    pdf = UserConstants.PDF_OPPFYLT,
+                    vurdering = vurderinger[1],
+                )
+
+                val retrievedUnpublishedExpiredVarsler = varselRepository.getUnpublishedExpiredVarsler()
+                retrievedUnpublishedExpiredVarsler.size shouldBeEqualTo 0
             }
         }
     }
