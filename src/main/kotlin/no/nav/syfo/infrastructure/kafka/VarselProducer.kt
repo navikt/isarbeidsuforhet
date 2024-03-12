@@ -1,9 +1,9 @@
 package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.application.IVarselProducer
+import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
-import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
 
 class VarselProducer(
@@ -11,8 +11,12 @@ class VarselProducer(
     private val expiredForhandsvarselProducer: ExpiredForhandsvarselProducer
 ) : IVarselProducer {
 
-    override fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, vurdering: Vurdering): Result<Varsel> {
-        return arbeidstakerForhandsvarselProducer.sendArbeidstakerForhandsvarsel(personIdent = personIdent, vurdering = vurdering)
+    override fun sendArbeidstakerForhandsvarsel(
+        personIdent: PersonIdent,
+        journalpostId: JournalpostId,
+        varsel: Varsel
+    ): Result<Varsel> {
+        return arbeidstakerForhandsvarselProducer.sendArbeidstakerForhandsvarsel(personIdent = personIdent, journalpostId = journalpostId, varsel = varsel)
     }
 
     override fun sendExpiredForhandsvarsel(personIdent: PersonIdent, varsel: Varsel): Result<Varsel> {

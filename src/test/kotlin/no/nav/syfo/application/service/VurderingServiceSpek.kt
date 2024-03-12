@@ -7,6 +7,7 @@ import no.nav.syfo.UserConstants
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.PDF_OPPFYLT
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
@@ -86,7 +87,7 @@ class VurderingServiceSpek : Spek({
                 success.size shouldBeEqualTo 1
 
                 val journalfortVurdering = success.first().getOrThrow()
-                journalfortVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+                journalfortVurdering.journalpostId?.value shouldBeEqualTo mockedJournalpostId.toString()
 
                 val pVurdering = database.getVurdering(journalfortVurdering.uuid)
                 pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
@@ -110,7 +111,7 @@ class VurderingServiceSpek : Spek({
                 success.size shouldBeEqualTo 1
 
                 val journalfortVurdering = success.first().getOrThrow()
-                journalfortVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+                journalfortVurdering.journalpostId?.value shouldBeEqualTo mockedJournalpostId.toString()
 
                 val pVurdering = database.getVurdering(journalfortVurdering.uuid)
                 pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
@@ -133,7 +134,7 @@ class VurderingServiceSpek : Spek({
                     pdf = UserConstants.PDF_FORHANDSVARSEL,
                     vurdering = vurderingForhandsvarsel,
                 )
-                val journalfortVarsel = vurderingForhandsvarsel.journalfor(journalpostId = mockedJournalpostId.toString())
+                val journalfortVarsel = vurderingForhandsvarsel.journalfor(journalpostId = JournalpostId(mockedJournalpostId.toString()))
                 vurderingRepository.update(journalfortVarsel)
 
                 val journalforteVurderinger = runBlocking {
