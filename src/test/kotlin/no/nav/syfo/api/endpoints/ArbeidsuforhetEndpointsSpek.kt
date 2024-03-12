@@ -62,6 +62,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 ),
                 journalforingService = journalforingService,
                 vurderingProducer = mockk<IVurderingProducer>(),
+                svarfristDager = externalMockEnvironment.environment.svarfristDager,
             )
             val validToken = generateJWT(
                 audience = externalMockEnvironment.environment.azure.appClientId,

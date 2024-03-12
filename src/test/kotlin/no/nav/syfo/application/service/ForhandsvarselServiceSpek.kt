@@ -28,6 +28,7 @@ object ForhandsvarselServiceSpek : Spek({
             vurderingPdfService = varselPdfServiceMock,
             journalforingService = journalforingServiceMock,
             vurderingProducer = mockk<IVurderingProducer>(),
+            svarfristDager = 21,
         )
 
         beforeEachTest {

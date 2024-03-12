@@ -47,6 +47,7 @@ class VurderingServiceSpek : Spek({
             vurderingPdfService = vurderingPdfService,
             journalforingService = journalforingService,
             vurderingProducer = vurderingProducer,
+            svarfristDager = externalMockEnvironment.environment.svarfristDager,
         )
 
         beforeEachTest {

@@ -12,4 +12,5 @@ fun generateForhandsvarselVurdering(
     veilederident = UserConstants.VEILEDER_IDENT,
     begrunnelse = begrunnelse,
     document = document,
+    svarfristDager = 21,
 )

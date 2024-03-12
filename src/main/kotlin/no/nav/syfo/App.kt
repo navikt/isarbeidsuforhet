@@ -106,6 +106,7 @@ fun main() {
                     vurderingPdfService = vurderingPdfService,
                     journalforingService = journalforingService,
                     vurderingProducer = vurderingProducer,
+                    svarfristDager = environment.svarfristDager,
                 )
                 val varselRepository = VarselRepository(database = applicationDatabase)
                 val varselProducer = VarselProducer(

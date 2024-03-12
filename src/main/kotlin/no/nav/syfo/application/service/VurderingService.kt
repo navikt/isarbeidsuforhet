@@ -13,6 +13,7 @@ class VurderingService(
     private val vurderingPdfService: IVurderingPdfService,
     private val journalforingService: IJournalforingService,
     private val vurderingProducer: IVurderingProducer,
+    private val svarfristDager: Long,
 ) {
     fun getVurderinger(
         personident: PersonIdent,
@@ -35,6 +36,7 @@ class VurderingService(
             veilederident = veilederident,
             begrunnelse = begrunnelse,
             document = document,
+            svarfristDager = svarfristDager,
         )
 
         vurderingRepository.createForhandsvarsel(
