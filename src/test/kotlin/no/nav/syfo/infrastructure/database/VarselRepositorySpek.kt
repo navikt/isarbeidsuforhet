@@ -25,20 +25,15 @@ class VarselRepositorySpek : Spek({
             }
 
             val expiredVarselOneWeekAgo =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now().minusWeeks(1))
+                Varsel().copy(svarfrist = LocalDate.now().minusWeeks(1))
             val expiredVarselYesterday =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now().minusDays(1))
+                Varsel().copy(svarfrist = LocalDate.now().minusDays(1))
             val expiredVarselToday =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now())
+                Varsel().copy(svarfrist = LocalDate.now())
             val expiredVarselTomorrow =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now().plusDays(1))
+                Varsel().copy(svarfrist = LocalDate.now().plusDays(1))
             val expiredVarselInOneWeek =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now().plusWeeks(1))
+                Varsel().copy(svarfrist = LocalDate.now().plusWeeks(1))
 
             it("retrieves expired varsler") {
                 val vurderinger = listOf(

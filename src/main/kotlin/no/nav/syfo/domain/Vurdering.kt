@@ -15,7 +15,6 @@ data class Vurdering private constructor(
     val document: List<DocumentComponent>,
     val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
-
 ) {
     fun journalfor(journalpostId: String): Vurdering = this.copy(journalpostId = journalpostId)
 
