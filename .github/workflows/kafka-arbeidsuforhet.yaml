@@ -25,6 +25,13 @@ jobs:
           RESOURCE: .nais/kafka/arbeidsuforhet-expired-varsel.yaml
           VARS: .nais/kafka/dev.json
 
+      - name: Deploy arbeidsuforhet-vurdering topic to dev
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/kafka/arbeidsuforhet-vurdering.yaml
+          VARS: .nais/kafka/dev.json
+
   deploy-kafka-arbeidsuforhet-prod:
     name: Deploy Kafka topics to prod-gcp
     needs: deploy-kafka-arbeidsuforhet-dev
@@ -37,4 +44,11 @@ jobs:
         env:
           CLUSTER: prod-gcp
           RESOURCE: .nais/kafka/arbeidsuforhet-expired-varsel.yaml
+          VARS: .nais/kafka/prod.json
+
+      - name: Deploy arbeidsuforhet-vurdering topic to prod
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: .nais/kafka/arbeidsuforhet-vurdering.yaml
           VARS: .nais/kafka/prod.json
