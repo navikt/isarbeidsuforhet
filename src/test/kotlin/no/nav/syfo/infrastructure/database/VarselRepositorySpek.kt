@@ -10,6 +10,7 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 class VarselRepositorySpek : Spek({
     describe(VarselRepositorySpek::class.java.simpleName) {
@@ -48,6 +49,7 @@ class VarselRepositorySpek : Spek({
                         pdf = UserConstants.PDF_FORHANDSVARSEL,
                         vurdering = it,
                     )
+                    varselRepository.update(it.varsel!!.copy(publishedAt = OffsetDateTime.now().minusWeeks(1)))
                 }
 
                 val retrievedExpiredVarsler = varselRepository.getUnpublishedExpiredVarsler()
@@ -66,6 +68,7 @@ class VarselRepositorySpek : Spek({
                         pdf = UserConstants.PDF_FORHANDSVARSEL,
                         vurdering = it,
                     )
+                    varselRepository.update(it.varsel!!.copy(publishedAt = OffsetDateTime.now().minusWeeks(1)))
                 }
 
                 val retrievedUnpublishedExpiredVarsler = varselRepository.getUnpublishedExpiredVarsler()

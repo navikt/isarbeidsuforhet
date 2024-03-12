@@ -26,6 +26,7 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.concurrent.Future
 
 private const val journalpostId = "123"
@@ -76,7 +77,9 @@ class VarselServiceSpek : Spek({
             return unpublishedVarsel
         }
 
-        fun createExpiredUnpublishedVarsel(): Varsel {
+        fun createExpiredUnpublishedVarsel(
+            publishedAt: OffsetDateTime? = OffsetDateTime.now().minusDays(2)
+        ): Varsel {
             val varselUnpublishedExpiredYesterday =
                 Varsel().copy(svarfrist = LocalDate.now().minusDays(1))
             val vurderingWithExpiredVarsel =
@@ -88,7 +91,9 @@ class VarselServiceSpek : Spek({
                 pdf = UserConstants.PDF_FORHANDSVARSEL,
                 vurdering = vurderingWithExpiredVarsel
             )
-            return vurderingWithExpiredVarsel.varsel!!
+            val publishedVarsel = vurderingWithExpiredVarsel.varsel!!.copy(publishedAt = publishedAt)
+            varselRepository.update(publishedVarsel)
+            return publishedVarsel
         }
 
         describe("publishUnpublishedVarsler") {
@@ -165,6 +170,17 @@ class VarselServiceSpek : Spek({
             it("publishes nothing when no expired unpublished varsel") {
                 val publishedExpiredVarsel = createExpiredUnpublishedVarsel().publishSvarfristExpired()
                 varselRepository.update(publishedExpiredVarsel)
+
+                val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 0
+
+                verify(exactly = 0) { mockExpiredForhandsvarselProducer.send(any()) }
+            }
+
+            it("publishes nothing when expired varsel has not been sent") {
+                val unpublishedExpiredVarsel = createExpiredUnpublishedVarsel(publishedAt = null)
+                varselRepository.update(unpublishedExpiredVarsel)
 
                 val (success, failed) = varselService.publishExpiredForhandsvarsler().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0

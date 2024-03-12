@@ -71,11 +71,13 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
                 FROM varsel v
                 INNER JOIN vurdering vu
                 ON v.vurdering_id = vu.id
-                WHERE svarfrist <= NOW() AND svarfrist_expired_published_at IS NULL
+                WHERE svarfrist <= NOW() 
+                    AND v.published_at IS NOT NULL 
+                    AND svarfrist_expired_published_at IS NULL
                     AND NOT EXISTS (
                         SELECT 1
                         FROM vurdering vu2
-                        WHERE vu2.id = v.vurdering_id
+                        WHERE vu2.personident = vu.personident
                             AND vu2.created_at > v.created_at
                             AND vu2.type IN ('OPPFYLT')
                 )
