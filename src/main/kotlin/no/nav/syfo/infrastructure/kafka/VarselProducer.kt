@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.application.IVarselProducer
+import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
@@ -12,7 +13,7 @@ class VarselProducer(
 
     override fun sendArbeidstakerForhandsvarsel(
         personIdent: PersonIdent,
-        journalpostId: String,
+        journalpostId: JournalpostId,
         varsel: Varsel
     ): Result<Varsel> {
         return arbeidstakerForhandsvarselProducer.sendArbeidstakerForhandsvarsel(personIdent = personIdent, journalpostId = journalpostId, varsel = varsel)

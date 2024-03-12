@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.kafka.esyfovarsel
 
+import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.*
@@ -10,14 +11,14 @@ import org.slf4j.LoggerFactory
 
 class ArbeidstakerForhandsvarselProducer(private val kafkaProducer: KafkaProducer<String, EsyfovarselHendelse>) {
 
-    fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, journalpostId: String, varsel: Varsel): Result<Varsel> {
+    fun sendArbeidstakerForhandsvarsel(personIdent: PersonIdent, journalpostId: JournalpostId, varsel: Varsel): Result<Varsel> {
         val varselHendelse = ArbeidstakerHendelse(
             type = HendelseType.SM_ARBEIDSUFORHET_FORHANDSVARSEL,
             arbeidstakerFnr = personIdent.value,
             data = VarselData(
                 journalpost = VarselDataJournalpost(
                     uuid = varsel.uuid.toString(),
-                    id = journalpostId,
+                    id = journalpostId.value,
                 ),
             ),
             orgnummer = null,
