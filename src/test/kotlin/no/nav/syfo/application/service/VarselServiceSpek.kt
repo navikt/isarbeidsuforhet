@@ -138,7 +138,7 @@ class VarselServiceSpek : Spek({
 
                 verify(exactly = 1) { mockEsyfoVarselHendelseProducer.send(any()) }
 
-                val (_, varsel) = varselRepository.getUnpublishedVarsler().first()
+                val (_, _, varsel) = varselRepository.getUnpublishedVarsler().first()
                 varsel.uuid.shouldBeEqualTo(unpublishedVarsel.uuid)
             }
         }

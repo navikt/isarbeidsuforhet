@@ -2,11 +2,9 @@ package no.nav.syfo.application
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
-import no.nav.syfo.domain.Vurdering
 
 interface IVarselRepository {
-    fun getUnpublishedVarsler(): List<Pair<PersonIdent, Varsel>>
+    fun getUnpublishedVarsler(): List<Triple<PersonIdent, String, Varsel>>
     fun getUnpublishedExpiredVarsler(): List<Pair<PersonIdent, Varsel>>
     fun update(varsel: Varsel)
-    fun getVurdering(varsel: Varsel): Vurdering?
 }
