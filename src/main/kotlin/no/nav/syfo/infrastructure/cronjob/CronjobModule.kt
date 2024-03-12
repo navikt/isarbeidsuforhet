@@ -22,8 +22,8 @@ fun launchCronjobs(
     )
     val cronjobs = mutableListOf<Cronjob>()
 
-    val journalforForhandsvarselCronjob = JournalforForhandsvarselCronjob(vurderingService)
-    cronjobs.add(journalforForhandsvarselCronjob)
+    val journalforVurderingerCronjob = JournalforVurderingerCronjob(vurderingService)
+    cronjobs.add(journalforVurderingerCronjob)
 
     val publishForhandsvarselCronjob = PublishForhandsvarselCronjob(varselService = varselService)
     cronjobs.add(publishForhandsvarselCronjob)
