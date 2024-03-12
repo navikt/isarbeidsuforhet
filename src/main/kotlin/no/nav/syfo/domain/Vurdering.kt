@@ -27,6 +27,7 @@ data class Vurdering private constructor(
             veilederident: String,
             begrunnelse: String,
             document: List<DocumentComponent>,
+            svarfristDager: Long,
         ) = Vurdering(
             uuid = UUID.randomUUID(),
             personident = personident,
@@ -36,7 +37,7 @@ data class Vurdering private constructor(
             begrunnelse = begrunnelse,
             document = document,
             journalpostId = null,
-            varsel = Varsel(),
+            varsel = Varsel(svarfristDager),
             publishedAt = null,
         )
 

@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 class PublishForhandsvarselCronjob(
     private val varselService: VarselService,
 ) : Cronjob {
-    override val initialDelayMinutes: Long = 5
+    override val initialDelayMinutes: Long = 4
     override val intervalDelayMinutes: Long = 10
 
     override suspend fun run() {

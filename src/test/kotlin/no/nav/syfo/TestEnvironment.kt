@@ -46,6 +46,7 @@ fun testEnvironment() = Environment(
         ),
     ),
     electorPath = "electorPath",
+    svarfristDager = 21,
 )
 
 fun testAppState() = ApplicationState(

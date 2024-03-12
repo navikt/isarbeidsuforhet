@@ -9,7 +9,6 @@ import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDate
 import java.time.OffsetDateTime
 
 class VarselRepositorySpek : Spek({
@@ -25,21 +24,11 @@ class VarselRepositorySpek : Spek({
                 database.dropData()
             }
 
-            val expiredVarselOneWeekAgo =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now().minusWeeks(1))
-            val expiredVarselYesterday =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now().minusDays(1))
-            val expiredVarselToday =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now())
-            val expiredVarselTomorrow =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now().plusDays(1))
-            val expiredVarselInOneWeek =
-                Varsel()
-                    .copy(svarfrist = LocalDate.now().plusWeeks(1))
+            val expiredVarselOneWeekAgo = Varsel(svarfristDager = -7)
+            val expiredVarselYesterday = Varsel(svarfristDager = -1)
+            val expiredVarselToday = Varsel(svarfristDager = 0)
+            val expiredVarselTomorrow = Varsel(svarfristDager = 1)
+            val expiredVarselInOneWeek = Varsel(svarfristDager = 7)
 
             it("retrieves expired varsler") {
                 val vurderinger = listOf(
