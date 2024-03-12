@@ -10,10 +10,12 @@ class VarselService(
 ) {
     fun publishUnpublishedVarsler(): List<Result<Varsel>> {
         val unpublishedVarsler = varselRepository.getUnpublishedVarsler()
-        return unpublishedVarsler.map { (personident, varsel) ->
-            val vurdering = varselRepository.getVurdering(varsel)
-                ?: throw IllegalStateException("varsel should always have a vurdering")
-            val result = varselProducer.sendArbeidstakerForhandsvarsel(personIdent = personident, vurdering = vurdering)
+        return unpublishedVarsler.map { (personident, journalpostId, varsel) ->
+            val result = varselProducer.sendArbeidstakerForhandsvarsel(
+                personIdent = personident,
+                journalpostId = journalpostId,
+                varsel = varsel,
+            )
             result.map {
                 val publishedVarsel = varsel.publish()
                 varselRepository.update(publishedVarsel)

@@ -4,7 +4,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.service.VurderingService
 import org.slf4j.LoggerFactory
 
-class JournalforForhandsvarselCronjob(
+class JournalforVurderingerCronjob(
     private val vurderingService: VurderingService,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 2
@@ -13,16 +13,16 @@ class JournalforForhandsvarselCronjob(
     override suspend fun run() {
         val (success, failed) = vurderingService.journalforVurderinger().partition { it.isSuccess }
         failed.forEach {
-            log.error("Exception caught while journalforing forhandsvarsel", it.exceptionOrNull())
+            log.error("Exception caught while journalforing vurdering", it.exceptionOrNull())
         }
         log.info(
-            "Completed journalforing forhandsvarsel with result: {}, {}",
+            "Completed journalforing vurdering with result: {}, {}",
             StructuredArguments.keyValue("failed", failed.size),
             StructuredArguments.keyValue("updated", success.size),
         )
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(JournalforForhandsvarselCronjob::class.java)
+        private val log = LoggerFactory.getLogger(JournalforVurderingerCronjob::class.java)
     }
 }

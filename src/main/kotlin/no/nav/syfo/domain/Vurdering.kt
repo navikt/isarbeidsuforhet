@@ -15,7 +15,7 @@ data class Vurdering private constructor(
     val begrunnelse: String,
     val varsel: Varsel?,
     val document: List<DocumentComponent>,
-    val journalpostId: String?,
+    val journalpostId: JournalpostId?,
     val publishedAt: OffsetDateTime?,
 ) {
 
@@ -39,7 +39,7 @@ data class Vurdering private constructor(
         publishedAt = null,
     )
 
-    fun journalfor(journalpostId: String): Vurdering = this.copy(journalpostId = journalpostId)
+    fun journalfor(journalpostId: JournalpostId): Vurdering = this.copy(journalpostId = journalpostId)
 
     fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
 
@@ -76,7 +76,7 @@ data class Vurdering private constructor(
             type: String,
             begrunnelse: String,
             document: List<DocumentComponent>,
-            journalpostId: String?,
+            journalpostId: JournalpostId?,
             varsel: Varsel?,
             publishedAt: OffsetDateTime?,
         ) = Vurdering(
