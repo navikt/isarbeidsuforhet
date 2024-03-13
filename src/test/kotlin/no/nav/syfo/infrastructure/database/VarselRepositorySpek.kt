@@ -82,7 +82,7 @@ class VarselRepositorySpek : Spek({
                     vurdering = vurderinger[0],
                 )
                 vurderingRepository.createVurdering(
-                    pdf = UserConstants.PDF_OPPFYLT,
+                    pdf = UserConstants.PDF_VURDERING,
                     vurdering = vurderinger[1],
                 )
 

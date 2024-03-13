@@ -8,18 +8,16 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
-import no.nav.syfo.UserConstants.PDF_OPPFYLT
+import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.domain.VurderingType
-import no.nav.syfo.domain.getBrevkode
-import no.nav.syfo.domain.getDokumentTittel
-import no.nav.syfo.domain.getJournalpostType
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.generator.generateJournalpostRequest
 import no.nav.syfo.generator.generateVurdering
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostType
 import no.nav.syfo.infrastructure.mock.dokarkivResponse
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
-import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -45,64 +43,74 @@ object JournalforingServiceSpek : Spek({
 
         describe("Journalføring") {
             it("Journalfører OPPFYLT vurdering") {
-                runBlocking {
-                    val journalpostId = journalforingService.journalfor(
+                val journalpostId = runBlocking {
+                    journalforingService.journalfor(
                         personident = ARBEIDSTAKER_PERSONIDENT,
-                        pdf = PDF_OPPFYLT,
+                        pdf = PDF_VURDERING,
                         vurdering = vurderingOppfylt,
                     )
+                }
 
-                    journalpostId shouldBeEqualTo mockedJournalpostId
+                journalpostId shouldBeEqualTo mockedJournalpostId
 
-                    coVerify(exactly = 1) {
-                        dokarkivMock.journalfor(
-                            journalpostRequest = generateJournalpostRequest(
-                                tittel = VurderingType.OPPFYLT.getDokumentTittel(),
-                                brevkodeType = VurderingType.OPPFYLT.getBrevkode(),
-                                pdf = PDF_OPPFYLT,
-                                vurderingUuid = vurderingOppfylt.uuid,
-                                journalpostType = VurderingType.OPPFYLT.getJournalpostType().name,
-                            )
+                coVerify(exactly = 1) {
+                    dokarkivMock.journalfor(
+                        journalpostRequest = generateJournalpostRequest(
+                            tittel = "Vurdering av §8-4 arbeidsuførhet",
+                            brevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING,
+                            pdf = PDF_VURDERING,
+                            vurderingUuid = vurderingOppfylt.uuid,
+                            journalpostType = JournalpostType.NOTAT.name,
                         )
-                    }
+                    )
                 }
             }
 
             it("Journalfører FORHANDSVARSEL vurdering") {
-                runBlocking {
-                    val journalpostId = journalforingService.journalfor(
+                val journalpostId = runBlocking {
+                    journalforingService.journalfor(
                         personident = ARBEIDSTAKER_PERSONIDENT,
                         pdf = PDF_FORHANDSVARSEL,
                         vurdering = vurderingForhandsvarsel,
                     )
+                }
 
-                    journalpostId shouldBeEqualTo mockedJournalpostId
+                journalpostId shouldBeEqualTo mockedJournalpostId
 
-                    coVerify(exactly = 1) {
-                        dokarkivMock.journalfor(
-                            journalpostRequest = generateJournalpostRequest(
-                                tittel = VurderingType.FORHANDSVARSEL.getDokumentTittel(),
-                                brevkodeType = VurderingType.FORHANDSVARSEL.getBrevkode(),
-                                pdf = PDF_FORHANDSVARSEL,
-                                vurderingUuid = vurderingForhandsvarsel.uuid,
-                                journalpostType = VurderingType.FORHANDSVARSEL.getJournalpostType().name,
-                            )
+                coVerify(exactly = 1) {
+                    dokarkivMock.journalfor(
+                        journalpostRequest = generateJournalpostRequest(
+                            tittel = "Forhåndsvarsel om avslag på sykepenger",
+                            brevkodeType = BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL,
+                            pdf = PDF_FORHANDSVARSEL,
+                            vurderingUuid = vurderingForhandsvarsel.uuid,
+                            journalpostType = JournalpostType.UTGAAENDE.name,
                         )
-                    }
+                    )
                 }
             }
 
-            it("Journalfører ikke når AVSLAG vurdering") {
-                runBlocking {
-                    assertFailsWith<IllegalStateException> {
-                        journalforingService.journalfor(
-                            personident = ARBEIDSTAKER_PERSONIDENT,
-                            pdf = byteArrayOf(0x2E, 0x21),
-                            vurdering = vurderingAvslag,
-                        )
-                    }
+            it("Journalfører AVSLAG vurdering") {
+                val journalpostId = runBlocking {
+                    journalforingService.journalfor(
+                        personident = ARBEIDSTAKER_PERSONIDENT,
+                        pdf = PDF_VURDERING,
+                        vurdering = vurderingAvslag,
+                    )
+                }
 
-                    coVerify(exactly = 0) { dokarkivMock.journalfor(any()) }
+                journalpostId shouldBeEqualTo mockedJournalpostId
+
+                coVerify(exactly = 1) {
+                    dokarkivMock.journalfor(
+                        journalpostRequest = generateJournalpostRequest(
+                            tittel = "Vurdering av §8-4 arbeidsuførhet",
+                            brevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING,
+                            pdf = PDF_VURDERING,
+                            vurderingUuid = vurderingAvslag.uuid,
+                            journalpostType = JournalpostType.NOTAT.name,
+                        )
+                    )
                 }
             }
         }

@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
-import no.nav.syfo.UserConstants.PDF_OPPFYLT
+import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.ForhandsvarselRequestDTO
@@ -282,20 +282,22 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.document shouldBeEqualTo vurderingDocumentOppfylt
                             responseDTO.type shouldBeEqualTo VurderingType.OPPFYLT
+                            responseDTO.varsel shouldBeEqualTo null
 
-                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
-                            vurdering?.begrunnelse shouldBeEqualTo begrunnelse
-                            vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-                            vurdering?.type shouldBeEqualTo VurderingType.OPPFYLT
+                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
+                            vurdering.begrunnelse shouldBeEqualTo begrunnelse
+                            vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            vurdering.type shouldBeEqualTo VurderingType.OPPFYLT
+                            vurdering.varsel shouldBeEqualTo null
 
-                            val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
-                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_OPPFYLT.size
-                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_OPPFYLT[0]
-                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_OPPFYLT[1]
+                            val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
+                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
+                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
+                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
                         }
                     }
 
-                    it("Creates new vurdering AVSLAG and does not create PDF") {
+                    it("Creates new vurdering AVSLAG and creates PDF") {
                         val vurderingDocumentAvslag = generateDocumentComponent(
                             fritekst = begrunnelse,
                             header = "Avslag",
@@ -321,14 +323,18 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.document shouldBeEqualTo vurderingDocumentAvslag
                             responseDTO.type shouldBeEqualTo VurderingType.AVSLAG
+                            responseDTO.varsel shouldBeEqualTo null
 
-                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
-                            vurdering?.begrunnelse shouldBeEqualTo begrunnelse
-                            vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-                            vurdering?.type shouldBeEqualTo VurderingType.AVSLAG
+                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
+                            vurdering.begrunnelse shouldBeEqualTo begrunnelse
+                            vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            vurdering.type shouldBeEqualTo VurderingType.AVSLAG
+                            vurdering.varsel shouldBeEqualTo null
 
-                            val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
-                            pVurderingPdf shouldBeEqualTo null
+                            val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
+                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
+                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
+                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
                         }
                     }
                 }
