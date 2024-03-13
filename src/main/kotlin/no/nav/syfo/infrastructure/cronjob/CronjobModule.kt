@@ -32,8 +32,7 @@ fun launchCronjobs(
     cronjobs.add(publishExpiredForhandsvarslerCronjob)
 
     val publishVurderingerCronJob = PublishVurderingerCronjob(vurderingService = vurderingService)
-    // TODO: kommenter inn når dto er validert
-    // cronjobs.add(publishVurderingerCronJob)
+    cronjobs.add(publishVurderingerCronJob)
 
     cronjobs.forEach {
         launchBackgroundTask(
