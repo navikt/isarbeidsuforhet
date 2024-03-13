@@ -25,7 +25,6 @@ data class Vurdering private constructor(
         begrunnelse: String,
         document: List<DocumentComponent>,
         type: VurderingType,
-        varsel: Varsel? = null,
     ) : this(
         uuid = UUID.randomUUID(),
         personident = personident,
@@ -35,7 +34,7 @@ data class Vurdering private constructor(
         begrunnelse = begrunnelse,
         document = document,
         journalpostId = null,
-        varsel = varsel,
+        varsel = if (type == VurderingType.FORHANDSVARSEL) Varsel() else null,
         publishedAt = null,
     )
 
@@ -47,25 +46,9 @@ data class Vurdering private constructor(
         VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, VurderingType.AVSLAG -> true
     }
 
+    fun isForhandsvarsel(): Boolean = type == VurderingType.FORHANDSVARSEL
+
     companion object {
-        fun createForhandsvarsel(
-            personident: PersonIdent,
-            veilederident: String,
-            begrunnelse: String,
-            document: List<DocumentComponent>,
-            svarfristDager: Long,
-        ) = Vurdering(
-            uuid = UUID.randomUUID(),
-            personident = personident,
-            createdAt = nowUTC(),
-            veilederident = veilederident,
-            type = VurderingType.FORHANDSVARSEL,
-            begrunnelse = begrunnelse,
-            document = document,
-            journalpostId = null,
-            varsel = Varsel(svarfristDager),
-            publishedAt = null,
-        )
 
         fun createFromDatabase(
             uuid: UUID,

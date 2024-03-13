@@ -11,6 +11,7 @@ import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 class VarselRepositorySpek : Spek({
@@ -26,11 +27,11 @@ class VarselRepositorySpek : Spek({
                 database.dropData()
             }
 
-            val expiredVarselOneWeekAgo = Varsel(svarfristDager = -7)
-            val expiredVarselYesterday = Varsel(svarfristDager = -1)
-            val expiredVarselToday = Varsel(svarfristDager = 0)
-            val expiredVarselTomorrow = Varsel(svarfristDager = 1)
-            val expiredVarselInOneWeek = Varsel(svarfristDager = 7)
+            val expiredVarselOneWeekAgo = Varsel().copy(svarfrist = LocalDate.now().minusDays(7))
+            val expiredVarselYesterday = Varsel().copy(svarfrist = LocalDate.now().minusDays(1))
+            val expiredVarselToday = Varsel().copy(svarfrist = LocalDate.now())
+            val expiredVarselTomorrow = Varsel().copy(svarfrist = LocalDate.now().plusDays(1))
+            val expiredVarselInOneWeek = Varsel().copy(svarfrist = LocalDate.now().plusDays(7))
 
             it("retrieves expired varsler") {
                 val vurderinger = listOf(
@@ -41,7 +42,7 @@ class VarselRepositorySpek : Spek({
                     generateForhandsvarselVurdering().copy(varsel = expiredVarselInOneWeek),
                 )
                 vurderinger.forEach {
-                    vurderingRepository.createForhandsvarsel(
+                    vurderingRepository.createVurdering(
                         pdf = UserConstants.PDF_FORHANDSVARSEL,
                         vurdering = it,
                     )
@@ -60,7 +61,7 @@ class VarselRepositorySpek : Spek({
                     generateForhandsvarselVurdering().copy(varsel = expiredVarselPublished),
                 )
                 vurderinger.forEach {
-                    vurderingRepository.createForhandsvarsel(
+                    vurderingRepository.createVurdering(
                         pdf = UserConstants.PDF_FORHANDSVARSEL,
                         vurdering = it,
                     )
@@ -77,7 +78,7 @@ class VarselRepositorySpek : Spek({
                     generateForhandsvarselVurdering().copy(varsel = expiredVarselOneWeekAgo),
                     generateVurdering(type = VurderingType.OPPFYLT)
                 )
-                vurderingRepository.createForhandsvarsel(
+                vurderingRepository.createVurdering(
                     pdf = UserConstants.PDF_FORHANDSVARSEL,
                     vurdering = vurderinger[0],
                 )

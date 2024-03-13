@@ -26,7 +26,9 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.UUID
 import java.util.concurrent.Future
 
 private val journalpostId = JournalpostId("123")
@@ -64,15 +66,15 @@ class VarselServiceSpek : Spek({
             database.dropData()
         }
 
-        val vurdering = generateForhandsvarselVurdering()
+        val vurderingForhandsvarsel = generateForhandsvarselVurdering()
 
         fun createUnpublishedVarsel(): Varsel {
-            vurderingRepository.createForhandsvarsel(
+            vurderingRepository.createVurdering(
                 pdf = UserConstants.PDF_FORHANDSVARSEL,
-                vurdering = vurdering,
+                vurdering = vurderingForhandsvarsel,
             )
-            val unpublishedVarsel = vurdering.varsel!!
-            vurderingRepository.update(vurdering.copy(journalpostId = journalpostId))
+            val unpublishedVarsel = vurderingForhandsvarsel.varsel!!
+            vurderingRepository.update(vurderingForhandsvarsel.copy(journalpostId = journalpostId))
 
             return unpublishedVarsel
         }
@@ -80,13 +82,13 @@ class VarselServiceSpek : Spek({
         fun createExpiredUnpublishedVarsel(
             publishedAt: OffsetDateTime? = OffsetDateTime.now().minusDays(2)
         ): Varsel {
-            val varselUnpublishedExpiredYesterday = Varsel(-1)
-            val vurderingWithExpiredVarsel =
-                generateForhandsvarselVurdering().copy(
-                    varsel = varselUnpublishedExpiredYesterday,
-                )
+            val varselUnpublishedExpiredYesterday = Varsel().copy(svarfrist = LocalDate.now().minusDays(1))
+            val vurderingWithExpiredVarsel = vurderingForhandsvarsel.copy(
+                varsel = varselUnpublishedExpiredYesterday,
+                uuid = UUID.randomUUID(),
+            )
 
-            vurderingRepository.createForhandsvarsel(
+            vurderingRepository.createVurdering(
                 pdf = UserConstants.PDF_FORHANDSVARSEL,
                 vurdering = vurderingWithExpiredVarsel
             )

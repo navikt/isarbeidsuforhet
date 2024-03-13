@@ -15,11 +15,6 @@ interface IVurderingRepository {
         pdf: ByteArray?
     ): Vurdering
 
-    fun createForhandsvarsel(
-        pdf: ByteArray,
-        vurdering: Vurdering,
-    )
-
     fun update(vurdering: Vurdering)
 
     fun getNotJournalforteVurderinger(): List<Pair<Vurdering, ByteArray>>

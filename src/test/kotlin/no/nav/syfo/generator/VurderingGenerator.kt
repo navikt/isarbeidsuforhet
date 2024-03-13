@@ -7,12 +7,11 @@ fun generateForhandsvarselVurdering(
     personident: PersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT,
     begrunnelse: String = "En begrunnelse",
     document: List<DocumentComponent> = generateDocumentComponent(begrunnelse),
-) = Vurdering.createForhandsvarsel(
+) = generateVurdering(
     personident = personident,
-    veilederident = UserConstants.VEILEDER_IDENT,
     begrunnelse = begrunnelse,
     document = document,
-    svarfristDager = 21,
+    type = VurderingType.FORHANDSVARSEL,
 )
 
 fun generateVurdering(
