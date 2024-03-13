@@ -166,7 +166,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.document shouldBeEqualTo forhandsvarselDocument
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                             responseDTO.varsel.shouldNotBeNull()
-                            responseDTO.varsel?.svarFrist shouldBeEqualTo LocalDate.now().plusWeeks(3)
+                            responseDTO.varsel?.svarfrist shouldBeEqualTo LocalDate.now().plusWeeks(3)
                         }
                     }
                     it("Successfully gets empty list of vurderinger") {
