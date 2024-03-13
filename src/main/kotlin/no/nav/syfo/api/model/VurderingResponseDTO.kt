@@ -35,13 +35,13 @@ data class VurderingResponseDTO private constructor(
 data class VarselDTO private constructor(
     val uuid: UUID,
     val createdAt: LocalDateTime,
-    val svarFrist: LocalDate,
+    val svarfrist: LocalDate,
 ) {
     companion object {
         fun createFromVarsel(varsel: Varsel) = VarselDTO(
             uuid = varsel.uuid,
             createdAt = varsel.createdAt.toLocalDateTime(),
-            svarFrist = varsel.svarfrist,
+            svarfrist = varsel.svarfrist,
         )
     }
 }
