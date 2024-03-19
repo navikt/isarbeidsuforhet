@@ -26,10 +26,11 @@ class VurderingPdfService(
                 callId = callId,
                 forhandsvarselPdfDTO = vurderingPdfDTO,
             )
-            VurderingType.OPPFYLT, VurderingType.AVSLAG -> pdfGenClient.createVurderingPdf(
+            VurderingType.OPPFYLT -> pdfGenClient.createVurderingPdf(
                 callId = callId,
                 vurderingPdfDTO = vurderingPdfDTO,
             )
+            VurderingType.AVSLAG -> throw IllegalStateException("Should not create PDF for type ${vurdering.type}")
         }
     }
 }

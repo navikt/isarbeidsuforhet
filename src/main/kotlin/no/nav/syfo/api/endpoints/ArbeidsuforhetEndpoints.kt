@@ -44,8 +44,9 @@ fun Route.registerArbeidsuforhetEndpoints(
 
         post(vurderingPath) {
             val requestDTO = call.receive<VurderingRequestDTO>()
-            if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
-                throw IllegalArgumentException("Vurdering can't have an empty begrunnelse or document")
+            if (requestDTO.type != VurderingType.AVSLAG && (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty())
+            ) {
+                throw IllegalArgumentException("Vurdering ${VurderingType.FORHANDSVARSEL} and ${VurderingType.OPPFYLT} can't have an empty begrunnelse or document")
             }
 
             val personIdent = call.getPersonIdent()
@@ -57,7 +58,7 @@ fun Route.registerArbeidsuforhetEndpoints(
             if (existingVurderinger.firstOrNull()?.isForhandsvarsel() == true &&
                 requestDTO.type == VurderingType.FORHANDSVARSEL
             ) {
-                throw IllegalArgumentException("Duplicate FORHANDSVARSEL for given person")
+                throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
             }
 
             val newVurdering = vurderingService.createVurdering(

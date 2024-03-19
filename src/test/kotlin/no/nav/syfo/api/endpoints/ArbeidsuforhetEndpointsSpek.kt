@@ -180,15 +180,11 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
                         }
                     }
-                    it("Creates new vurdering AVSLAG and creates PDF") {
-                        val vurderingDocumentAvslag = generateDocumentComponent(
-                            fritekst = begrunnelse,
-                            header = "Avslag",
-                        )
+                    it("Creates new vurdering AVSLAG and do not create PDF") {
                         val vurderingAvslagRequestDTO = VurderingRequestDTO(
                             type = VurderingType.AVSLAG,
-                            begrunnelse = begrunnelse,
-                            document = vurderingDocumentAvslag,
+                            begrunnelse = "",
+                            document = emptyList(),
                         )
                         with(
                             handleRequest(HttpMethod.Post, urlVurdering) {
@@ -201,23 +197,22 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.Created
 
                             val responseDTO = objectMapper.readValue<VurderingResponseDTO>(response.content!!)
-                            responseDTO.begrunnelse shouldBeEqualTo begrunnelse
+                            responseDTO.begrunnelse shouldBeEqualTo ""
                             responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                            responseDTO.document shouldBeEqualTo vurderingDocumentAvslag
+                            responseDTO.document shouldBeEqualTo emptyList()
                             responseDTO.type shouldBeEqualTo VurderingType.AVSLAG
                             responseDTO.varsel shouldBeEqualTo null
 
                             val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
-                            vurdering.begrunnelse shouldBeEqualTo begrunnelse
+                            vurdering.begrunnelse shouldBeEqualTo ""
+                            vurdering.document shouldBeEqualTo emptyList()
                             vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                             vurdering.type shouldBeEqualTo VurderingType.AVSLAG
                             vurdering.varsel shouldBeEqualTo null
 
                             val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
-                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
-                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
-                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
+                            pVurderingPdf shouldBeEqualTo null
                         }
                     }
                     it("Successfully gets an existing vurdering") {

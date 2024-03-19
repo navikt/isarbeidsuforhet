@@ -144,10 +144,10 @@ class VurderingServiceSpek : Spek({
                 pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
             }
 
-            it("journalfører AVSLAG vurdering") {
+            it("journalfører ikke AVSLAG vurdering") {
                 vurderingRepository.createVurdering(
                     vurdering = vurderingAvslag,
-                    pdf = PDF_VURDERING,
+                    pdf = null,
                 )
 
                 val journalforteVurderinger = runBlocking {
@@ -156,15 +156,11 @@ class VurderingServiceSpek : Spek({
 
                 val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
-                success.size shouldBeEqualTo 1
+                success.size shouldBeEqualTo 0
 
-                val journalfortVurdering = success.first().getOrThrow()
-                journalfortVurdering.journalpostId?.value shouldBeEqualTo mockedJournalpostId.toString()
-
-                val pVurdering = database.getVurdering(journalfortVurdering.uuid)
-                pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
-                pVurdering.type shouldBeEqualTo VurderingType.AVSLAG.name
-                pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+                val pVurdering = database.getVurdering(vurderingAvslag.uuid)
+                pVurdering!!.type shouldBeEqualTo VurderingType.AVSLAG.name
+                pVurdering.journalpostId shouldBeEqualTo null
             }
 
             it("journalfører ikke når ingen vurderinger") {
@@ -224,7 +220,7 @@ class VurderingServiceSpek : Spek({
                 )
                 vurderingRepository.createVurdering(
                     pdf = PDF_VURDERING,
-                    vurdering = vurderingAvslag,
+                    vurdering = vurderingOppfylt,
                 )
 
                 val journalforteVurderinger = runBlocking {
@@ -244,7 +240,7 @@ class VurderingServiceSpek : Spek({
                     vurderingService.createVurdering(
                         personident = ARBEIDSTAKER_PERSONIDENT,
                         veilederident = VEILEDER_IDENT,
-                        type = VurderingType.FORHANDSVARSEL,
+                        type = VurderingType.AVSLAG,
                         begrunnelse = "",
                         document = emptyList(),
                         callId = UUID.randomUUID().toString(),
@@ -299,25 +295,6 @@ class VurderingServiceSpek : Spek({
                 val vurderingList = vurderingRepository.getUnpublishedVurderinger()
                 vurderingList.size shouldBeEqualTo 1
                 vurderingList.first().uuid.shouldBeEqualTo(unpublishedVurdering.uuid)
-            }
-
-            it("journalfører ikke når kun AVSLAG vurderinger") {
-                vurderingRepository.createVurdering(
-                    vurdering = vurderingAvslag,
-                    pdf = null,
-                )
-
-                val journalforteVurderinger = runBlocking {
-                    vurderingService.journalforVurderinger()
-                }
-
-                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
-                failed.size shouldBeEqualTo 0
-                success.size shouldBeEqualTo 0
-
-                val pVurdering = database.getVurdering(vurderingAvslag.uuid)
-                pVurdering?.type shouldBeEqualTo VurderingType.AVSLAG.name
-                pVurdering?.journalpostId shouldBeEqualTo null
             }
         }
 
@@ -379,7 +356,7 @@ class VurderingServiceSpek : Spek({
                     }
                 }
 
-                it("lager vurdering AVSLAG med pdf") {
+                it("lager vurdering AVSLAG uten pdf") {
                     coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
 
                     val vurdering = runBlocking {
@@ -387,18 +364,20 @@ class VurderingServiceSpek : Spek({
                             personident = ARBEIDSTAKER_PERSONIDENT,
                             veilederident = VEILEDER_IDENT,
                             type = VurderingType.AVSLAG,
-                            begrunnelse = begrunnelse,
-                            document = document,
+                            begrunnelse = "",
+                            document = emptyList(),
                             callId = "",
                         )
                     }
 
                     vurdering.varsel shouldBeEqualTo null
+                    vurdering.begrunnelse shouldBeEqualTo ""
+                    vurdering.document shouldBeEqualTo emptyList()
                     vurdering.type shouldBeEqualTo VurderingType.AVSLAG
                     vurdering.journalpostId shouldBeEqualTo null
                     vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
 
-                    coVerify(exactly = 1) {
+                    coVerify(exactly = 0) {
                         vurderingPdfServiceMock.createVurderingPdf(
                             vurdering = vurdering,
                             callId = "",
