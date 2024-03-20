@@ -18,6 +18,7 @@ import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostType
 import no.nav.syfo.infrastructure.mock.dokarkivResponse
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
+import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -91,26 +92,14 @@ object JournalforingServiceSpek : Spek({
             }
 
             it("Journalfører AVSLAG vurdering") {
-                val journalpostId = runBlocking {
-                    journalforingService.journalfor(
-                        personident = ARBEIDSTAKER_PERSONIDENT,
-                        pdf = PDF_VURDERING,
-                        vurdering = vurderingAvslag,
-                    )
-                }
-
-                journalpostId shouldBeEqualTo mockedJournalpostId
-
-                coVerify(exactly = 1) {
-                    dokarkivMock.journalfor(
-                        journalpostRequest = generateJournalpostRequest(
-                            tittel = "Vurdering av §8-4 arbeidsuførhet",
-                            brevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING,
+                runBlocking {
+                    assertFailsWith<IllegalStateException> {
+                        journalforingService.journalfor(
+                            personident = ARBEIDSTAKER_PERSONIDENT,
                             pdf = PDF_VURDERING,
-                            vurderingUuid = vurderingAvslag.uuid,
-                            journalpostType = JournalpostType.NOTAT.name,
+                            vurdering = vurderingAvslag,
                         )
-                    )
+                    }
                 }
             }
         }

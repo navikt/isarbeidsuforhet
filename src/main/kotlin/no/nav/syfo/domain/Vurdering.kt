@@ -43,7 +43,8 @@ data class Vurdering private constructor(
     fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
 
     fun shouldJournalfores(): Boolean = when (type) {
-        VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, VurderingType.AVSLAG -> true
+        VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT -> true
+        VurderingType.AVSLAG -> false
     }
 
     fun isForhandsvarsel(): Boolean = type == VurderingType.FORHANDSVARSEL
@@ -82,15 +83,18 @@ enum class VurderingType {
 
 fun VurderingType.getDokumentTittel(): String = when (this) {
     VurderingType.FORHANDSVARSEL -> "Forhåndsvarsel om avslag på sykepenger"
-    VurderingType.OPPFYLT, VurderingType.AVSLAG -> "Vurdering av §8-4 arbeidsuførhet"
+    VurderingType.OPPFYLT -> "Vurdering av §8-4 arbeidsuførhet"
+    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
 }
 
 fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
     VurderingType.FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
-    VurderingType.OPPFYLT, VurderingType.AVSLAG -> BrevkodeType.ARBEIDSUFORHET_VURDERING
+    VurderingType.OPPFYLT -> BrevkodeType.ARBEIDSUFORHET_VURDERING
+    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
 }
 
 fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
     VurderingType.FORHANDSVARSEL -> JournalpostType.UTGAAENDE
-    VurderingType.OPPFYLT, VurderingType.AVSLAG -> JournalpostType.NOTAT
+    VurderingType.OPPFYLT -> JournalpostType.NOTAT
+    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
 }
