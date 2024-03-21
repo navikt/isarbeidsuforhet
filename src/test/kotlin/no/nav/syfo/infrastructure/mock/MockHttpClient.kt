@@ -15,7 +15,7 @@ fun mockHttpClient(environment: Environment) = HttpClient(MockEngine) {
                 requestUrl.startsWith("/${environment.clients.istilgangskontroll.baseUrl}") -> tilgangskontrollResponse(
                     request
                 )
-                requestUrl.startsWith("/${environment.clients.isarbeidsuforhetpdfgen.baseUrl}") -> pdfGenClientMockResponse(
+                requestUrl.startsWith("/${environment.clients.ispdfgen.baseUrl}") -> pdfGenClientMockResponse(
                     request
                 )
                 requestUrl.startsWith("/${environment.clients.pdl.baseUrl}") -> pdlMockResponse(request)

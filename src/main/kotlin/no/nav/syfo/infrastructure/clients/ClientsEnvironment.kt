@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.clients
 
 data class ClientsEnvironment(
     val istilgangskontroll: ClientEnvironment,
-    val isarbeidsuforhetpdfgen: OpenClientEnvironment,
+    val ispdfgen: OpenClientEnvironment,
     val pdl: ClientEnvironment,
     val dokarkiv: ClientEnvironment,
 )
