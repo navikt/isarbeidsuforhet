@@ -37,8 +37,8 @@ fun testEnvironment() = Environment(
             baseUrl = "pdlUrl",
             clientId = "pdlClientId",
         ),
-        isarbeidsuforhetpdfgen = OpenClientEnvironment(
-            baseUrl = "isarbeidsuforhetpdfgenUrl",
+        ispdfgen = OpenClientEnvironment(
+            baseUrl = "ispdfgenUrl",
         ),
         dokarkiv = ClientEnvironment(
             baseUrl = "dokarkivUrl",

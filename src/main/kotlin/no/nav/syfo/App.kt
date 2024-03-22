@@ -57,7 +57,7 @@ fun main() {
         )
 
     val pdfGenClient = PdfGenClient(
-        pdfGenBaseUrl = environment.clients.isarbeidsuforhetpdfgen.baseUrl,
+        pdfGenBaseUrl = environment.clients.ispdfgen.baseUrl,
     )
 
     val journalforingService = JournalforingService(

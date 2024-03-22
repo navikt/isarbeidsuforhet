@@ -39,8 +39,8 @@ data class Environment(
                 baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
                 clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID")
             ),
-            isarbeidsuforhetpdfgen = OpenClientEnvironment(
-                baseUrl = "http://isarbeidsuforhetpdfgen"
+            ispdfgen = OpenClientEnvironment(
+                baseUrl = "http://ispdfgen"
             ),
             pdl = ClientEnvironment(
                 baseUrl = getEnvVar("PDL_URL"),
