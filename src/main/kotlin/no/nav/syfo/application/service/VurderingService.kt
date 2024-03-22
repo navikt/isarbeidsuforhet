@@ -11,7 +11,6 @@ class VurderingService(
     private val vurderingPdfService: IVurderingPdfService,
     private val journalforingService: IJournalforingService,
     private val vurderingProducer: IVurderingProducer,
-    private val svarfristDager: Long,
 ) {
     fun getVurderinger(
         personident: PersonIdent,
@@ -42,33 +41,6 @@ class VurderingService(
         vurderingRepository.createVurdering(
             vurdering = vurdering,
             pdf = pdf,
-        )
-
-        return vurdering
-    }
-
-    suspend fun createForhandsvarsel(
-        personident: PersonIdent,
-        veilederident: String,
-        begrunnelse: String,
-        document: List<DocumentComponent>,
-        callId: String,
-    ): Vurdering {
-        val vurdering = Vurdering.createForhandsvarsel(
-            personident = personident,
-            veilederident = veilederident,
-            begrunnelse = begrunnelse,
-            document = document,
-            svarfristDager = svarfristDager,
-        )
-        val pdf = vurderingPdfService.createVurderingPdf(
-            vurdering = vurdering,
-            callId = callId,
-        )
-
-        vurderingRepository.createForhandsvarsel(
-            pdf = pdf,
-            vurdering = vurdering,
         )
 
         return vurdering

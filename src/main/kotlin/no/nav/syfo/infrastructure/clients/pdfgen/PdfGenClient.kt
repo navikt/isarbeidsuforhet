@@ -29,15 +29,15 @@ class PdfGenClient(
             pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$FORHANDSVARSEL_PATH"
         ) ?: throw RuntimeException("Failed to request pdf for forhandsvarsel, callId: $callId")
 
-    suspend fun createOppfyltPdf(
+    suspend fun createVurderingPdf(
         callId: String,
-        oppfyltPdfDTO: VurderingPdfDTO,
+        vurderingPdfDTO: VurderingPdfDTO,
     ): ByteArray =
         getPdf(
             callId = callId,
-            payload = oppfyltPdfDTO,
-            pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$OPPFYLT_PATH"
-        ) ?: throw RuntimeException("Failed to request pdf for vurdering oppfylt, callId: $callId")
+            payload = vurderingPdfDTO,
+            pdfUrl = "$pdfGenBaseUrl$API_BASE_PATH$VURDERING_PATH"
+        ) ?: throw RuntimeException("Failed to request pdf for vurdering, callId: $callId")
 
     private suspend inline fun <reified Payload> getPdf(
         callId: String,
@@ -65,7 +65,7 @@ class PdfGenClient(
         callId: String,
     ): ByteArray? {
         log.error(
-            "Error while requesting PDF from isarbeidsuforhetpdfgen with {}, {}, {}",
+            "Error while requesting PDF from ispdfgen with {}, {}, {}",
             StructuredArguments.keyValue("statusCode", response.status.value.toString()),
             StructuredArguments.keyValue("url", url),
             StructuredArguments.keyValue("callId", callId),
@@ -77,24 +77,24 @@ class PdfGenClient(
     companion object {
         private const val API_BASE_PATH = "/api/v1/genpdf/isarbeidsuforhet"
         const val FORHANDSVARSEL_PATH = "/forhandsvarsel-om-avslag-pa-sykepenger"
-        const val OPPFYLT_PATH = "/vurdering-av-arbeidsuforhet"
+        const val VURDERING_PATH = "/vurdering-av-arbeidsuforhet"
 
         private val log = LoggerFactory.getLogger(PdfGenClient::class.java)
     }
 }
 
 private object Metrics {
-    private const val CALL_PDFGEN_BASE = "${METRICS_NS}_call_isarbeidsuforhetpdfgen"
+    private const val CALL_PDFGEN_BASE = "${METRICS_NS}_call_ispdfgen"
 
     private const val CALL_PDFGEN_SUCCESS = "${CALL_PDFGEN_BASE}_success_count"
     private const val CALL_PDFGEN_FAIL = "${CALL_PDFGEN_BASE}_fail_count"
 
     val COUNT_CALL_PDFGEN_SUCCESS: Counter = Counter
         .builder(CALL_PDFGEN_SUCCESS)
-        .description("Counts the number of successful calls to isarbeidsuforhetpdfgen")
+        .description("Counts the number of successful calls to ispdfgen")
         .register(METRICS_REGISTRY)
     val COUNT_CALL_PDFGEN_FAIL: Counter = Counter
         .builder(CALL_PDFGEN_FAIL)
-        .description("Counts the number of failed calls to isarbeidsuforhetpdfgen")
+        .description("Counts the number of failed calls to ispdfgen")
         .register(METRICS_REGISTRY)
 }

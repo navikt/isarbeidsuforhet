@@ -2,7 +2,7 @@ package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
-import no.nav.syfo.UserConstants.PDF_OPPFYLT
+import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.generator.generateVurdering
@@ -27,7 +27,7 @@ class VurderingRepositorySpek : Spek({
             val vurderingForhandsvarsel = generateForhandsvarselVurdering()
 
             it("creates vurdering, varsel and pdf in database") {
-                vurderingRepository.createForhandsvarsel(
+                vurderingRepository.createVurdering(
                     pdf = PDF_FORHANDSVARSEL,
                     vurdering = vurderingForhandsvarsel,
                 )
@@ -44,10 +44,10 @@ class VurderingRepositorySpek : Spek({
             }
 
             it("fails if vurdering is missing a varsel") {
-                val vurderingWithoutVarsel = generateForhandsvarselVurdering().copy(varsel = null)
+                val vurderingWithoutVarsel = vurderingForhandsvarsel.copy(varsel = null)
 
                 assertFailsWith(IllegalStateException::class) {
-                    vurderingRepository.createForhandsvarsel(
+                    vurderingRepository.createVurdering(
                         pdf = PDF_FORHANDSVARSEL,
                         vurdering = vurderingWithoutVarsel,
                     )
@@ -61,7 +61,7 @@ class VurderingRepositorySpek : Spek({
             it("Creates vurdering OPPFYLT and pdf without varsel") {
                 vurderingRepository.createVurdering(
                     vurdering = vurderingOppfylt,
-                    pdf = PDF_OPPFYLT,
+                    pdf = PDF_VURDERING,
                 )
 
                 val vurdering = vurderingRepository.getVurderinger(vurderingOppfylt.personident).firstOrNull()
@@ -71,15 +71,15 @@ class VurderingRepositorySpek : Spek({
 
                 val pdf = database.getVurderingPdf(vurdering!!.uuid)?.pdf
                 pdf shouldNotBeEqualTo null
-                pdf?.get(0) shouldBeEqualTo PDF_OPPFYLT[0]
-                pdf?.get(1) shouldBeEqualTo PDF_OPPFYLT[1]
+                pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
+                pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
             }
 
-            it("Creates vurdering AVSLAG without pdf and varsel") {
+            it("Creates vurdering AVSLAG and pdf without varsel") {
                 val vurderingAvslag = generateVurdering(type = VurderingType.AVSLAG)
                 vurderingRepository.createVurdering(
-                    vurdering = vurderingAvslag.copy(type = VurderingType.AVSLAG),
-                    pdf = null,
+                    vurdering = vurderingAvslag,
+                    pdf = PDF_VURDERING,
                 )
 
                 val vurdering = vurderingRepository.getVurderinger(vurderingAvslag.personident).firstOrNull()
@@ -88,7 +88,9 @@ class VurderingRepositorySpek : Spek({
                 vurdering?.varsel shouldBeEqualTo null
 
                 val pdf = database.getVurderingPdf(vurdering!!.uuid)?.pdf
-                pdf shouldBeEqualTo null
+                pdf shouldNotBeEqualTo null
+                pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
+                pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
             }
         }
     }

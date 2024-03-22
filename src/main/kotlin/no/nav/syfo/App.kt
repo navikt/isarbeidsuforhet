@@ -8,6 +8,7 @@ import io.ktor.server.netty.*
 import no.nav.syfo.api.apiModule
 import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.application.service.VarselService
+import no.nav.syfo.domain.Varsel
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.cronjob.launchCronjobs
 import no.nav.syfo.infrastructure.database.applicationDatabase
@@ -56,7 +57,7 @@ fun main() {
         )
 
     val pdfGenClient = PdfGenClient(
-        pdfGenBaseUrl = environment.clients.isarbeidsuforhetpdfgen.baseUrl,
+        pdfGenBaseUrl = environment.clients.ispdfgen.baseUrl,
     )
 
     val journalforingService = JournalforingService(
@@ -85,6 +86,7 @@ fun main() {
         )
     )
 
+    Varsel.svarfristDager = environment.svarfristDager
     lateinit var vurderingService: VurderingService
     lateinit var varselService: VarselService
 
@@ -106,7 +108,6 @@ fun main() {
                     vurderingPdfService = vurderingPdfService,
                     journalforingService = journalforingService,
                     vurderingProducer = vurderingProducer,
-                    svarfristDager = environment.svarfristDager,
                 )
                 val varselRepository = VarselRepository(database = applicationDatabase)
                 val varselProducer = VarselProducer(

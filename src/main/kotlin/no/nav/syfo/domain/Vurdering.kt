@@ -25,7 +25,6 @@ data class Vurdering private constructor(
         begrunnelse: String,
         document: List<DocumentComponent>,
         type: VurderingType,
-        varsel: Varsel? = null,
     ) : this(
         uuid = UUID.randomUUID(),
         personident = personident,
@@ -35,7 +34,7 @@ data class Vurdering private constructor(
         begrunnelse = begrunnelse,
         document = document,
         journalpostId = null,
-        varsel = varsel,
+        varsel = if (type == VurderingType.FORHANDSVARSEL) Varsel() else null,
         publishedAt = null,
     )
 
@@ -44,29 +43,13 @@ data class Vurdering private constructor(
     fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
 
     fun shouldJournalfores(): Boolean = when (type) {
-        VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, -> true
+        VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT -> true
         VurderingType.AVSLAG -> false
     }
 
+    fun isForhandsvarsel(): Boolean = type == VurderingType.FORHANDSVARSEL
+
     companion object {
-        fun createForhandsvarsel(
-            personident: PersonIdent,
-            veilederident: String,
-            begrunnelse: String,
-            document: List<DocumentComponent>,
-            svarfristDager: Long,
-        ) = Vurdering(
-            uuid = UUID.randomUUID(),
-            personident = personident,
-            createdAt = nowUTC(),
-            veilederident = veilederident,
-            type = VurderingType.FORHANDSVARSEL,
-            begrunnelse = begrunnelse,
-            document = document,
-            journalpostId = null,
-            varsel = Varsel(svarfristDager),
-            publishedAt = null,
-        )
 
         fun createFromDatabase(
             uuid: UUID,
@@ -101,17 +84,17 @@ enum class VurderingType {
 fun VurderingType.getDokumentTittel(): String = when (this) {
     VurderingType.FORHANDSVARSEL -> "Forhåndsvarsel om avslag på sykepenger"
     VurderingType.OPPFYLT -> "Vurdering av §8-4 arbeidsuførhet"
-    else -> throw IllegalStateException("Should not create journalføring-pdf for type $this")
+    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
 }
 
 fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
     VurderingType.FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
     VurderingType.OPPFYLT -> BrevkodeType.ARBEIDSUFORHET_VURDERING
-    else -> throw IllegalStateException("Should not create journalføring-pdf for type $this")
+    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
 }
 
 fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
     VurderingType.FORHANDSVARSEL -> JournalpostType.UTGAAENDE
     VurderingType.OPPFYLT -> JournalpostType.NOTAT
-    else -> throw IllegalStateException("Should not create journalføring-pdf for type $this")
+    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
 }

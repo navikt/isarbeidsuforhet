@@ -9,10 +9,9 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
-import no.nav.syfo.UserConstants.PDF_OPPFYLT
+import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.api.*
-import no.nav.syfo.api.model.ForhandsvarselRequestDTO
 import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.application.IVurderingProducer
@@ -29,6 +28,7 @@ import no.nav.syfo.infrastructure.database.getVurderingPdf
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -38,7 +38,6 @@ import java.util.*
 object ArbeidsuforhetEndpointsSpek : Spek({
 
     val objectMapper: ObjectMapper = configuredJacksonMapper()
-    val urlForhandsvarsel = "$arbeidsuforhetApiBasePath/$forhandsvarselPath"
     val urlVurdering = "$arbeidsuforhetApiBasePath/$vurderingPath"
 
     describe(ArbeidsuforhetEndpointsSpek::class.java.simpleName) {
@@ -64,7 +63,6 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 ),
                 journalforingService = journalforingService,
                 vurderingProducer = mockk<IVurderingProducer>(),
-                svarfristDager = externalMockEnvironment.environment.svarfristDager,
             )
             val validToken = generateJWT(
                 audience = externalMockEnvironment.environment.azure.appClientId,
@@ -76,21 +74,40 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 fritekst = begrunnelse,
                 header = "Forhåndsvarsel"
             )
-            val forhandsvarselRequestDTO = ForhandsvarselRequestDTO(
+            val vurderingDocumentOppfylt = generateDocumentComponent(
+                fritekst = begrunnelse,
+                header = "Oppfylt",
+            )
+            val forhandsvarselRequestDTO = VurderingRequestDTO(
+                type = VurderingType.FORHANDSVARSEL,
                 begrunnelse = begrunnelse,
                 document = forhandsvarselDocument,
             )
+            val vurderingRequestDTO = VurderingRequestDTO(
+                type = VurderingType.OPPFYLT,
+                begrunnelse = begrunnelse,
+                document = vurderingDocumentOppfylt,
+            )
             val personIdent = ARBEIDSTAKER_PERSONIDENT.value
+
+            suspend fun createForhandsvarsel() = vurderingService.createVurdering(
+                personident = PersonIdent(personIdent),
+                veilederident = VEILEDER_IDENT,
+                begrunnelse = begrunnelse,
+                document = forhandsvarselDocument,
+                callId = UUID.randomUUID().toString(),
+                type = VurderingType.FORHANDSVARSEL,
+            )
 
             beforeEachTest {
                 database.dropData()
             }
 
-            describe("Forhåndsvarsel") {
+            describe("Vurdering") {
                 describe("Happy path") {
-                    it("Successfully creates a new forhandsvarsel") {
+                    it("Successfully creates a new forhandsvarsel with varsel and pdf") {
                         with(
-                            handleRequest(HttpMethod.Post, urlForhandsvarsel) {
+                            handleRequest(HttpMethod.Post, urlVurdering) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, personIdent)
@@ -105,30 +122,24 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.document shouldBeEqualTo forhandsvarselDocument
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                            responseDTO.varsel shouldNotBeEqualTo null
 
-                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
-                            vurdering?.begrunnelse shouldBeEqualTo begrunnelse
-                            vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-                            vurdering?.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
+                            vurdering.begrunnelse shouldBeEqualTo begrunnelse
+                            vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            vurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                            vurdering.varsel shouldNotBeEqualTo null
 
-                            val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
+                            val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
                             pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_FORHANDSVARSEL.size
                             pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_FORHANDSVARSEL[0]
                             pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_FORHANDSVARSEL[1]
                         }
                     }
                     it("Does not allow duplicate forhandsvarsel") {
-                        runBlocking {
-                            vurderingService.createForhandsvarsel(
-                                personident = PersonIdent(personIdent),
-                                veilederident = VEILEDER_IDENT,
-                                begrunnelse = begrunnelse,
-                                document = forhandsvarselDocument,
-                                callId = UUID.randomUUID().toString(),
-                            )
-                        }
+                        runBlocking { createForhandsvarsel() }
                         with(
-                            handleRequest(HttpMethod.Post, urlForhandsvarsel) {
+                            handleRequest(HttpMethod.Post, urlVurdering) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                                 addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                                 addHeader(NAV_PERSONIDENT_HEADER, personIdent)
@@ -138,16 +149,74 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                         }
                     }
-                    it("Successfully gets an existing vurdering") {
-                        runBlocking {
-                            vurderingService.createForhandsvarsel(
-                                personident = PersonIdent(personIdent),
-                                veilederident = VEILEDER_IDENT,
-                                begrunnelse = begrunnelse,
-                                document = forhandsvarselDocument,
-                                callId = UUID.randomUUID().toString(),
-                            )
+                    it("Creates new vurdering OPPFYLT and creates PDF") {
+                        with(
+                            handleRequest(HttpMethod.Post, urlVurdering) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
+                                setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Created
+
+                            val responseDTO = objectMapper.readValue<VurderingResponseDTO>(response.content!!)
+                            responseDTO.begrunnelse shouldBeEqualTo begrunnelse
+                            responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
+                            responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
+                            responseDTO.document shouldBeEqualTo vurderingDocumentOppfylt
+                            responseDTO.type shouldBeEqualTo VurderingType.OPPFYLT
+                            responseDTO.varsel shouldBeEqualTo null
+
+                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
+                            vurdering.begrunnelse shouldBeEqualTo begrunnelse
+                            vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            vurdering.type shouldBeEqualTo VurderingType.OPPFYLT
+                            vurdering.varsel shouldBeEqualTo null
+
+                            val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
+                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
+                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
+                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
                         }
+                    }
+                    it("Creates new vurdering AVSLAG and do not create PDF") {
+                        val vurderingAvslagRequestDTO = VurderingRequestDTO(
+                            type = VurderingType.AVSLAG,
+                            begrunnelse = "",
+                            document = emptyList(),
+                        )
+                        with(
+                            handleRequest(HttpMethod.Post, urlVurdering) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
+                                setBody(objectMapper.writeValueAsString(vurderingAvslagRequestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.Created
+
+                            val responseDTO = objectMapper.readValue<VurderingResponseDTO>(response.content!!)
+                            responseDTO.begrunnelse shouldBeEqualTo ""
+                            responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
+                            responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
+                            responseDTO.document shouldBeEqualTo emptyList()
+                            responseDTO.type shouldBeEqualTo VurderingType.AVSLAG
+                            responseDTO.varsel shouldBeEqualTo null
+
+                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
+                            vurdering.begrunnelse shouldBeEqualTo ""
+                            vurdering.document shouldBeEqualTo emptyList()
+                            vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            vurdering.type shouldBeEqualTo VurderingType.AVSLAG
+                            vurdering.varsel shouldBeEqualTo null
+
+                            val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
+                            pVurderingPdf shouldBeEqualTo null
+                        }
+                    }
+                    it("Successfully gets an existing vurdering") {
+                        runBlocking { createForhandsvarsel() }
                         with(
                             handleRequest(HttpMethod.Get, urlVurdering) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
@@ -166,7 +235,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.document shouldBeEqualTo forhandsvarselDocument
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                             responseDTO.varsel.shouldNotBeNull()
-                            responseDTO.varsel?.svarFrist shouldBeEqualTo LocalDate.now().plusWeeks(3)
+                            responseDTO.varsel?.svarfrist shouldBeEqualTo LocalDate.now().plusWeeks(3)
                         }
                     }
                     it("Successfully gets empty list of vurderinger") {
@@ -184,20 +253,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Successfully gets multiple vurderinger") {
                         runBlocking {
-                            vurderingService.createForhandsvarsel(
-                                personident = PersonIdent(personIdent),
-                                veilederident = VEILEDER_IDENT,
-                                begrunnelse = begrunnelse,
-                                document = forhandsvarselDocument,
-                                callId = UUID.randomUUID().toString(),
-                            )
-                            vurderingService.createForhandsvarsel(
-                                personident = PersonIdent(personIdent),
-                                veilederident = VEILEDER_IDENT,
-                                begrunnelse = begrunnelse,
-                                document = forhandsvarselDocument,
-                                callId = UUID.randomUUID().toString(),
-                            )
+                            createForhandsvarsel()
+                            createForhandsvarsel()
                         }
                         with(
                             handleRequest(HttpMethod.Get, urlVurdering) {
@@ -209,126 +266,6 @@ object ArbeidsuforhetEndpointsSpek : Spek({
 
                             val responseDTOs = objectMapper.readValue<List<VurderingResponseDTO>>(response.content!!)
                             responseDTOs.size shouldBeEqualTo 2
-                        }
-                    }
-                }
-
-                describe("Unhappy path") {
-                    it("Fails if document is empty") {
-                        val forhandsvarselWithoutDocument = forhandsvarselRequestDTO.copy(document = emptyList())
-                        with(
-                            handleRequest(HttpMethod.Post, urlForhandsvarsel) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
-                                setBody(objectMapper.writeValueAsString(forhandsvarselWithoutDocument))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                        }
-                    }
-                    it("Returns status Unauthorized if no token is supplied") {
-                        testMissingToken(urlForhandsvarsel, HttpMethod.Post)
-                    }
-                    it("Returns status Forbidden if denied access to person") {
-                        testDeniedPersonAccess(urlForhandsvarsel, validToken, HttpMethod.Post)
-                    }
-                    it("Returns status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
-                        testMissingPersonIdent(urlForhandsvarsel, validToken, HttpMethod.Post)
-                    }
-                    it("Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
-                        testInvalidPersonIdent(urlForhandsvarsel, validToken, HttpMethod.Post)
-                    }
-                    it("Returns status Unauthorized if no token is supplied") {
-                        testMissingToken(urlVurdering, HttpMethod.Get)
-                    }
-                    it("Returns status Forbidden if denied access to person") {
-                        testDeniedPersonAccess(urlVurdering, validToken, HttpMethod.Get)
-                    }
-                    it("Returns status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
-                        testMissingPersonIdent(urlVurdering, validToken, HttpMethod.Get)
-                    }
-                    it("Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
-                        testInvalidPersonIdent(urlVurdering, validToken, HttpMethod.Get)
-                    }
-                }
-            }
-
-            describe("Vurdering") {
-                val vurderingDocumentOppfylt = generateDocumentComponent(
-                    fritekst = begrunnelse,
-                    header = "Oppfylt",
-                )
-                val vurderingRequestDTO = VurderingRequestDTO(
-                    type = VurderingType.OPPFYLT,
-                    begrunnelse = begrunnelse,
-                    document = vurderingDocumentOppfylt,
-                )
-                describe("Happy path") {
-                    it("Creates new vurdering OPPFYLT and creates PDF") {
-                        with(
-                            handleRequest(HttpMethod.Post, urlVurdering) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
-                                setBody(objectMapper.writeValueAsString(vurderingRequestDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Created
-
-                            val responseDTO = objectMapper.readValue<VurderingResponseDTO>(response.content!!)
-                            responseDTO.begrunnelse shouldBeEqualTo begrunnelse
-                            responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
-                            responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                            responseDTO.document shouldBeEqualTo vurderingDocumentOppfylt
-                            responseDTO.type shouldBeEqualTo VurderingType.OPPFYLT
-
-                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
-                            vurdering?.begrunnelse shouldBeEqualTo begrunnelse
-                            vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-                            vurdering?.type shouldBeEqualTo VurderingType.OPPFYLT
-
-                            val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
-                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_OPPFYLT.size
-                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_OPPFYLT[0]
-                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_OPPFYLT[1]
-                        }
-                    }
-
-                    it("Creates new vurdering AVSLAG and does not create PDF") {
-                        val vurderingDocumentAvslag = generateDocumentComponent(
-                            fritekst = begrunnelse,
-                            header = "Avslag",
-                        )
-                        val vurderingAvslagRequestDTO = VurderingRequestDTO(
-                            type = VurderingType.AVSLAG,
-                            begrunnelse = begrunnelse,
-                            document = vurderingDocumentAvslag,
-                        )
-                        with(
-                            handleRequest(HttpMethod.Post, urlVurdering) {
-                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                                addHeader(NAV_PERSONIDENT_HEADER, personIdent)
-                                setBody(objectMapper.writeValueAsString(vurderingAvslagRequestDTO))
-                            }
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Created
-
-                            val responseDTO = objectMapper.readValue<VurderingResponseDTO>(response.content!!)
-                            responseDTO.begrunnelse shouldBeEqualTo begrunnelse
-                            responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
-                            responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                            responseDTO.document shouldBeEqualTo vurderingDocumentAvslag
-                            responseDTO.type shouldBeEqualTo VurderingType.AVSLAG
-
-                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).firstOrNull()
-                            vurdering?.begrunnelse shouldBeEqualTo begrunnelse
-                            vurdering?.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-                            vurdering?.type shouldBeEqualTo VurderingType.AVSLAG
-
-                            val pVurderingPdf = database.getVurderingPdf(vurdering!!.uuid)
-                            pVurderingPdf shouldBeEqualTo null
                         }
                     }
                 }
@@ -347,7 +284,6 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                         }
                     }
-
                     it("Throws error when begrunnelse is empty") {
                         val vurderingWithoutBegrunnelse = vurderingRequestDTO.copy(begrunnelse = "")
                         with(
@@ -360,6 +296,18 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         ) {
                             response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                         }
+                    }
+                    it("Returns status Unauthorized if no token is supplied") {
+                        testMissingToken(urlVurdering, HttpMethod.Get)
+                    }
+                    it("Returns status Forbidden if denied access to person") {
+                        testDeniedPersonAccess(urlVurdering, validToken, HttpMethod.Get)
+                    }
+                    it("Returns status BadRequest if no $NAV_PERSONIDENT_HEADER is supplied") {
+                        testMissingPersonIdent(urlVurdering, validToken, HttpMethod.Get)
+                    }
+                    it("Returns status BadRequest if $NAV_PERSONIDENT_HEADER with invalid PersonIdent is supplied") {
+                        testInvalidPersonIdent(urlVurdering, validToken, HttpMethod.Get)
                     }
                 }
             }

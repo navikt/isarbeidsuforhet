@@ -34,7 +34,6 @@ fun Application.testApiModule(
         vurderingPdfService = varselPdfService,
         journalforingService = journalforingService,
         vurderingProducer = mockk<IVurderingProducer>(),
-        svarfristDager = externalMockEnvironment.environment.svarfristDager,
     )
 
     this.apiModule(
