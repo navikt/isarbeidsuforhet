@@ -1,10 +1,13 @@
 package no.nav.syfo.application.service
 
+import io.micrometer.core.instrument.Counter
 import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVurderingPdfService
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.*
+import no.nav.syfo.infrastructure.metric.METRICS_NS
+import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 
 class VurderingService(
     private val vurderingRepository: IVurderingRepository,
@@ -43,6 +46,12 @@ class VurderingService(
             pdf = pdf,
         )
 
+        when (type) {
+            VurderingType.FORHANDSVARSEL -> Metrics.COUNT_VURDERING_FORHANDSVARSEL.increment()
+            VurderingType.OPPFYLT -> Metrics.COUNT_VURDERING_OPPFYLT.increment()
+            VurderingType.AVSLAG -> Metrics.COUNT_VURDERING_AVSLAG.increment()
+        }
+
         return vurdering
     }
 
@@ -76,5 +85,28 @@ class VurderingService(
                 publishedVurdering
             }
         }
+    }
+}
+
+private class Metrics {
+    companion object {
+        const val VURDERING_BASE = "${METRICS_NS}_vurdering"
+
+        const val VURDERING_FORHANDSVARSEL = "${VURDERING_BASE}_forhandsvarsel"
+        const val VURDERING_OPPFYLT = "${VURDERING_BASE}_oppfylt"
+        const val VURDERING_AVSLAG = "${VURDERING_BASE}_avslag"
+
+        val COUNT_VURDERING_FORHANDSVARSEL: Counter = Counter
+            .builder(VURDERING_FORHANDSVARSEL)
+            .description("Counts the number of successful forhandsvarsel vurderinger")
+            .register(METRICS_REGISTRY)
+        val COUNT_VURDERING_OPPFYLT: Counter = Counter
+            .builder(VURDERING_OPPFYLT)
+            .description("Counts the number of successful oppfylt vurderinger")
+            .register(METRICS_REGISTRY)
+        val COUNT_VURDERING_AVSLAG: Counter = Counter
+            .builder(VURDERING_AVSLAG)
+            .description("Counts the number of successful avslag vurderinger")
+            .register(METRICS_REGISTRY)
     }
 }
