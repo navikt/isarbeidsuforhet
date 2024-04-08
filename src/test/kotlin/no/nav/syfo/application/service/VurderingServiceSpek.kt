@@ -35,6 +35,7 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.lang.RuntimeException
+import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Future
 
@@ -243,6 +244,7 @@ class VurderingServiceSpek : Spek({
                         type = VurderingType.AVSLAG,
                         begrunnelse = "",
                         document = emptyList(),
+                        gjelderFom = LocalDate.now().plusDays(1),
                         callId = UUID.randomUUID().toString(),
                     )
                 }
@@ -263,6 +265,11 @@ class VurderingServiceSpek : Spek({
                 persistedVurdering.uuid shouldBeEqualTo unpublishedVurdering.uuid
                 persistedVurdering.publishedAt.shouldNotBeNull()
                 vurderingRepository.getUnpublishedVurderinger().shouldBeEmpty()
+
+                val vurderingRecord = producerRecordSlot.captured.value()
+                vurderingRecord.uuid shouldBeEqualTo unpublishedVurdering.uuid
+                vurderingRecord.type shouldBeEqualTo unpublishedVurdering.type
+                vurderingRecord.gjelderFom shouldBeEqualTo unpublishedVurdering.gjelderFom
             }
 
             it("publishes nothing when no unpublished vurdering") {
@@ -280,6 +287,7 @@ class VurderingServiceSpek : Spek({
                         type = VurderingType.FORHANDSVARSEL,
                         begrunnelse = "",
                         document = emptyList(),
+                        gjelderFom = null,
                         callId = UUID.randomUUID().toString(),
                     )
                 }
@@ -312,6 +320,7 @@ class VurderingServiceSpek : Spek({
                             type = VurderingType.FORHANDSVARSEL,
                             begrunnelse = begrunnelse,
                             document = document,
+                            gjelderFom = null,
                             callId = "",
                         )
                     }
@@ -339,6 +348,7 @@ class VurderingServiceSpek : Spek({
                             type = VurderingType.OPPFYLT,
                             begrunnelse = begrunnelse,
                             document = document,
+                            gjelderFom = null,
                             callId = "",
                         )
                     }
@@ -358,6 +368,7 @@ class VurderingServiceSpek : Spek({
 
                 it("lager vurdering AVSLAG uten pdf") {
                     coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
+                    val avslagGjelderFom = LocalDate.now().plusDays(1)
 
                     val vurdering = runBlocking {
                         vurderingServiceWithMocks.createVurdering(
@@ -366,6 +377,7 @@ class VurderingServiceSpek : Spek({
                             type = VurderingType.AVSLAG,
                             begrunnelse = "",
                             document = emptyList(),
+                            gjelderFom = avslagGjelderFom,
                             callId = "",
                         )
                     }
@@ -376,6 +388,7 @@ class VurderingServiceSpek : Spek({
                     vurdering.type shouldBeEqualTo VurderingType.AVSLAG
                     vurdering.journalpostId shouldBeEqualTo null
                     vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                    vurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
 
                     coVerify(exactly = 0) {
                         vurderingPdfServiceMock.createVurderingPdf(
@@ -401,6 +414,7 @@ class VurderingServiceSpek : Spek({
                                 type = VurderingType.FORHANDSVARSEL,
                                 begrunnelse = begrunnelse,
                                 document = document,
+                                gjelderFom = null,
                                 callId = "",
                             )
                         }
@@ -427,6 +441,7 @@ class VurderingServiceSpek : Spek({
                                 type = VurderingType.FORHANDSVARSEL,
                                 begrunnelse = begrunnelse,
                                 document = document,
+                                gjelderFom = null,
                                 callId = "",
                             )
                         }

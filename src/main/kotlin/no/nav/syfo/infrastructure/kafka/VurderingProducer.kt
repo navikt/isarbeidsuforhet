@@ -6,6 +6,7 @@ import no.nav.syfo.domain.VurderingType
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -40,6 +41,7 @@ data class VurderingRecord(
     val veilederident: String,
     val type: VurderingType,
     val begrunnelse: String,
+    val gjelderFom: LocalDate?,
 ) {
     companion object {
         fun fromVurdering(vurdering: Vurdering): VurderingRecord =
@@ -50,6 +52,7 @@ data class VurderingRecord(
                 veilederident = vurdering.veilederident,
                 type = vurdering.type,
                 begrunnelse = vurdering.begrunnelse,
+                gjelderFom = vurdering.gjelderFom,
             )
     }
 }

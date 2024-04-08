@@ -8,6 +8,7 @@ import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
+import java.time.LocalDate
 
 class VurderingService(
     private val vurderingRepository: IVurderingRepository,
@@ -25,6 +26,7 @@ class VurderingService(
         type: VurderingType,
         begrunnelse: String,
         document: List<DocumentComponent>,
+        gjelderFom: LocalDate?,
         callId: String,
     ): Vurdering {
         val vurdering = Vurdering(
@@ -33,6 +35,7 @@ class VurderingService(
             begrunnelse = begrunnelse,
             document = document,
             type = type,
+            gjelderFom = gjelderFom,
         )
         val pdf = if (vurdering.shouldJournalfores()) {
             vurderingPdfService.createVurderingPdf(
