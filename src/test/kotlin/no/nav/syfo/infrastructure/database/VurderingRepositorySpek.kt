@@ -7,7 +7,6 @@ import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.generator.generateVurdering
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
@@ -35,23 +34,12 @@ class VurderingRepositorySpek : Spek({
                 val vurdering = vurderingRepository.getVurderinger(vurderingForhandsvarsel.personident).firstOrNull()
                 vurdering?.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                 vurdering?.journalpostId shouldBeEqualTo null
-                vurdering?.varsel?.uuid shouldBeEqualTo vurderingForhandsvarsel.varsel?.uuid
+                vurdering?.varsel?.uuid shouldBeEqualTo vurderingForhandsvarsel.varsel.uuid
 
                 val pdf = database.getVurderingPdf(vurdering!!.uuid)?.pdf
                 pdf shouldNotBeEqualTo null
                 pdf?.get(0) shouldBeEqualTo PDF_FORHANDSVARSEL[0]
                 pdf?.get(1) shouldBeEqualTo PDF_FORHANDSVARSEL[1]
-            }
-
-            it("fails if vurdering is missing a varsel") {
-                val vurderingWithoutVarsel = vurderingForhandsvarsel.copy(varsel = null)
-
-                assertFailsWith(IllegalStateException::class) {
-                    vurderingRepository.createVurdering(
-                        pdf = PDF_FORHANDSVARSEL,
-                        vurdering = vurderingWithoutVarsel,
-                    )
-                }
             }
         }
 
