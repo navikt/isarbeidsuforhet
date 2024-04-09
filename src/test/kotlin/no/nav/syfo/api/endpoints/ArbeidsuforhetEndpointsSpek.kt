@@ -28,6 +28,7 @@ import no.nav.syfo.infrastructure.database.getVurderingPdf
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.util.configuredJacksonMapper
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.amshove.kluent.shouldNotBeNull
 import org.spekframework.spek2.Spek
@@ -93,10 +94,11 @@ object ArbeidsuforhetEndpointsSpek : Spek({
             suspend fun createForhandsvarsel() = vurderingService.createVurdering(
                 personident = PersonIdent(personIdent),
                 veilederident = VEILEDER_IDENT,
+                type = VurderingType.FORHANDSVARSEL,
                 begrunnelse = begrunnelse,
                 document = forhandsvarselDocument,
+                gjelderFom = null,
                 callId = UUID.randomUUID().toString(),
-                type = VurderingType.FORHANDSVARSEL,
             )
 
             beforeEachTest {
@@ -122,12 +124,14 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.document shouldBeEqualTo forhandsvarselDocument
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                            responseDTO.gjelderFom.shouldBeNull()
                             responseDTO.varsel shouldNotBeEqualTo null
 
                             val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
                             vurdering.begrunnelse shouldBeEqualTo begrunnelse
                             vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                             vurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                            vurdering.gjelderFom.shouldBeNull()
                             vurdering.varsel shouldNotBeEqualTo null
 
                             val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
@@ -166,12 +170,14 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.document shouldBeEqualTo vurderingDocumentOppfylt
                             responseDTO.type shouldBeEqualTo VurderingType.OPPFYLT
+                            responseDTO.gjelderFom.shouldBeNull()
                             responseDTO.varsel shouldBeEqualTo null
 
                             val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
                             vurdering.begrunnelse shouldBeEqualTo begrunnelse
                             vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                             vurdering.type shouldBeEqualTo VurderingType.OPPFYLT
+                            vurdering.gjelderFom.shouldBeNull()
                             vurdering.varsel shouldBeEqualTo null
 
                             val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
@@ -181,10 +187,12 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         }
                     }
                     it("Creates new vurdering AVSLAG and do not create PDF") {
+                        val avslagGjelderFom = LocalDate.now().plusDays(1)
                         val vurderingAvslagRequestDTO = VurderingRequestDTO(
                             type = VurderingType.AVSLAG,
                             begrunnelse = "",
                             document = emptyList(),
+                            gjelderFom = avslagGjelderFom
                         )
                         with(
                             handleRequest(HttpMethod.Post, urlVurdering) {
@@ -202,6 +210,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                             responseDTO.document shouldBeEqualTo emptyList()
                             responseDTO.type shouldBeEqualTo VurderingType.AVSLAG
+                            responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                             responseDTO.varsel shouldBeEqualTo null
 
                             val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
@@ -209,6 +218,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             vurdering.document shouldBeEqualTo emptyList()
                             vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                             vurdering.type shouldBeEqualTo VurderingType.AVSLAG
+                            vurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
                             vurdering.varsel shouldBeEqualTo null
 
                             val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)

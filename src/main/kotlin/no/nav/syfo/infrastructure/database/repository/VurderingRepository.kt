@@ -109,6 +109,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setString(6, vurdering.type.name)
             it.setString(7, vurdering.begrunnelse)
             it.setObject(8, mapper.writeValueAsString(vurdering.document))
+            it.setObject(9, vurdering.gjelderFom)
             it.executeQuery().toList { toPVurdering() }
         }.single()
     }
@@ -169,8 +170,9 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 veilederident,
                 type,
                 begrunnelse,
-                document
-            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb)
+                document,
+                gjelder_fom
+            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?)
             RETURNING *
             """
 
@@ -230,6 +232,7 @@ internal fun ResultSet.toPVurdering(): PVurdering = PVurdering(
     ),
     journalpostId = getString("journalpost_id"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
+    gjelderFom = getDate("gjelder_fom")?.toLocalDate(),
 )
 
 internal fun ResultSet.toPVurderingPdf(): PVurderingPdf = PVurderingPdf(

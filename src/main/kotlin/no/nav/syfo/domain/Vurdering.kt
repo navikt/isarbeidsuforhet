@@ -3,6 +3,7 @@ package no.nav.syfo.domain
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostType
 import no.nav.syfo.util.nowUTC
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -17,6 +18,7 @@ data class Vurdering private constructor(
     val document: List<DocumentComponent>,
     val journalpostId: JournalpostId?,
     val publishedAt: OffsetDateTime?,
+    val gjelderFom: LocalDate?,
 ) {
 
     constructor(
@@ -25,6 +27,7 @@ data class Vurdering private constructor(
         begrunnelse: String,
         document: List<DocumentComponent>,
         type: VurderingType,
+        gjelderFom: LocalDate? = null,
     ) : this(
         uuid = UUID.randomUUID(),
         personident = personident,
@@ -36,6 +39,7 @@ data class Vurdering private constructor(
         journalpostId = null,
         varsel = if (type == VurderingType.FORHANDSVARSEL) Varsel() else null,
         publishedAt = null,
+        gjelderFom = gjelderFom,
     )
 
     fun journalfor(journalpostId: JournalpostId): Vurdering = this.copy(journalpostId = journalpostId)
@@ -62,6 +66,7 @@ data class Vurdering private constructor(
             journalpostId: JournalpostId?,
             varsel: Varsel?,
             publishedAt: OffsetDateTime?,
+            gjelderFom: LocalDate?,
         ) = Vurdering(
             uuid = uuid,
             personident = personident,
@@ -73,6 +78,7 @@ data class Vurdering private constructor(
             journalpostId = journalpostId,
             varsel = varsel,
             publishedAt = publishedAt,
+            gjelderFom = gjelderFom,
         )
     }
 }

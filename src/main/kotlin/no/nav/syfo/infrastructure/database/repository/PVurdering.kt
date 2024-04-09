@@ -1,6 +1,7 @@
 package no.nav.syfo.infrastructure.database.repository
 
 import no.nav.syfo.domain.*
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -16,6 +17,7 @@ data class PVurdering(
     val document: List<DocumentComponent>,
     val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
+    val gjelderFom: LocalDate?,
 ) {
 
     fun toVurdering(
@@ -31,5 +33,6 @@ data class PVurdering(
         journalpostId = journalpostId?.let { JournalpostId(it) },
         varsel = varsel,
         publishedAt = publishedAt,
+        gjelderFom = gjelderFom,
     )
 }
