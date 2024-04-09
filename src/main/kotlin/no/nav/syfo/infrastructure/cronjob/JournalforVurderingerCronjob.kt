@@ -8,7 +8,7 @@ class JournalforVurderingerCronjob(
     private val vurderingService: VurderingService,
 ) : Cronjob {
     override val initialDelayMinutes: Long = 2
-    override val intervalDelayMinutes: Long = 10
+    override val intervalDelayMinutes: Long = 1
 
     override suspend fun run() {
         val (success, failed) = vurderingService.journalforVurderinger().partition { it.isSuccess }
