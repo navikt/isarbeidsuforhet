@@ -30,7 +30,18 @@ class CronjobRunner(
             val job = launch {
                 try {
                     if (leaderPodClient.isLeader()) {
-                        cronjob.run()
+                        val results = cronjob.run()
+                        val (success, failed) = results.partition { it.isSuccess }
+                        failed.forEach {
+                            log.error("Exception caught in $cronjobName", it.exceptionOrNull())
+                        }
+                        if (failed.size + success.size > 0) {
+                            log.info(
+                                "Completed $cronjobName with result: {}, {}",
+                                StructuredArguments.keyValue("failed", failed.size),
+                                StructuredArguments.keyValue("updated", success.size),
+                            )
+                        }
                     } else {
                         log.info("Pod is not leader and will not perform cronjob")
                     }
