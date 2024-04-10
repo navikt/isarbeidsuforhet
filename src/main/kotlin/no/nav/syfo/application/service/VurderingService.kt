@@ -47,7 +47,7 @@ class VurderingService(
                 veilederident = veilederident,
                 begrunnelse = begrunnelse,
                 document = document,
-                gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type")
+                gjelderFom = gjelderFom ?: LocalDate.now() // TODO: throw IllegalArgumentException("gjelderFom is required for $type") når frontend er klar
             )
         }
 
