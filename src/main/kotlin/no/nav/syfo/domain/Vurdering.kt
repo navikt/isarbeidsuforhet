@@ -20,8 +20,18 @@ sealed interface Vurdering {
     val publishedAt: OffsetDateTime?
     val gjelderFom: LocalDate?
 
-    fun journalfor(journalpostId: JournalpostId): Vurdering
-    fun publish(): Vurdering
+    fun journalfor(journalpostId: JournalpostId): Vurdering = when (this) {
+        is Forhandsvarsel -> this.copy(journalpostId = journalpostId)
+        is Oppfylt -> this.copy(journalpostId = journalpostId)
+        is Avslag -> this.copy(journalpostId = journalpostId)
+    }
+
+    fun publish(): Vurdering = when (this) {
+        is Forhandsvarsel -> this.copy(publishedAt = nowUTC())
+        is Oppfylt -> this.copy(publishedAt = nowUTC())
+        is Avslag -> this.copy(publishedAt = nowUTC())
+    }
+
     fun shouldJournalfores(): Boolean = true
 
     data class Forhandsvarsel internal constructor(
@@ -51,9 +61,6 @@ sealed interface Vurdering {
             journalpostId = null,
             publishedAt = null,
         )
-
-        override fun journalfor(journalpostId: JournalpostId): Vurdering = this.copy(journalpostId = journalpostId)
-        override fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
     }
 
     data class Oppfylt internal constructor(
@@ -83,9 +90,6 @@ sealed interface Vurdering {
             journalpostId = null,
             publishedAt = null,
         )
-
-        override fun journalfor(journalpostId: JournalpostId): Vurdering = this.copy(journalpostId = journalpostId)
-        override fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
     }
 
     data class Avslag internal constructor(
@@ -118,8 +122,6 @@ sealed interface Vurdering {
             publishedAt = null,
         )
 
-        override fun journalfor(journalpostId: JournalpostId): Vurdering = this.copy(journalpostId = journalpostId)
-        override fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
         override fun shouldJournalfores(): Boolean = false
     }
 
