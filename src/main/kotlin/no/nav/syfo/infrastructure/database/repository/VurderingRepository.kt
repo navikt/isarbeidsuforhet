@@ -51,9 +51,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                     pdf = pdf,
                 )
             }
-            if (vurdering.isForhandsvarsel()) {
-                if (vurdering.varsel == null)
-                    throw IllegalStateException("Vurdering should have Varsel when creating forhåndsvarsel")
+            if (vurdering is Vurdering.Forhandsvarsel) {
                 connection.createVarsel(
                     vurderingId = pVurdering.id,
                     varsel = vurdering.varsel,
@@ -92,7 +90,14 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                             getBytes("pdf"),
                         )
                     }
-            }.map { (pVurdering, pdf) -> Pair(pVurdering.toVurdering(null), pdf) }
+            }.map { (pVurdering, pdf) ->
+                Pair(
+                    pVurdering.toVurdering(
+                        varsel = connection.getVarselForVurdering(pVurdering)
+                    ),
+                    pdf
+                )
+            }
         }
 
     private fun Connection.createVurdering(

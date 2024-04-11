@@ -7,58 +7,129 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-data class Vurdering private constructor(
-    val uuid: UUID,
-    val personident: PersonIdent,
-    val createdAt: OffsetDateTime,
-    val veilederident: String,
-    val type: VurderingType,
-    val begrunnelse: String,
-    val varsel: Varsel?,
-    val document: List<DocumentComponent>,
-    val journalpostId: JournalpostId?,
-    val publishedAt: OffsetDateTime?,
-    val gjelderFom: LocalDate?,
-) {
+sealed interface Vurdering {
+    val uuid: UUID
+    val personident: PersonIdent
+    val createdAt: OffsetDateTime
+    val veilederident: String
+    val type: VurderingType
+    val begrunnelse: String
+    val varsel: Varsel?
+    val document: List<DocumentComponent>
+    val journalpostId: JournalpostId?
+    val publishedAt: OffsetDateTime?
+    val gjelderFom: LocalDate?
 
-    constructor(
-        personident: PersonIdent,
-        veilederident: String,
-        begrunnelse: String,
-        document: List<DocumentComponent>,
-        type: VurderingType,
-        gjelderFom: LocalDate? = null,
-    ) : this(
-        uuid = UUID.randomUUID(),
-        personident = personident,
-        createdAt = nowUTC(),
-        veilederident = veilederident,
-        type = type,
-        begrunnelse = begrunnelse,
-        document = document,
-        journalpostId = null,
-        varsel = if (type == VurderingType.FORHANDSVARSEL) Varsel() else null,
-        publishedAt = null,
-        gjelderFom = gjelderFom,
-    )
-
-    fun journalfor(journalpostId: JournalpostId): Vurdering = this.copy(journalpostId = journalpostId)
-
-    fun publish(): Vurdering = this.copy(publishedAt = nowUTC())
-
-    fun shouldJournalfores(): Boolean = when (type) {
-        VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT -> true
-        VurderingType.AVSLAG -> false
+    fun journalfor(journalpostId: JournalpostId): Vurdering = when (this) {
+        is Forhandsvarsel -> this.copy(journalpostId = journalpostId)
+        is Oppfylt -> this.copy(journalpostId = journalpostId)
+        is Avslag -> this.copy(journalpostId = journalpostId)
     }
 
-    fun isForhandsvarsel(): Boolean = type == VurderingType.FORHANDSVARSEL
+    fun publish(): Vurdering = when (this) {
+        is Forhandsvarsel -> this.copy(publishedAt = nowUTC())
+        is Oppfylt -> this.copy(publishedAt = nowUTC())
+        is Avslag -> this.copy(publishedAt = nowUTC())
+    }
+
+    fun shouldJournalfores(): Boolean = true
+
+    data class Forhandsvarsel internal constructor(
+        override val uuid: UUID = UUID.randomUUID(),
+        override val createdAt: OffsetDateTime = nowUTC(),
+        override val personident: PersonIdent,
+        override val veilederident: String,
+        override val begrunnelse: String,
+        override val document: List<DocumentComponent>,
+        override val varsel: Varsel = Varsel(),
+        override val journalpostId: JournalpostId? = null,
+        override val publishedAt: OffsetDateTime? = null
+    ) : Vurdering {
+        override val type: VurderingType = VurderingType.FORHANDSVARSEL
+        override val gjelderFom: LocalDate? = null
+
+        constructor(
+            personident: PersonIdent,
+            veilederident: String,
+            begrunnelse: String,
+            document: List<DocumentComponent>,
+        ) : this(
+            personident = personident,
+            veilederident = veilederident,
+            begrunnelse = begrunnelse,
+            document = document,
+            journalpostId = null,
+            publishedAt = null,
+        )
+    }
+
+    data class Oppfylt internal constructor(
+        override val uuid: UUID = UUID.randomUUID(),
+        override val createdAt: OffsetDateTime = nowUTC(),
+        override val personident: PersonIdent,
+        override val veilederident: String,
+        override val begrunnelse: String,
+        override val document: List<DocumentComponent>,
+        override val journalpostId: JournalpostId? = null,
+        override val publishedAt: OffsetDateTime? = null
+    ) : Vurdering {
+        override val type: VurderingType = VurderingType.OPPFYLT
+        override val varsel: Varsel? = null
+        override val gjelderFom: LocalDate? = null
+
+        constructor(
+            personident: PersonIdent,
+            veilederident: String,
+            begrunnelse: String,
+            document: List<DocumentComponent>,
+        ) : this(
+            personident = personident,
+            veilederident = veilederident,
+            begrunnelse = begrunnelse,
+            document = document,
+            journalpostId = null,
+            publishedAt = null,
+        )
+    }
+
+    data class Avslag internal constructor(
+        override val uuid: UUID = UUID.randomUUID(),
+        override val createdAt: OffsetDateTime = nowUTC(),
+        override val personident: PersonIdent,
+        override val veilederident: String,
+        override val begrunnelse: String,
+        override val document: List<DocumentComponent>,
+        override val gjelderFom: LocalDate,
+        override val journalpostId: JournalpostId? = null,
+        override val publishedAt: OffsetDateTime? = null
+    ) : Vurdering {
+        override val type: VurderingType = VurderingType.AVSLAG
+        override val varsel: Varsel? = null
+
+        constructor(
+            personident: PersonIdent,
+            veilederident: String,
+            begrunnelse: String,
+            document: List<DocumentComponent>,
+            gjelderFom: LocalDate,
+        ) : this(
+            personident = personident,
+            veilederident = veilederident,
+            begrunnelse = begrunnelse,
+            document = document,
+            gjelderFom = gjelderFom,
+            journalpostId = null,
+            publishedAt = null,
+        )
+
+        override fun shouldJournalfores(): Boolean = false
+    }
 
     companion object {
-
         fun createFromDatabase(
             uuid: UUID,
-            personident: PersonIdent,
             createdAt: OffsetDateTime,
+            personident: PersonIdent,
             veilederident: String,
             type: String,
             begrunnelse: String,
@@ -66,20 +137,43 @@ data class Vurdering private constructor(
             journalpostId: JournalpostId?,
             varsel: Varsel?,
             publishedAt: OffsetDateTime?,
-            gjelderFom: LocalDate?,
-        ) = Vurdering(
-            uuid = uuid,
-            personident = personident,
-            createdAt = createdAt,
-            veilederident = veilederident,
-            type = VurderingType.valueOf(type),
-            begrunnelse = begrunnelse,
-            document = document,
-            journalpostId = journalpostId,
-            varsel = varsel,
-            publishedAt = publishedAt,
-            gjelderFom = gjelderFom,
-        )
+            gjelderFom: LocalDate?
+        ): Vurdering {
+            return when (VurderingType.valueOf(type)) {
+                VurderingType.FORHANDSVARSEL -> Forhandsvarsel(
+                    uuid = uuid,
+                    createdAt = createdAt,
+                    personident = personident,
+                    veilederident = veilederident,
+                    begrunnelse = begrunnelse,
+                    document = document,
+                    varsel = varsel!!,
+                    journalpostId = journalpostId,
+                    publishedAt = publishedAt
+                )
+                VurderingType.OPPFYLT -> Oppfylt(
+                    uuid = uuid,
+                    createdAt = createdAt,
+                    personident = personident,
+                    veilederident = veilederident,
+                    begrunnelse = begrunnelse,
+                    document = document,
+                    journalpostId = journalpostId,
+                    publishedAt = publishedAt
+                )
+                VurderingType.AVSLAG -> Avslag(
+                    uuid = uuid,
+                    createdAt = createdAt,
+                    personident = personident,
+                    veilederident = veilederident,
+                    begrunnelse = begrunnelse,
+                    document = document,
+                    gjelderFom = gjelderFom!!,
+                    journalpostId = journalpostId,
+                    publishedAt = publishedAt
+                )
+            }
+        }
     }
 }
 

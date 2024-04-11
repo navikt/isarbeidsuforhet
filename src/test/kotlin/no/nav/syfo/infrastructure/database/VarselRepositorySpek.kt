@@ -46,7 +46,7 @@ class VarselRepositorySpek : Spek({
                         pdf = UserConstants.PDF_FORHANDSVARSEL,
                         vurdering = it,
                     )
-                    varselRepository.update(it.varsel!!.copy(publishedAt = OffsetDateTime.now().minusWeeks(1)))
+                    varselRepository.update(it.varsel.copy(publishedAt = OffsetDateTime.now().minusWeeks(1)))
                 }
 
                 val retrievedExpiredVarsler = varselRepository.getUnpublishedExpiredVarsler()
@@ -65,7 +65,7 @@ class VarselRepositorySpek : Spek({
                         pdf = UserConstants.PDF_FORHANDSVARSEL,
                         vurdering = it,
                     )
-                    varselRepository.update(it.varsel!!.copy(publishedAt = OffsetDateTime.now().minusWeeks(1)))
+                    varselRepository.update(it.varsel.copy(publishedAt = OffsetDateTime.now().minusWeeks(1)))
                 }
 
                 val retrievedUnpublishedExpiredVarsler = varselRepository.getUnpublishedExpiredVarsler()

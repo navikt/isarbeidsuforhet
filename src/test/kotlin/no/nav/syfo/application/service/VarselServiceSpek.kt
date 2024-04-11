@@ -73,7 +73,7 @@ class VarselServiceSpek : Spek({
                 pdf = UserConstants.PDF_FORHANDSVARSEL,
                 vurdering = vurderingForhandsvarsel,
             )
-            val unpublishedVarsel = vurderingForhandsvarsel.varsel!!
+            val unpublishedVarsel = vurderingForhandsvarsel.varsel
             vurderingRepository.update(vurderingForhandsvarsel.copy(journalpostId = journalpostId))
 
             return unpublishedVarsel
@@ -92,7 +92,7 @@ class VarselServiceSpek : Spek({
                 pdf = UserConstants.PDF_FORHANDSVARSEL,
                 vurdering = vurderingWithExpiredVarsel
             )
-            val publishedVarsel = vurderingWithExpiredVarsel.varsel!!.copy(publishedAt = publishedAt)
+            val publishedVarsel = vurderingWithExpiredVarsel.varsel.copy(publishedAt = publishedAt)
             varselRepository.update(publishedVarsel)
             return publishedVarsel
         }

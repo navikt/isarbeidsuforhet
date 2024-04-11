@@ -29,14 +29,28 @@ class VurderingService(
         gjelderFom: LocalDate?,
         callId: String,
     ): Vurdering {
-        val vurdering = Vurdering(
-            personident = personident,
-            veilederident = veilederident,
-            begrunnelse = begrunnelse,
-            document = document,
-            type = type,
-            gjelderFom = gjelderFom,
-        )
+        val vurdering = when (type) {
+            VurderingType.FORHANDSVARSEL -> Vurdering.Forhandsvarsel(
+                personident = personident,
+                veilederident = veilederident,
+                begrunnelse = begrunnelse,
+                document = document,
+            )
+            VurderingType.OPPFYLT -> Vurdering.Oppfylt(
+                personident = personident,
+                veilederident = veilederident,
+                begrunnelse = begrunnelse,
+                document = document,
+            )
+            VurderingType.AVSLAG -> Vurdering.Avslag(
+                personident = personident,
+                veilederident = veilederident,
+                begrunnelse = begrunnelse,
+                document = document,
+                gjelderFom = gjelderFom ?: LocalDate.now() // TODO: throw IllegalArgumentException("gjelderFom is required for $type") når frontend er klar
+            )
+        }
+
         val pdf = if (vurdering.shouldJournalfores()) {
             vurderingPdfService.createVurderingPdf(
                 vurdering = vurdering,
