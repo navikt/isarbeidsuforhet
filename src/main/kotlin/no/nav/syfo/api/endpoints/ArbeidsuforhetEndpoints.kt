@@ -8,7 +8,6 @@ import io.ktor.server.routing.*
 import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.application.service.VurderingService
-import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
@@ -54,13 +53,6 @@ fun Route.registerArbeidsuforhetEndpoints(
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             val navIdent = call.getNAVIdent()
             val callId = call.getCallId()
-
-            val existingVurderinger = vurderingService.getVurderinger(personIdent)
-            if (existingVurderinger.firstOrNull() is Vurdering.Forhandsvarsel &&
-                requestDTO.type == VurderingType.FORHANDSVARSEL
-            ) {
-                throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
-            }
 
             val newVurdering = vurderingService.createVurdering(
                 personident = personIdent,

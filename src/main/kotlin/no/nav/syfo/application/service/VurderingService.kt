@@ -29,6 +29,14 @@ class VurderingService(
         gjelderFom: LocalDate?,
         callId: String,
     ): Vurdering {
+        val currentVurdering = getVurderinger(personident).firstOrNull()
+        if (type == VurderingType.FORHANDSVARSEL && currentVurdering is Vurdering.Forhandsvarsel) {
+            throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
+        }
+        if (type == VurderingType.AVSLAG && (currentVurdering == null || !currentVurdering.isExpiredForhandsvarsel())) {
+            throw IllegalArgumentException("Cannot create ${VurderingType.AVSLAG} without expired ${VurderingType.FORHANDSVARSEL}")
+        }
+
         val vurdering = when (type) {
             VurderingType.FORHANDSVARSEL -> Vurdering.Forhandsvarsel(
                 personident = personident,

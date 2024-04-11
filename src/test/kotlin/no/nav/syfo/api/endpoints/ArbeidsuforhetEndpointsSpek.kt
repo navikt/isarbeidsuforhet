@@ -16,9 +16,12 @@ import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
+import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Varsel
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
+import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.bearerHeader
 import no.nav.syfo.infrastructure.database.dropData
@@ -91,12 +94,12 @@ object ArbeidsuforhetEndpointsSpek : Spek({
             )
             val personIdent = ARBEIDSTAKER_PERSONIDENT.value
 
-            suspend fun createForhandsvarsel() = vurderingService.createVurdering(
+            suspend fun createVurdering(type: VurderingType, document: List<DocumentComponent>) = vurderingService.createVurdering(
                 personident = PersonIdent(personIdent),
                 veilederident = VEILEDER_IDENT,
-                type = VurderingType.FORHANDSVARSEL,
+                type = type,
                 begrunnelse = begrunnelse,
-                document = forhandsvarselDocument,
+                document = document,
                 gjelderFom = null,
                 callId = UUID.randomUUID().toString(),
             )
@@ -141,7 +144,12 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         }
                     }
                     it("Does not allow duplicate forhandsvarsel") {
-                        runBlocking { createForhandsvarsel() }
+                        runBlocking {
+                            createVurdering(
+                                type = VurderingType.FORHANDSVARSEL,
+                                document = forhandsvarselDocument
+                            )
+                        }
                         with(
                             handleRequest(HttpMethod.Post, urlVurdering) {
                                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -187,6 +195,12 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         }
                     }
                     it("Creates new vurdering AVSLAG and do not create PDF") {
+                        val expiredForhandsvarsel =
+                            generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now()))
+                        vurderingRepository.createVurdering(
+                            vurdering = expiredForhandsvarsel,
+                            pdf = PDF_FORHANDSVARSEL,
+                        )
                         val avslagGjelderFom = LocalDate.now().plusDays(1)
                         val vurderingAvslagRequestDTO = VurderingRequestDTO(
                             type = VurderingType.AVSLAG,
@@ -213,20 +227,27 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                             responseDTO.varsel shouldBeEqualTo null
 
-                            val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
-                            vurdering.begrunnelse shouldBeEqualTo ""
-                            vurdering.document shouldBeEqualTo emptyList()
-                            vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-                            vurdering.type shouldBeEqualTo VurderingType.AVSLAG
-                            vurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
-                            vurdering.varsel shouldBeEqualTo null
+                            val vurderinger = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
+                            vurderinger.size shouldBeEqualTo 2
+                            val avslagVurdering = vurderinger.first()
+                            avslagVurdering.begrunnelse shouldBeEqualTo ""
+                            avslagVurdering.document shouldBeEqualTo emptyList()
+                            avslagVurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                            avslagVurdering.type shouldBeEqualTo VurderingType.AVSLAG
+                            avslagVurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
+                            avslagVurdering.varsel shouldBeEqualTo null
 
-                            val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
+                            val pVurderingPdf = database.getVurderingPdf(avslagVurdering.uuid)
                             pVurderingPdf shouldBeEqualTo null
                         }
                     }
                     it("Successfully gets an existing vurdering") {
-                        runBlocking { createForhandsvarsel() }
+                        runBlocking {
+                            createVurdering(
+                                type = VurderingType.FORHANDSVARSEL,
+                                document = forhandsvarselDocument
+                            )
+                        }
                         with(
                             handleRequest(HttpMethod.Get, urlVurdering) {
                                 addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
@@ -246,6 +267,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                             responseDTO.varsel.shouldNotBeNull()
                             responseDTO.varsel?.svarfrist shouldBeEqualTo LocalDate.now().plusWeeks(3)
+                            responseDTO.varsel?.isExpired shouldBeEqualTo false
                         }
                     }
                     it("Successfully gets empty list of vurderinger") {
@@ -263,8 +285,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Successfully gets multiple vurderinger") {
                         runBlocking {
-                            createForhandsvarsel()
-                            createForhandsvarsel()
+                            createVurdering(type = VurderingType.FORHANDSVARSEL, document = forhandsvarselDocument)
+                            createVurdering(type = VurderingType.OPPFYLT, document = generateDocumentComponent("Oppfylt"))
                         }
                         with(
                             handleRequest(HttpMethod.Get, urlVurdering) {

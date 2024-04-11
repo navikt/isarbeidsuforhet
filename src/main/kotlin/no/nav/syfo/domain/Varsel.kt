@@ -24,6 +24,8 @@ data class Varsel private constructor(
 
     fun publishSvarfristExpired(): Varsel = this.copy(svarfristExpiredPublishedAt = nowUTC())
 
+    fun isExpired(): Boolean = svarfrist.isBefore(LocalDate.now()) || svarfrist.isEqual(LocalDate.now())
+
     companion object {
         fun createFromDatabase(
             uuid: UUID,
