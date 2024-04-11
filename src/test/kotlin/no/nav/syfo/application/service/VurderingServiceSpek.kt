@@ -13,6 +13,7 @@ import no.nav.syfo.application.IVurderingPdfService
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.JournalpostId
+import no.nav.syfo.domain.Varsel
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
@@ -38,6 +39,8 @@ import java.lang.RuntimeException
 import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Future
+
+val expiredForhandsvarsel = generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now()))
 
 class VurderingServiceSpek : Spek({
     describe(VurderingService::class.java.simpleName) {
@@ -237,7 +240,11 @@ class VurderingServiceSpek : Spek({
         describe("publishUnpublishedVurderinger") {
 
             it("publishes unpublished vurdering") {
-                val unpublishedVurdering = runBlocking {
+                vurderingRepository.createVurdering(
+                    vurdering = expiredForhandsvarsel,
+                    pdf = PDF_FORHANDSVARSEL,
+                )
+                val unpublishedAvslagVurdering = runBlocking {
                     vurderingService.createVurdering(
                         personident = ARBEIDSTAKER_PERSONIDENT,
                         veilederident = VEILEDER_IDENT,
@@ -251,25 +258,29 @@ class VurderingServiceSpek : Spek({
 
                 val (success, failed) = vurderingService.publishUnpublishedVurderinger().partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
-                success.size shouldBeEqualTo 1
+                success.size shouldBeEqualTo 2
 
-                val producerRecordSlot = slot<ProducerRecord<String, VurderingRecord>>()
-                verify(exactly = 1) { mockVurderingProducer.send(capture(producerRecordSlot)) }
+                val producerRecordSlot1 = slot<ProducerRecord<String, VurderingRecord>>()
+                val producerRecordSlot2 = slot<ProducerRecord<String, VurderingRecord>>()
+                verifyOrder {
+                    mockVurderingProducer.send(capture(producerRecordSlot1))
+                    mockVurderingProducer.send(capture(producerRecordSlot2))
+                }
 
-                val publishedVurdering = success.first().getOrThrow()
-                publishedVurdering.uuid.shouldBeEqualTo(unpublishedVurdering.uuid)
+                val publishedAvslagVurdering = success[1].getOrThrow()
+                publishedAvslagVurdering.uuid.shouldBeEqualTo(unpublishedAvslagVurdering.uuid)
 
                 val persistedVurderinger = vurderingService.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
-                persistedVurderinger.size shouldBeEqualTo 1
-                val persistedVurdering = persistedVurderinger.first()
-                persistedVurdering.uuid shouldBeEqualTo unpublishedVurdering.uuid
-                persistedVurdering.publishedAt.shouldNotBeNull()
+                persistedVurderinger.size shouldBeEqualTo 2
+                val persistedAvslagVurdering = persistedVurderinger[0]
+                persistedAvslagVurdering.uuid shouldBeEqualTo unpublishedAvslagVurdering.uuid
+                persistedAvslagVurdering.publishedAt.shouldNotBeNull()
                 vurderingRepository.getUnpublishedVurderinger().shouldBeEmpty()
 
-                val vurderingRecord = producerRecordSlot.captured.value()
-                vurderingRecord.uuid shouldBeEqualTo unpublishedVurdering.uuid
-                vurderingRecord.type shouldBeEqualTo unpublishedVurdering.type
-                vurderingRecord.gjelderFom shouldBeEqualTo unpublishedVurdering.gjelderFom
+                val avslagVurderingRecord = producerRecordSlot2.captured.value()
+                avslagVurderingRecord.uuid shouldBeEqualTo unpublishedAvslagVurdering.uuid
+                avslagVurderingRecord.type shouldBeEqualTo unpublishedAvslagVurdering.type
+                avslagVurderingRecord.gjelderFom shouldBeEqualTo unpublishedAvslagVurdering.gjelderFom
             }
 
             it("publishes nothing when no unpublished vurdering") {
@@ -367,6 +378,7 @@ class VurderingServiceSpek : Spek({
                 }
 
                 it("lager vurdering AVSLAG uten pdf") {
+                    every { vurderingRepositoryMock.getVurderinger(ARBEIDSTAKER_PERSONIDENT) } returns listOf(expiredForhandsvarsel)
                     coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
                     val avslagGjelderFom = LocalDate.now().plusDays(1)
 
@@ -451,6 +463,64 @@ class VurderingServiceSpek : Spek({
                         }
                         coVerify(exactly = 0) {
                             vurderingRepositoryMock.createVurdering(any(), any())
+                        }
+                    }
+                }
+
+                it("Avslag fails when current vurdering is not expired forhandsvarsel") {
+                    vurderingRepository.createVurdering(
+                        vurdering = generateForhandsvarselVurdering(),
+                        pdf = PDF_FORHANDSVARSEL,
+                    )
+
+                    runBlocking {
+                        assertFailsWith(IllegalArgumentException::class) {
+                            vurderingServiceWithMocks.createVurdering(
+                                personident = ARBEIDSTAKER_PERSONIDENT,
+                                veilederident = VEILEDER_IDENT,
+                                type = VurderingType.AVSLAG,
+                                begrunnelse = "",
+                                document = emptyList(),
+                                gjelderFom = LocalDate.now().plusDays(1),
+                                callId = "",
+                            )
+                        }
+                    }
+                }
+
+                it("Avslag fails when current vurdering is oppfylt") {
+                    vurderingRepository.createVurdering(
+                        vurdering = generateVurdering(type = VurderingType.OPPFYLT),
+                        pdf = PDF_VURDERING,
+                    )
+
+                    runBlocking {
+                        assertFailsWith(IllegalArgumentException::class) {
+                            vurderingServiceWithMocks.createVurdering(
+                                personident = ARBEIDSTAKER_PERSONIDENT,
+                                veilederident = VEILEDER_IDENT,
+                                type = VurderingType.AVSLAG,
+                                begrunnelse = "",
+                                document = emptyList(),
+                                gjelderFom = LocalDate.now().plusDays(1),
+                                callId = "",
+                            )
+                        }
+                    }
+                }
+
+                it("Avslag fails when no current vurdering") {
+                    runBlocking {
+                        assertFailsWith(IllegalArgumentException::class) {
+                            vurderingServiceWithMocks.createVurdering(
+                                personident = ARBEIDSTAKER_PERSONIDENT,
+                                veilederident = VEILEDER_IDENT,
+                                type = VurderingType.AVSLAG,
+                                begrunnelse = "",
+                                document = emptyList(),
+                                gjelderFom = LocalDate.now().plusDays(1),
+                                callId = "",
+                            )
                         }
                     }
                 }

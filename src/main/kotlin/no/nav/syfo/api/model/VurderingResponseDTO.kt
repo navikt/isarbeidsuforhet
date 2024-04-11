@@ -38,12 +38,14 @@ data class VarselDTO private constructor(
     val uuid: UUID,
     val createdAt: LocalDateTime,
     val svarfrist: LocalDate,
+    val isExpired: Boolean,
 ) {
     companion object {
         fun createFromVarsel(varsel: Varsel) = VarselDTO(
             uuid = varsel.uuid,
             createdAt = varsel.createdAt.toLocalDateTime(),
             svarfrist = varsel.svarfrist,
+            isExpired = varsel.isExpired(),
         )
     }
 }

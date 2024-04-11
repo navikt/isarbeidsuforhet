@@ -51,6 +51,7 @@ class VarselRepositorySpek : Spek({
 
                 val retrievedExpiredVarsler = varselRepository.getUnpublishedExpiredVarsler()
                 retrievedExpiredVarsler.size shouldBeEqualTo 3
+                retrievedExpiredVarsler.filter { it.second.isExpired() }.size shouldBeEqualTo 3
             }
 
             it("retrieves expired varsel that is not published") {

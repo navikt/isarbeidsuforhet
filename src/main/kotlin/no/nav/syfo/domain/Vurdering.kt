@@ -33,6 +33,7 @@ sealed interface Vurdering {
     }
 
     fun shouldJournalfores(): Boolean = true
+    fun isExpiredForhandsvarsel(): Boolean = this is Forhandsvarsel && this.varsel.isExpired()
 
     data class Forhandsvarsel internal constructor(
         override val uuid: UUID = UUID.randomUUID(),
@@ -151,6 +152,7 @@ sealed interface Vurdering {
                     journalpostId = journalpostId,
                     publishedAt = publishedAt
                 )
+
                 VurderingType.OPPFYLT -> Oppfylt(
                     uuid = uuid,
                     createdAt = createdAt,
@@ -161,6 +163,7 @@ sealed interface Vurdering {
                     journalpostId = journalpostId,
                     publishedAt = publishedAt
                 )
+
                 VurderingType.AVSLAG -> Avslag(
                     uuid = uuid,
                     createdAt = createdAt,
