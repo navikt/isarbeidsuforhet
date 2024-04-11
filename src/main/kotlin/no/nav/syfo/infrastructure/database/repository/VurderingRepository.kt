@@ -42,15 +42,15 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             }
         }
 
-    override fun createVurdering(vurdering: Vurdering, pdf: ByteArray?): Vurdering {
+    override fun createVurdering(vurdering: Vurdering, pdf: ByteArray): Vurdering {
         database.connection.use { connection ->
             val pVurdering = connection.createVurdering(vurdering)
-            if (pdf != null) {
-                connection.createPdf(
-                    vurderingId = pVurdering.id,
-                    pdf = pdf,
-                )
-            }
+
+            connection.createPdf(
+                vurderingId = pVurdering.id,
+                pdf = pdf,
+            )
+
             if (vurdering is Vurdering.Forhandsvarsel) {
                 connection.createVarsel(
                     vurderingId = pVurdering.id,

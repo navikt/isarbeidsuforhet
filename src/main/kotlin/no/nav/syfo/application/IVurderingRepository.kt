@@ -12,7 +12,7 @@ interface IVurderingRepository {
 
     fun createVurdering(
         vurdering: Vurdering,
-        pdf: ByteArray?
+        pdf: ByteArray,
     ): Vurdering
 
     fun update(vurdering: Vurdering)

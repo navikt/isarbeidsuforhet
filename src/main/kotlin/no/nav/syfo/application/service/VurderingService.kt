@@ -59,12 +59,10 @@ class VurderingService(
             )
         }
 
-        val pdf = if (vurdering.shouldJournalfores()) {
-            vurderingPdfService.createVurderingPdf(
-                vurdering = vurdering,
-                callId = callId,
-            )
-        } else null
+        val pdf = vurderingPdfService.createVurderingPdf(
+            vurdering = vurdering,
+            callId = callId,
+        )
 
         vurderingRepository.createVurdering(
             vurdering = vurdering,

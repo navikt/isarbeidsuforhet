@@ -8,6 +8,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.UserConstants.PDF_AVSLAG
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
@@ -81,6 +82,10 @@ object ArbeidsuforhetEndpointsSpek : Spek({
             val vurderingDocumentOppfylt = generateDocumentComponent(
                 fritekst = begrunnelse,
                 header = "Oppfylt",
+            )
+            val vurderingDocumentAvslag = generateDocumentComponent(
+                fritekst = begrunnelse,
+                header = "Avslag",
             )
             val forhandsvarselRequestDTO = VurderingRequestDTO(
                 type = VurderingType.FORHANDSVARSEL,
@@ -194,7 +199,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
                         }
                     }
-                    it("Creates new vurdering AVSLAG and do not create PDF") {
+                    it("Creates new vurdering AVSLAG and creates PDF") {
                         val expiredForhandsvarsel =
                             generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now()))
                         vurderingRepository.createVurdering(
@@ -204,8 +209,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         val avslagGjelderFom = LocalDate.now().plusDays(1)
                         val vurderingAvslagRequestDTO = VurderingRequestDTO(
                             type = VurderingType.AVSLAG,
-                            begrunnelse = "",
-                            document = emptyList(),
+                            begrunnelse = "Avslag",
+                            document = vurderingDocumentAvslag,
                             gjelderFom = avslagGjelderFom
                         )
                         with(
@@ -219,10 +224,10 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             response.status() shouldBeEqualTo HttpStatusCode.Created
 
                             val responseDTO = objectMapper.readValue<VurderingResponseDTO>(response.content!!)
-                            responseDTO.begrunnelse shouldBeEqualTo ""
+                            responseDTO.begrunnelse shouldBeEqualTo "Avslag"
                             responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
                             responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                            responseDTO.document shouldBeEqualTo emptyList()
+                            responseDTO.document shouldBeEqualTo vurderingDocumentAvslag
                             responseDTO.type shouldBeEqualTo VurderingType.AVSLAG
                             responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                             responseDTO.varsel shouldBeEqualTo null
@@ -230,15 +235,17 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             val vurderinger = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
                             vurderinger.size shouldBeEqualTo 2
                             val avslagVurdering = vurderinger.first()
-                            avslagVurdering.begrunnelse shouldBeEqualTo ""
-                            avslagVurdering.document shouldBeEqualTo emptyList()
+                            avslagVurdering.begrunnelse shouldBeEqualTo "Avslag"
+                            avslagVurdering.document shouldBeEqualTo vurderingDocumentAvslag
                             avslagVurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                             avslagVurdering.type shouldBeEqualTo VurderingType.AVSLAG
                             avslagVurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
                             avslagVurdering.varsel shouldBeEqualTo null
 
                             val pVurderingPdf = database.getVurderingPdf(avslagVurdering.uuid)
-                            pVurderingPdf shouldBeEqualTo null
+                            pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_AVSLAG.size
+                            pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_AVSLAG[0]
+                            pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_AVSLAG[1]
                         }
                     }
                     it("Successfully gets an existing vurdering") {
