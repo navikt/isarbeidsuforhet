@@ -8,7 +8,6 @@ import io.ktor.server.routing.*
 import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.application.service.VurderingService
-import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollPlugin
@@ -44,15 +43,14 @@ fun Route.registerArbeidsuforhetEndpoints(
 
         post(vurderingPath) {
             val requestDTO = call.receive<VurderingRequestDTO>()
-            if (requestDTO.type != VurderingType.AVSLAG && (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty())
-            ) {
-                throw IllegalArgumentException("Vurdering ${VurderingType.FORHANDSVARSEL} and ${VurderingType.OPPFYLT} can't have an empty begrunnelse or document")
+            val callId = call.getCallId()
+            if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
+                throw IllegalArgumentException("Vurdering can't have an empty begrunnelse or document, callId: $callId")
             }
 
             val personIdent = call.getPersonIdent()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
             val navIdent = call.getNAVIdent()
-            val callId = call.getCallId()
 
             val newVurdering = vurderingService.createVurdering(
                 personident = personIdent,

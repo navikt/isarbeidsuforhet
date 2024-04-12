@@ -6,6 +6,7 @@ import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS
+import no.nav.syfo.UserConstants.PDF_AVSLAG
 import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.application.IJournalforingService
@@ -148,10 +149,10 @@ class VurderingServiceSpek : Spek({
                 pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
             }
 
-            it("journalfører ikke AVSLAG vurdering") {
+            it("journalfører AVSLAG vurdering") {
                 vurderingRepository.createVurdering(
                     vurdering = vurderingAvslag,
-                    pdf = null,
+                    pdf = PDF_AVSLAG,
                 )
 
                 val journalforteVurderinger = runBlocking {
@@ -160,11 +161,11 @@ class VurderingServiceSpek : Spek({
 
                 val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
                 failed.size shouldBeEqualTo 0
-                success.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
 
                 val pVurdering = database.getVurdering(vurderingAvslag.uuid)
                 pVurdering!!.type shouldBeEqualTo VurderingType.AVSLAG.name
-                pVurdering.journalpostId shouldBeEqualTo null
+                pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
             }
 
             it("journalfører ikke når ingen vurderinger") {
@@ -377,9 +378,9 @@ class VurderingServiceSpek : Spek({
                     }
                 }
 
-                it("lager vurdering AVSLAG uten pdf") {
+                it("lager vurdering AVSLAG med pdf") {
                     every { vurderingRepositoryMock.getVurderinger(ARBEIDSTAKER_PERSONIDENT) } returns listOf(expiredForhandsvarsel)
-                    coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
+                    coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_AVSLAG
                     val avslagGjelderFom = LocalDate.now().plusDays(1)
 
                     val vurdering = runBlocking {
@@ -387,22 +388,22 @@ class VurderingServiceSpek : Spek({
                             personident = ARBEIDSTAKER_PERSONIDENT,
                             veilederident = VEILEDER_IDENT,
                             type = VurderingType.AVSLAG,
-                            begrunnelse = "",
-                            document = emptyList(),
+                            begrunnelse = "Avslag",
+                            document = document,
                             gjelderFom = avslagGjelderFom,
                             callId = "",
                         )
                     }
 
                     vurdering.varsel shouldBeEqualTo null
-                    vurdering.begrunnelse shouldBeEqualTo ""
-                    vurdering.document shouldBeEqualTo emptyList()
+                    vurdering.begrunnelse shouldBeEqualTo "Avslag"
+                    vurdering.document shouldBeEqualTo document
                     vurdering.type shouldBeEqualTo VurderingType.AVSLAG
                     vurdering.journalpostId shouldBeEqualTo null
                     vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                     vurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
 
-                    coVerify(exactly = 0) {
+                    coVerify(exactly = 1) {
                         vurderingPdfServiceMock.createVurderingPdf(
                             vurdering = vurdering,
                             callId = "",

@@ -32,7 +32,6 @@ sealed interface Vurdering {
         is Avslag -> this.copy(publishedAt = nowUTC())
     }
 
-    fun shouldJournalfores(): Boolean = true
     fun isExpiredForhandsvarsel(): Boolean = this is Forhandsvarsel && this.varsel.isExpired()
 
     data class Forhandsvarsel internal constructor(
@@ -122,8 +121,6 @@ sealed interface Vurdering {
             journalpostId = null,
             publishedAt = null,
         )
-
-        override fun shouldJournalfores(): Boolean = false
     }
 
     companion object {
@@ -187,17 +184,16 @@ enum class VurderingType {
 fun VurderingType.getDokumentTittel(): String = when (this) {
     VurderingType.FORHANDSVARSEL -> "Forhåndsvarsel om avslag på sykepenger"
     VurderingType.OPPFYLT -> "Vurdering av §8-4 arbeidsuførhet"
-    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
+    VurderingType.AVSLAG -> "Innstilling om avslag"
 }
 
 fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
     VurderingType.FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
     VurderingType.OPPFYLT -> BrevkodeType.ARBEIDSUFORHET_VURDERING
-    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
+    VurderingType.AVSLAG -> BrevkodeType.ARBEIDSUFORHET_AVSLAG
 }
 
 fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
     VurderingType.FORHANDSVARSEL -> JournalpostType.UTGAAENDE
-    VurderingType.OPPFYLT -> JournalpostType.NOTAT
-    VurderingType.AVSLAG -> throw IllegalStateException("Should not journalfore type $this")
+    VurderingType.OPPFYLT, VurderingType.AVSLAG -> JournalpostType.NOTAT
 }

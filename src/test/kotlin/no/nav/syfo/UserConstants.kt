@@ -12,6 +12,7 @@ object UserConstants {
 
     val PDF_FORHANDSVARSEL = byteArrayOf(0x2E, 0x28)
     val PDF_VURDERING = byteArrayOf(0x2E, 0x30)
+    val PDF_AVSLAG = byteArrayOf(0x2E, 0x32)
     const val VEILEDER_IDENT = "Z999999"
 
     const val PERSON_FORNAVN = "Fornavn"

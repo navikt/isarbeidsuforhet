@@ -30,7 +30,10 @@ class VurderingPdfService(
                 callId = callId,
                 vurderingPdfDTO = vurderingPdfDTO,
             )
-            VurderingType.AVSLAG -> throw IllegalStateException("Should not create PDF for type ${vurdering.type}")
+            VurderingType.AVSLAG -> pdfGenClient.createAvslagPdf(
+                callId = callId,
+                vurderingPdfDTO = vurderingPdfDTO,
+            )
         }
     }
 }

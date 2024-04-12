@@ -7,6 +7,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.UserConstants.PDF_AVSLAG
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.domain.VurderingType
@@ -18,7 +19,6 @@ import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostType
 import no.nav.syfo.infrastructure.mock.dokarkivResponse
 import no.nav.syfo.infrastructure.mock.mockedJournalpostId
-import org.amshove.kluent.internal.assertFailsWith
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -92,14 +92,26 @@ object JournalforingServiceSpek : Spek({
             }
 
             it("Journalfører AVSLAG vurdering") {
-                runBlocking {
-                    assertFailsWith<IllegalStateException> {
-                        journalforingService.journalfor(
-                            personident = ARBEIDSTAKER_PERSONIDENT,
-                            pdf = PDF_VURDERING,
-                            vurdering = vurderingAvslag,
+                val journalpostId = runBlocking {
+                    journalforingService.journalfor(
+                        personident = ARBEIDSTAKER_PERSONIDENT,
+                        pdf = PDF_AVSLAG,
+                        vurdering = vurderingAvslag,
+                    )
+                }
+
+                journalpostId shouldBeEqualTo mockedJournalpostId
+
+                coVerify(exactly = 1) {
+                    dokarkivMock.journalfor(
+                        journalpostRequest = generateJournalpostRequest(
+                            tittel = "Innstilling om avslag",
+                            brevkodeType = BrevkodeType.ARBEIDSUFORHET_AVSLAG,
+                            pdf = PDF_AVSLAG,
+                            vurderingUuid = vurderingAvslag.uuid,
+                            journalpostType = JournalpostType.NOTAT.name,
                         )
-                    }
+                    )
                 }
             }
         }
