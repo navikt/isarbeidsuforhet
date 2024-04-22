@@ -525,6 +525,25 @@ class VurderingServiceSpek : Spek({
                         }
                     }
                 }
+
+                it("Avslag fails when missing gjelderFom") {
+                    every { vurderingRepositoryMock.getVurderinger(ARBEIDSTAKER_PERSONIDENT) } returns listOf(expiredForhandsvarsel)
+                    coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_AVSLAG
+
+                    runBlocking {
+                        assertFailsWith(IllegalArgumentException::class) {
+                            vurderingServiceWithMocks.createVurdering(
+                                personident = ARBEIDSTAKER_PERSONIDENT,
+                                veilederident = VEILEDER_IDENT,
+                                type = VurderingType.AVSLAG,
+                                begrunnelse = "Avslag",
+                                document = document,
+                                gjelderFom = null,
+                                callId = "",
+                            )
+                        }
+                    }
+                }
             }
         }
     }
