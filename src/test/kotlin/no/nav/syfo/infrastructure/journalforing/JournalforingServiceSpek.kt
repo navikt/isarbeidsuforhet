@@ -61,7 +61,7 @@ object JournalforingServiceSpek : Spek({
                             brevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING,
                             pdf = PDF_VURDERING,
                             vurderingUuid = vurderingOppfylt.uuid,
-                            journalpostType = JournalpostType.NOTAT.name,
+                            journalpostType = JournalpostType.UTGAAENDE.name,
                         )
                     )
                 }

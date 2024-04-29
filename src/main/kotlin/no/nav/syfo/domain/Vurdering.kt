@@ -194,6 +194,6 @@ fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
 }
 
 fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
-    VurderingType.FORHANDSVARSEL -> JournalpostType.UTGAAENDE
-    VurderingType.OPPFYLT, VurderingType.AVSLAG -> JournalpostType.NOTAT
+    VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT -> JournalpostType.UTGAAENDE
+    VurderingType.AVSLAG -> JournalpostType.NOTAT
 }
