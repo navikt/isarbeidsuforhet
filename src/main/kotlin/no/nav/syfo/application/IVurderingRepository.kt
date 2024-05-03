@@ -15,7 +15,9 @@ interface IVurderingRepository {
         pdf: ByteArray,
     ): Vurdering
 
-    fun update(vurdering: Vurdering)
+    fun setPublished(vurdering: Vurdering)
+
+    fun setJournalpostId(vurdering: Vurdering)
 
     fun getNotJournalforteVurderinger(): List<Pair<Vurdering, ByteArray>>
 }

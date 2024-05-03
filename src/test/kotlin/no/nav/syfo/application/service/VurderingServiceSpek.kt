@@ -184,7 +184,7 @@ class VurderingServiceSpek : Spek({
                     vurdering = vurderingForhandsvarsel,
                 )
                 val journalfortVarsel = vurderingForhandsvarsel.journalfor(journalpostId = JournalpostId(mockedJournalpostId.toString()))
-                vurderingRepository.update(journalfortVarsel)
+                vurderingRepository.setJournalpostId(journalfortVarsel)
 
                 val journalforteVurderinger = runBlocking {
                     vurderingService.journalforVurderinger()

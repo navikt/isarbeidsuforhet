@@ -66,12 +66,24 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         }
     }
 
-    override fun update(vurdering: Vurdering) = database.connection.use { connection ->
-        connection.prepareStatement(UPDATE_VURDERING).use {
+    override fun setJournalpostId(vurdering: Vurdering) = database.connection.use { connection ->
+        connection.prepareStatement(UPDATE_JOURNALPOST_ID).use {
             it.setString(1, vurdering.journalpostId?.value)
             it.setObject(2, nowUTC())
-            it.setObject(3, vurdering.publishedAt)
-            it.setString(4, vurdering.uuid.toString())
+            it.setString(3, vurdering.uuid.toString())
+            val updated = it.executeUpdate()
+            if (updated != 1) {
+                throw SQLException("Expected a single row to be updated, got update count $updated")
+            }
+        }
+        connection.commit()
+    }
+
+    override fun setPublished(vurdering: Vurdering) = database.connection.use { connection ->
+        connection.prepareStatement(UPDATE_PUBLISHED_AT).use {
+            it.setObject(1, nowUTC())
+            it.setObject(2, vurdering.publishedAt)
+            it.setString(3, vurdering.uuid.toString())
             val updated = it.executeUpdate()
             if (updated != 1) {
                 throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -181,9 +193,14 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             RETURNING *
             """
 
-        private const val UPDATE_VURDERING =
+        private const val UPDATE_JOURNALPOST_ID =
             """
-                UPDATE VURDERING SET journalpost_id=?, updated_at=?, published_at=? WHERE uuid=?
+                UPDATE VURDERING SET journalpost_id=?, updated_at=? WHERE uuid=?
+            """
+
+        private const val UPDATE_PUBLISHED_AT =
+            """
+                UPDATE VURDERING SET updated_at=?, published_at=? WHERE uuid=?
             """
 
         private const val CREATE_VARSEL =
