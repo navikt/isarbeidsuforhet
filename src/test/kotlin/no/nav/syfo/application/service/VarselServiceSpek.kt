@@ -74,7 +74,7 @@ class VarselServiceSpek : Spek({
                 vurdering = vurderingForhandsvarsel,
             )
             val unpublishedVarsel = vurderingForhandsvarsel.varsel
-            vurderingRepository.update(vurderingForhandsvarsel.copy(journalpostId = journalpostId))
+            vurderingRepository.setJournalpostId(vurderingForhandsvarsel.copy(journalpostId = journalpostId))
 
             return unpublishedVarsel
         }

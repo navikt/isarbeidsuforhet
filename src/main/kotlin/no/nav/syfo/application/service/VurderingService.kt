@@ -91,7 +91,7 @@ class VurderingService(
                 val journalfortVurdering = vurdering.journalfor(
                     journalpostId = JournalpostId(journalpostId.toString()),
                 )
-                vurderingRepository.update(journalfortVurdering)
+                vurderingRepository.setJournalpostId(journalfortVurdering)
 
                 journalfortVurdering
             }
@@ -104,7 +104,7 @@ class VurderingService(
             val producerResult = vurderingProducer.send(vurdering = vurdering)
             producerResult.map {
                 val publishedVurdering = it.publish()
-                vurderingRepository.update(publishedVurdering)
+                vurderingRepository.setPublished(publishedVurdering)
                 publishedVurdering
             }
         }
