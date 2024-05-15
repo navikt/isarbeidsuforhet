@@ -177,8 +177,8 @@ sealed interface Vurdering {
     }
 }
 
-enum class VurderingType {
-    FORHANDSVARSEL, OPPFYLT, AVSLAG
+enum class VurderingType(val isFinal: Boolean) {
+    FORHANDSVARSEL(false), OPPFYLT(true), AVSLAG(true);
 }
 
 fun VurderingType.getDokumentTittel(): String = when (this) {
