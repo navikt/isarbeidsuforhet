@@ -42,7 +42,7 @@ data class VurderingRecord(
     val type: VurderingType,
     val begrunnelse: String,
     val gjelderFom: LocalDate?,
-    val isFinalVurdering: Boolean,
+    val isFinal: Boolean,
 ) {
     companion object {
         fun fromVurdering(vurdering: Vurdering): VurderingRecord =
@@ -54,7 +54,7 @@ data class VurderingRecord(
                 type = vurdering.type,
                 begrunnelse = vurdering.begrunnelse,
                 gjelderFom = vurdering.gjelderFom,
-                isFinalVurdering = vurdering.type.isFinal
+                isFinal = vurdering.type.isFinal
             )
     }
 }
