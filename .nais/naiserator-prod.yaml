@@ -41,6 +41,7 @@ spec:
     inbound:
       rules:
         - application: syfomodiaperson
+        - application: syfooversiktsrv
     outbound:
       external:
         - host: "login.microsoftonline.com"
