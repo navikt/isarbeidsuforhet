@@ -1,5 +1,7 @@
 package no.nav.syfo.domain
 
+import java.util.*
+
 data class PersonIdent(val value: String) {
     private val elevenDigits = Regex("^\\d{11}\$")
 
@@ -9,3 +11,5 @@ data class PersonIdent(val value: String) {
         }
     }
 }
+
+fun PersonIdent.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(value.toByteArray()).toString()
