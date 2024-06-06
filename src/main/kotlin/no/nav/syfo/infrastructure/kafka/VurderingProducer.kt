@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.kafka
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.VurderingType
+import no.nav.syfo.domain.asProducerRecordKey
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
@@ -18,7 +19,7 @@ class VurderingProducer(private val producer: KafkaProducer<String, VurderingRec
             producer.send(
                 ProducerRecord(
                     TOPIC,
-                    UUID.randomUUID().toString(),
+                    vurdering.personident.asProducerRecordKey(),
                     VurderingRecord.fromVurdering(vurdering),
                 )
             ).get()

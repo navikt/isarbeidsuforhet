@@ -3,6 +3,7 @@ package no.nav.syfo.infrastructure.kafka
 import no.nav.syfo.application.IExpiredForhandsvarselProducer
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Varsel
+import no.nav.syfo.domain.asProducerRecordKey
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
@@ -18,7 +19,7 @@ class ExpiredForhandsvarselProducer(private val producer: KafkaProducer<String, 
             producer.send(
                 ProducerRecord(
                     TOPIC,
-                    UUID.randomUUID().toString(),
+                    personIdent.asProducerRecordKey(),
                     ExpiredForhandsvarselRecord.fromVarsel(personIdent, varsel),
                 )
             ).get()
