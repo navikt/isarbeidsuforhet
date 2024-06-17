@@ -20,6 +20,10 @@ class VurderingService(
         personident: PersonIdent,
     ): List<Vurdering> = vurderingRepository.getVurderinger(personident)
 
+    fun getVurderingerBulk(
+        personidenter: List<PersonIdent>,
+    ) = vurderingRepository.getVurderingerBulk(personidenter)
+
     suspend fun createVurdering(
         personident: PersonIdent,
         veilederident: String,

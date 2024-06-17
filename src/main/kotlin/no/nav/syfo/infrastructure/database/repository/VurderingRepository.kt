@@ -31,6 +31,19 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             }
         }
 
+    override fun getVurderingerBulk(
+        personidenter: List<PersonIdent>,
+    ): Map<PersonIdent, Vurdering> =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_VURDERINGER).use {
+                it.setString(1, personidenter.map { it.value }.joinToString(","))
+                it.executeQuery().toList { toPVurdering() }
+            }.associate {
+                // Den nyeste vurderingen blir valgt her siden lista er sortert med den nyeste til slutt
+                it.personident to it.toVurdering(connection.getVarselForVurdering(it))
+            }
+        }
+
     override fun getUnpublishedVurderinger(): List<Vurdering> =
         database.connection.use { connection ->
             connection.prepareStatement(GET_UNPUBLISHED_VURDERING).use {
@@ -163,6 +176,11 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         private const val GET_VURDERING =
             """
                 SELECT * FROM VURDERING WHERE personident=? ORDER BY created_at DESC
+            """
+
+        private const val GET_VURDERINGER =
+            """
+                SELECT * FROM VURDERING WHERE personident = ANY (string_to_array(?, ',')) ORDER BY created_at ASC
             """
 
         private const val GET_UNPUBLISHED_VURDERING =

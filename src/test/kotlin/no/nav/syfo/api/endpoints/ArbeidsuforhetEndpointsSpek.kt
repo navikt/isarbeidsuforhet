@@ -7,7 +7,10 @@ import io.ktor.server.testing.*
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_2_PERSONIDENT
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_3_PERSONIDENT
 import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT
+import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS
 import no.nav.syfo.UserConstants.PDF_AVSLAG
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.UserConstants.PDF_VURDERING
@@ -15,12 +18,11 @@ import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.api.*
 import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
+import no.nav.syfo.api.model.VurderingerRequestDTO
+import no.nav.syfo.api.model.VurderingerResponseDTO
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.Varsel
-import no.nav.syfo.domain.VurderingType
+import no.nav.syfo.domain.*
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
@@ -31,10 +33,7 @@ import no.nav.syfo.infrastructure.clients.pdfgen.VurderingPdfService
 import no.nav.syfo.infrastructure.database.getVurderingPdf
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
 import no.nav.syfo.util.configuredJacksonMapper
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
-import org.amshove.kluent.shouldNotBeEqualTo
-import org.amshove.kluent.shouldNotBeNull
+import org.amshove.kluent.*
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -99,9 +98,14 @@ object ArbeidsuforhetEndpointsSpek : Spek({
             )
             val personIdent = ARBEIDSTAKER_PERSONIDENT.value
 
-            suspend fun createVurdering(type: VurderingType, document: List<DocumentComponent>) = vurderingService.createVurdering(
-                personident = PersonIdent(personIdent),
-                veilederident = VEILEDER_IDENT,
+            suspend fun createVurdering(
+                personident: PersonIdent = PersonIdent(personIdent),
+                veilederident: String = VEILEDER_IDENT,
+                type: VurderingType,
+                document: List<DocumentComponent>
+            ) = vurderingService.createVurdering(
+                personident = personident,
+                veilederident = veilederident,
                 type = type,
                 begrunnelse = begrunnelse,
                 document = document,
@@ -305,6 +309,138 @@ object ArbeidsuforhetEndpointsSpek : Spek({
 
                             val responseDTOs = objectMapper.readValue<List<VurderingResponseDTO>>(response.content!!)
                             responseDTOs.size shouldBeEqualTo 2
+                        }
+                    }
+                }
+                describe("POST: Get vurderinger for several persons") {
+                    val personidenter = listOf(ARBEIDSTAKER_PERSONIDENT, ARBEIDSTAKER_2_PERSONIDENT, ARBEIDSTAKER_3_PERSONIDENT)
+                    val requestDTO = VurderingerRequestDTO(personidenter.map { it.value })
+                    val url = "$arbeidsuforhetApiBasePath/get-vurderinger"
+
+                    suspend fun createVurderinger(
+                        identer: List<PersonIdent> = personidenter,
+                        type: VurderingType = VurderingType.FORHANDSVARSEL,
+                    ) {
+                        identer.forEach { personident ->
+                            createVurdering(
+                                personident = personident,
+                                veilederident = VEILEDER_IDENT,
+                                type = type,
+                                document = forhandsvarselDocument,
+                            )
+                        }
+                    }
+
+                    it("Gets all vurderinger for all persons") {
+                        runBlocking { createVurderinger() }
+
+                        with(
+                            handleRequest(HttpMethod.Post, url) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(requestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val responseDTO =
+                                objectMapper.readValue<VurderingerResponseDTO>(response.content!!)
+
+                            responseDTO.vurderinger.size shouldBeEqualTo 3
+                            responseDTO.vurderinger.keys shouldContainAll personidenter.map { it.value }
+                            responseDTO.vurderinger.forEach { (_, vurdering) ->
+                                vurdering.veilederident shouldBeEqualTo VEILEDER_IDENT
+                                vurdering.begrunnelse shouldBeEqualTo begrunnelse
+                                vurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                            }
+                        }
+                    }
+                    it("Gets latest vurderinger for all persons") {
+                        runBlocking {
+                            createVurderinger()
+                            createVurderinger(
+                                identer = listOf(ARBEIDSTAKER_PERSONIDENT),
+                                type = VurderingType.OPPFYLT,
+                            )
+                        }
+
+                        with(
+                            handleRequest(HttpMethod.Post, url) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(requestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val responseDTO =
+                                objectMapper.readValue<VurderingerResponseDTO>(response.content!!)
+
+                            responseDTO.vurderinger.size shouldBeEqualTo 3
+                            responseDTO.vurderinger.keys shouldContainAll personidenter.map { it.value }
+                            responseDTO.vurderinger.forEach { (_, vurdering) ->
+                                vurdering.veilederident shouldBeEqualTo VEILEDER_IDENT
+                                vurdering.begrunnelse shouldBeEqualTo begrunnelse
+                                if (vurdering.personident == ARBEIDSTAKER_PERSONIDENT.value) {
+                                    vurdering.type shouldBeEqualTo VurderingType.OPPFYLT
+                                } else {
+                                    vurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                                }
+                            }
+                        }
+                    }
+
+                    it("Gets vurderinger only for person with vurdering, even when veileder has access to all persons") {
+                        runBlocking { createVurderinger(identer = listOf(ARBEIDSTAKER_PERSONIDENT)) }
+
+                        with(
+                            handleRequest(HttpMethod.Post, url) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(requestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val responseDTO =
+                                objectMapper.readValue<VurderingerResponseDTO>(response.content!!)
+
+                            responseDTO.vurderinger.size shouldBeEqualTo 1
+                            responseDTO.vurderinger.keys shouldContain ARBEIDSTAKER_PERSONIDENT.value
+                            responseDTO.vurderinger.forEach { (_, vurdering) ->
+                                vurdering.veilederident shouldBeEqualTo VEILEDER_IDENT
+                                vurdering.begrunnelse shouldBeEqualTo begrunnelse
+                            }
+                        }
+                    }
+
+                    it("Gets vurderinger only for persons where veileder has access") {
+                        val personidenter = listOf(ARBEIDSTAKER_PERSONIDENT, ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS)
+                        val requestDTO = VurderingerRequestDTO(personidenter.map { it.value })
+                        runBlocking { createVurderinger(identer = personidenter) }
+
+                        with(
+                            handleRequest(HttpMethod.Post, url) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(requestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.OK
+                            val responseDTO = objectMapper.readValue<VurderingerResponseDTO>(response.content!!)
+
+                            responseDTO.vurderinger.size shouldBeEqualTo 1
+                            responseDTO.vurderinger.keys shouldContain ARBEIDSTAKER_PERSONIDENT.value
+                            responseDTO.vurderinger.keys shouldNotContain ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS.value
+                        }
+                    }
+
+                    it("Gets no vurderinger when none of the persons has vurdering") {
+                        with(
+                            handleRequest(HttpMethod.Post, url) {
+                                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                                addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
+                                setBody(objectMapper.writeValueAsString(requestDTO))
+                            }
+                        ) {
+                            response.status() shouldBeEqualTo HttpStatusCode.NoContent
                         }
                     }
                 }
