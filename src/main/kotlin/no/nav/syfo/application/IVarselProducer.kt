@@ -10,5 +10,4 @@ interface IVarselProducer {
         journalpostId: JournalpostId,
         varsel: Varsel
     ): Result<Varsel>
-    fun sendExpiredForhandsvarsel(personIdent: PersonIdent, varsel: Varsel): Result<Varsel>
 }

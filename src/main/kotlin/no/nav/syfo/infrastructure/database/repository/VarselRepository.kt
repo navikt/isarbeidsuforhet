@@ -20,19 +20,11 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         }
     }.map { (personident, journalpostId, pVarsel) -> Triple(personident, journalpostId, pVarsel.toVarsel()) }
 
-    override fun getUnpublishedExpiredVarsler(): List<Pair<PersonIdent, Varsel>> =
-        database.connection.use { connection ->
-            connection.prepareStatement(GET_UNPUBLISHED_EXPIRED_VARSLER).use {
-                it.executeQuery().toList { Pair(PersonIdent(getString("personident")), toPVarsel()) }
-            }
-        }.map { (personident, pVarsel) -> Pair(personident, pVarsel.toVarsel()) }
-
     override fun update(varsel: Varsel) = database.connection.use { connection ->
         connection.prepareStatement(UPDATE_VARSEL).use {
             it.setObject(1, varsel.publishedAt)
             it.setObject(2, nowUTC())
-            it.setObject(3, varsel.svarfristExpiredPublishedAt)
-            it.setString(4, varsel.uuid.toString())
+            it.setString(3, varsel.uuid.toString())
             val updated = it.executeUpdate()
             if (updated != 1) {
                 throw SQLException("Expected a single row to be updated, got update count $updated")
@@ -53,26 +45,8 @@ class VarselRepository(private val database: DatabaseInterface) : IVarselReposit
         private const val UPDATE_VARSEL =
             """
                  UPDATE varsel
-                 SET published_at = ?, updated_at = ?, svarfrist_expired_published_at = ?
+                 SET published_at = ?, updated_at = ?
                  WHERE uuid = ?
-            """
-
-        private const val GET_UNPUBLISHED_EXPIRED_VARSLER =
-            """
-                SELECT vu.personident, v.*
-                FROM varsel v
-                INNER JOIN vurdering vu
-                ON v.vurdering_id = vu.id
-                WHERE svarfrist <= NOW() 
-                    AND v.published_at IS NOT NULL 
-                    AND svarfrist_expired_published_at IS NULL
-                    AND NOT EXISTS (
-                        SELECT 1
-                        FROM vurdering vu2
-                        WHERE vu2.personident = vu.personident
-                            AND vu2.created_at > v.created_at
-                            AND vu2.type = 'OPPFYLT'
-                )
             """
     }
 }
@@ -85,5 +59,4 @@ internal fun ResultSet.toPVarsel(): PVarsel = PVarsel(
     vurderingId = getInt("vurdering_id"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
     svarfrist = getDate("svarfrist").toLocalDate(),
-    svarfristExpiredPublishedAt = getObject("svarfrist_expired_published_at", OffsetDateTime::class.java),
 )

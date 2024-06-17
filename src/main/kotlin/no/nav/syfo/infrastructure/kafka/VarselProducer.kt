@@ -8,7 +8,6 @@ import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselPr
 
 class VarselProducer(
     private val arbeidstakerForhandsvarselProducer: ArbeidstakerForhandsvarselProducer,
-    private val expiredForhandsvarselProducer: ExpiredForhandsvarselProducer
 ) : IVarselProducer {
 
     override fun sendArbeidstakerForhandsvarsel(
@@ -17,9 +16,5 @@ class VarselProducer(
         varsel: Varsel
     ): Result<Varsel> {
         return arbeidstakerForhandsvarselProducer.sendArbeidstakerForhandsvarsel(personIdent = personIdent, journalpostId = journalpostId, varsel = varsel)
-    }
-
-    override fun sendExpiredForhandsvarsel(personIdent: PersonIdent, varsel: Varsel): Result<Varsel> {
-        return expiredForhandsvarselProducer.send(personIdent = personIdent, varsel = varsel)
     }
 }

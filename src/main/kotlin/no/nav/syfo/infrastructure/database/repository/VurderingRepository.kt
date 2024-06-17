@@ -140,7 +140,6 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setObject(3, now)
             it.setInt(4, vurderingId)
             it.setDate(5, Date.valueOf(varsel.svarfrist))
-            it.setObject(6, varsel.svarfristExpiredPublishedAt)
             it.executeQuery().toList { toPVarsel() }.single()
         }
     }
@@ -211,9 +210,8 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 created_at,
                 updated_at,
                 vurdering_id,
-                svarfrist,
-                svarfrist_expired_published_at             
-            ) values (DEFAULT, ?, ?, ?, ?, ?, ?)
+                svarfrist             
+            ) values (DEFAULT, ?, ?, ?, ?, ?)
             RETURNING *
             """
 

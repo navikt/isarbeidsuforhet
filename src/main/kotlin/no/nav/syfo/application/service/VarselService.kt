@@ -23,18 +23,4 @@ class VarselService(
             }
         }
     }
-
-    fun publishExpiredForhandsvarsler(): List<Result<Varsel>> {
-        val expiredUnpublishedVarsler = varselRepository.getUnpublishedExpiredVarsler()
-        return expiredUnpublishedVarsler
-            .map { (personIdent, expiredUnpublishedVarsel) ->
-                val result =
-                    varselProducer.sendExpiredForhandsvarsel(personIdent = personIdent, varsel = expiredUnpublishedVarsel)
-                result.map {
-                    val expiredPublishedVarsel = it.publishSvarfristExpired()
-                    varselRepository.update(expiredPublishedVarsel)
-                    expiredPublishedVarsel
-                }
-            }
-    }
 }
