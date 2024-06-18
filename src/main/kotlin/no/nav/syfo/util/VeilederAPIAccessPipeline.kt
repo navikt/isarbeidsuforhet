@@ -30,4 +30,3 @@ suspend fun PipelineContext<out Unit, ApplicationCall>.validateVeilederAccess(
         )
     }
 }
-
