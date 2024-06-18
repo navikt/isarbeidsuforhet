@@ -20,9 +20,9 @@ class VurderingService(
         personident: PersonIdent,
     ): List<Vurdering> = vurderingRepository.getVurderinger(personident)
 
-    fun getVurderinger(
+    fun getVurderingForPersoner(
         personidenter: List<PersonIdent>,
-    ) = vurderingRepository.getVurderingerBulk(personidenter)
+    ): Map<PersonIdent, Vurdering> = vurderingRepository.getVurderingForPersoner(personidenter)
 
     suspend fun createVurdering(
         personident: PersonIdent,

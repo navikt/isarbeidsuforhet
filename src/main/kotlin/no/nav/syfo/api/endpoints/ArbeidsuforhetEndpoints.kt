@@ -26,12 +26,14 @@ fun Route.registerArbeidsuforhetEndpoints(
 ) {
     route(arbeidsuforhetApiBasePath) {
         get(vurderingPath) {
-            call.checkVeilederTilgang(
+            val personIdent = call.getPersonIdent()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+
+            validateVeilederAccess(
                 action = API_ACTION,
+                personIdentToAccess = personIdent,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
-                val personIdent = call.getPersonIdent()
-                    ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
                 val vurderinger = vurderingService.getVurderinger(
                     personident = personIdent,
                 )
@@ -41,8 +43,12 @@ fun Route.registerArbeidsuforhetEndpoints(
         }
 
         post(vurderingPath) {
-            call.checkVeilederTilgang(
+            val personIdent = call.getPersonIdent()
+                ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
+
+            validateVeilederAccess(
                 action = API_ACTION,
+                personIdentToAccess = personIdent,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val requestDTO = call.receive<VurderingRequestDTO>()
@@ -51,8 +57,6 @@ fun Route.registerArbeidsuforhetEndpoints(
                     throw IllegalArgumentException("Vurdering can't have an empty begrunnelse or document, callId: $callId")
                 }
 
-                val personIdent = call.getPersonIdent()
-                    ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
                 val navIdent = call.getNAVIdent()
 
                 val newVurdering = vurderingService.createVurdering(
@@ -82,7 +86,7 @@ fun Route.registerArbeidsuforhetEndpoints(
             val vurderinger = if (personerVeilederHasAccessTo.isNullOrEmpty()) {
                 emptyMap()
             } else {
-                vurderingService.getVurderinger(
+                vurderingService.getVurderingForPersoner(
                     personidenter = personerVeilederHasAccessTo,
                 )
             }

@@ -3,11 +3,10 @@ package no.nav.syfo.util
 import com.auth0.jwt.JWT
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.util.pipeline.*
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
-import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
-import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 
 const val JWT_CLAIM_AZP = "azp"
 const val JWT_CLAIM_NAVIDENT = "NAVident"
@@ -31,27 +30,10 @@ fun ApplicationCall.getNAVIdent(): String {
 fun ApplicationCall.getBearerHeader(): String? =
     this.request.headers[HttpHeaders.Authorization]?.removePrefix("Bearer ")
 
-suspend fun ApplicationCall.checkVeilederTilgang(
-    action: String,
-    veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
-    block: suspend () -> Unit,
-) {
-    val callId = getCallId()
-    val token = getBearerHeader()
-        ?: throw IllegalArgumentException("Failed to complete the following action: $action. No Authorization header supplied")
-    val personident = getPersonIdent()
-        ?: throw IllegalArgumentException("Failed to $action: No $NAV_PERSONIDENT_HEADER supplied in request header")
+fun PipelineContext<out Unit, ApplicationCall>.getBearerHeader(): String? {
+    return this.call.getBearerHeader()
+}
 
-    val hasAccess = veilederTilgangskontrollClient.hasAccess(
-        callId = callId,
-        personIdent = personident,
-        token = token,
-    )
-    if (!hasAccess) {
-        throw ForbiddenAccessVeilederException(
-            action = action,
-        )
-    } else {
-        block()
-    }
+fun PipelineContext<out Unit, ApplicationCall>.getCallId(): String {
+    return this.call.getCallId()
 }

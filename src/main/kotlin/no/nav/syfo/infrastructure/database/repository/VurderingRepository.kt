@@ -31,7 +31,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             }
         }
 
-    override fun getVurderingerBulk(
+    override fun getVurderingForPersoner(
         personidenter: List<PersonIdent>,
     ): Map<PersonIdent, Vurdering> =
         database.connection.use { connection ->
