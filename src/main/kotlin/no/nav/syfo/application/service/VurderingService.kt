@@ -20,7 +20,7 @@ class VurderingService(
         personident: PersonIdent,
     ): List<Vurdering> = vurderingRepository.getVurderinger(personident)
 
-    fun getVurderingerBulk(
+    fun getVurderinger(
         personidenter: List<PersonIdent>,
     ) = vurderingRepository.getVurderingerBulk(personidenter)
 

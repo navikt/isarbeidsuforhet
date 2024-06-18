@@ -351,6 +351,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                                 vurdering.veilederident shouldBeEqualTo VEILEDER_IDENT
                                 vurdering.begrunnelse shouldBeEqualTo begrunnelse
                                 vurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                                vurdering.varsel shouldNotBe null
                             }
                         }
                     }
@@ -360,6 +361,14 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             createVurderinger(
                                 identer = listOf(ARBEIDSTAKER_PERSONIDENT),
                                 type = VurderingType.OPPFYLT,
+                            )
+                            createVurderinger(
+                                identer = listOf(ARBEIDSTAKER_2_PERSONIDENT),
+                                type = VurderingType.OPPFYLT,
+                            )
+                            createVurderinger(
+                                identer = listOf(ARBEIDSTAKER_2_PERSONIDENT),
+                                type = VurderingType.FORHANDSVARSEL,
                             )
                         }
 
@@ -381,8 +390,10 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                                 vurdering.begrunnelse shouldBeEqualTo begrunnelse
                                 if (vurdering.personident == ARBEIDSTAKER_PERSONIDENT.value) {
                                     vurdering.type shouldBeEqualTo VurderingType.OPPFYLT
+                                    vurdering.varsel shouldBe null
                                 } else {
                                     vurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
+                                    vurdering.varsel shouldNotBe null
                                 }
                             }
                         }

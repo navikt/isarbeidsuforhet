@@ -35,12 +35,30 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         personidenter: List<PersonIdent>,
     ): Map<PersonIdent, Vurdering> =
         database.connection.use { connection ->
-            connection.prepareStatement(GET_VURDERINGER).use {
-                it.setString(1, personidenter.map { it.value }.joinToString(","))
-                it.executeQuery().toList { toPVurdering() }
-            }.associate {
+            connection.prepareStatement(GET_VURDERINGER).use { preparedStatement ->
+                preparedStatement.setString(1, personidenter.joinToString(",") { it.value })
+                preparedStatement.executeQuery().toList {
+                    toPVurdering().toVurdering(
+                        if (getString("varsel_uuid") != null) {
+                            PVarsel(
+                                id = getInt("varsel_id"),
+                                uuid = UUID.fromString(getString("varsel_uuid")),
+                                createdAt = getObject("varsel_created_at", OffsetDateTime::class.java),
+                                updatedAt = getObject("varsel_updated_at", OffsetDateTime::class.java),
+                                vurderingId = getInt("id"),
+                                publishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
+                                svarfrist = getDate("varsel_svarfrist").toLocalDate(),
+                                svarfristExpiredPublishedAt = getObject(
+                                    "varsel_svarfrist_expired_published_at",
+                                    OffsetDateTime::class.java
+                                ),
+                            ).toVarsel()
+                        } else null
+                    )
+                }
+            }.associateBy {
                 // Den nyeste vurderingen blir valgt her siden lista er sortert med den nyeste til slutt
-                it.personident to it.toVurdering(connection.getVarselForVurdering(it))
+                it.personident
             }
         }
 
@@ -180,7 +198,17 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
 
         private const val GET_VURDERINGER =
             """
-                SELECT * FROM VURDERING WHERE personident = ANY (string_to_array(?, ',')) ORDER BY created_at ASC
+                SELECT vu.*,
+                    va.id as varsel_id,
+                    va.uuid as varsel_uuid,
+                    va.created_at as varsel_created_at,
+                    va.updated_at as varsel_updated_at,
+                    va.svarfrist as varsel_svarfrist,
+                    va.published_at as varsel_published_at,
+                    va.svarfrist_expired_published_at as varsel_svarfrist_expired_published_at 
+                FROM VURDERING vu LEFT OUTER JOIN VARSEL va ON (vu.id = va.vurdering_id) 
+                WHERE vu.personident = ANY (string_to_array(?, ',')) 
+                ORDER BY vu.created_at ASC
             """
 
         private const val GET_UNPUBLISHED_VURDERING =

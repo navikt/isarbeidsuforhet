@@ -82,7 +82,7 @@ fun Route.registerArbeidsuforhetEndpoints(
             val vurderinger = if (personerVeilederHasAccessTo.isNullOrEmpty()) {
                 emptyMap()
             } else {
-                vurderingService.getVurderingerBulk(
+                vurderingService.getVurderinger(
                     personidenter = personerVeilederHasAccessTo,
                 )
             }
