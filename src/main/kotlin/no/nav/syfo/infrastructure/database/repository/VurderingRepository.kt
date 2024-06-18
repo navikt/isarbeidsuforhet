@@ -48,10 +48,6 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                                 vurderingId = getInt("id"),
                                 publishedAt = getObject("varsel_published_at", OffsetDateTime::class.java),
                                 svarfrist = getDate("varsel_svarfrist").toLocalDate(),
-                                svarfristExpiredPublishedAt = getObject(
-                                    "varsel_svarfrist_expired_published_at",
-                                    OffsetDateTime::class.java
-                                ),
                             ).toVarsel()
                         } else null
                     )
@@ -204,8 +200,7 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                     va.created_at as varsel_created_at,
                     va.updated_at as varsel_updated_at,
                     va.svarfrist as varsel_svarfrist,
-                    va.published_at as varsel_published_at,
-                    va.svarfrist_expired_published_at as varsel_svarfrist_expired_published_at 
+                    va.published_at as varsel_published_at
                 FROM VURDERING vu LEFT OUTER JOIN VARSEL va ON (vu.id = va.vurdering_id) 
                 WHERE vu.personident = ANY (string_to_array(?, ',')) 
                 ORDER BY vu.created_at ASC

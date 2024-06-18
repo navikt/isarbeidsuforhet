@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import io.ktor.util.pipeline.*
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.infrastructure.clients.veiledertilgang.ForbiddenAccessVeilederException
 
 suspend fun PipelineContext<out Unit, ApplicationCall>.validateVeilederAccess(
     action: String,
@@ -30,7 +31,3 @@ suspend fun PipelineContext<out Unit, ApplicationCall>.validateVeilederAccess(
     }
 }
 
-class ForbiddenAccessVeilederException(
-    action: String,
-    message: String = "Denied NAVIdent access to personIdent: $action",
-) : RuntimeException(message)
