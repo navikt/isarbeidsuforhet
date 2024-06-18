@@ -75,11 +75,6 @@ fun main() {
             kafkaAivenProducerConfig<KafkaArbeidstakervarselSerializer>(kafkaEnvironment = environment.kafka)
         )
     )
-    val expiredForhandsvarselProducer = ExpiredForhandsvarselProducer(
-        producer = KafkaProducer(
-            kafkaAivenProducerConfig<ExpiredForhandsvarselRecordSerializer>(kafkaEnvironment = environment.kafka)
-        )
-    )
     val vurderingProducer = VurderingProducer(
         producer = KafkaProducer(
             kafkaAivenProducerConfig<VurderingRecordSerializer>(kafkaEnvironment = environment.kafka)
@@ -112,7 +107,6 @@ fun main() {
                 val varselRepository = VarselRepository(database = applicationDatabase)
                 val varselProducer = VarselProducer(
                     arbeidstakerForhandsvarselProducer = arbeidstakerForhandsvarselProducer,
-                    expiredForhandsvarselProducer = expiredForhandsvarselProducer
                 )
                 varselService = VarselService(
                     varselRepository = varselRepository,

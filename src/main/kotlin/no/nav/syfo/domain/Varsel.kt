@@ -10,19 +10,15 @@ data class Varsel private constructor(
     val createdAt: OffsetDateTime,
     val publishedAt: OffsetDateTime?,
     val svarfrist: LocalDate,
-    val svarfristExpiredPublishedAt: OffsetDateTime?,
 ) {
     constructor() : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         publishedAt = null,
         svarfrist = LocalDate.now().plusDays(svarfristDager),
-        svarfristExpiredPublishedAt = null,
     )
 
     fun publish(): Varsel = this.copy(publishedAt = nowUTC())
-
-    fun publishSvarfristExpired(): Varsel = this.copy(svarfristExpiredPublishedAt = nowUTC())
 
     fun isExpired(): Boolean = svarfrist.isBefore(LocalDate.now()) || svarfrist.isEqual(LocalDate.now())
 
@@ -32,13 +28,11 @@ data class Varsel private constructor(
             createdAt: OffsetDateTime,
             publishedAt: OffsetDateTime?,
             svarfrist: LocalDate,
-            svarfristExpiredPublishedAt: OffsetDateTime?,
         ) = Varsel(
             uuid = uuid,
             createdAt = createdAt,
             publishedAt = publishedAt,
             svarfrist = svarfrist,
-            svarfristExpiredPublishedAt = svarfristExpiredPublishedAt,
         )
 
         // Overridden in App.kt based on environment

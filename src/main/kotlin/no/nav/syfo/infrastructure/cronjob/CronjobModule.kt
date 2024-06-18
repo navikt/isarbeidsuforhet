@@ -28,9 +28,6 @@ fun launchCronjobs(
     val publishForhandsvarselCronjob = PublishForhandsvarselCronjob(varselService = varselService)
     cronjobs.add(publishForhandsvarselCronjob)
 
-    val publishExpiredForhandsvarslerCronjob = PublishExpiredForhandsvarslerCronjob(varselService = varselService)
-    cronjobs.add(publishExpiredForhandsvarslerCronjob)
-
     val publishVurderingerCronJob = PublishVurderingerCronjob(vurderingService = vurderingService)
     cronjobs.add(publishVurderingerCronJob)
 
