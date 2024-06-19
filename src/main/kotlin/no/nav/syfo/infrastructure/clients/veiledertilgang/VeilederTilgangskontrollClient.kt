@@ -15,8 +15,6 @@ import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.infrastructure.clients.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.bearerHeader
-import no.nav.syfo.infrastructure.clients.veiledertilgang.Metrics.Companion.COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL
-import no.nav.syfo.infrastructure.clients.veiledertilgang.Metrics.Companion.COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import org.slf4j.LoggerFactory
@@ -80,19 +78,19 @@ class VeilederTilgangskontrollClient(
                 contentType(ContentType.Application.Json)
                 setBody(identer)
             }
-            COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS.increment()
+            Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSONS_SUCCESS.increment()
             response.body<List<String>>().map { PersonIdent(it) }
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden) {
                 log.warn("Forbidden to request access to list of person from istilgangskontroll")
                 null
             } else {
-                COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.increment()
+                Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.increment()
                 log.error("Error while requesting access to list of person from istilgangskontroll: ${e.message}", e)
                 null
             }
         } catch (e: ServerResponseException) {
-            COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.increment()
+            Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSONS_FAIL.increment()
             log.error("Error while requesting access to list of person from istilgangskontroll: ${e.message}", e)
             null
         }
