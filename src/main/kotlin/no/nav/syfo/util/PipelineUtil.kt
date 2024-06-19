@@ -3,6 +3,7 @@ package no.nav.syfo.util
 import com.auth0.jwt.JWT
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.util.pipeline.*
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.infrastructure.NAV_CALL_ID_HEADER
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
@@ -28,3 +29,11 @@ fun ApplicationCall.getNAVIdent(): String {
 
 fun ApplicationCall.getBearerHeader(): String? =
     this.request.headers[HttpHeaders.Authorization]?.removePrefix("Bearer ")
+
+fun PipelineContext<out Unit, ApplicationCall>.getBearerHeader(): String? {
+    return this.call.getBearerHeader()
+}
+
+fun PipelineContext<out Unit, ApplicationCall>.getCallId(): String {
+    return this.call.getCallId()
+}

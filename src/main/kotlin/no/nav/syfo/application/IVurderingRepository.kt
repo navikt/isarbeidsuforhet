@@ -8,6 +8,10 @@ interface IVurderingRepository {
         personident: PersonIdent,
     ): List<Vurdering>
 
+    fun getLatestVurderingForPersoner(
+        personidenter: List<PersonIdent>,
+    ): Map<PersonIdent, Vurdering>
+
     fun getUnpublishedVurderinger(): List<Vurdering>
 
     fun createVurdering(

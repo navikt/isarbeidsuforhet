@@ -20,6 +20,10 @@ class VurderingService(
         personident: PersonIdent,
     ): List<Vurdering> = vurderingRepository.getVurderinger(personident)
 
+    fun getLatestVurderingForPersoner(
+        personidenter: List<PersonIdent>,
+    ): Map<PersonIdent, Vurdering> = vurderingRepository.getLatestVurderingForPersoner(personidenter)
+
     suspend fun createVurdering(
         personident: PersonIdent,
         veilederident: String,
