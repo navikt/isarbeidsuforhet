@@ -53,8 +53,8 @@ fun Route.registerArbeidsuforhetEndpoints(
             ) {
                 val requestDTO = call.receive<VurderingRequestDTO>()
                 val callId = call.getCallId()
-                if (requestDTO.begrunnelse.isBlank() || requestDTO.document.isEmpty()) {
-                    throw IllegalArgumentException("Vurdering can't have an empty begrunnelse or document, callId: $callId")
+                if (requestDTO.document.isEmpty()) {
+                    throw IllegalArgumentException("Vurdering can't have empty document, callId: $callId")
                 }
 
                 val navIdent = call.getNAVIdent()
@@ -63,6 +63,7 @@ fun Route.registerArbeidsuforhetEndpoints(
                     personident = personIdent,
                     veilederident = navIdent,
                     type = requestDTO.type,
+                    arsak = requestDTO.arsak,
                     begrunnelse = requestDTO.begrunnelse,
                     document = requestDTO.document,
                     gjelderFom = requestDTO.gjelderFom,

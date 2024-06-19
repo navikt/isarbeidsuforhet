@@ -28,6 +28,7 @@ class VurderingService(
         personident: PersonIdent,
         veilederident: String,
         type: VurderingType,
+        arsak: VurderingArsak?,
         begrunnelse: String,
         document: List<DocumentComponent>,
         gjelderFom: LocalDate?,
@@ -61,6 +62,12 @@ class VurderingService(
                 document = document,
                 gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type")
             )
+            VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
+                personident = personident,
+                veilederident = veilederident,
+                arsak = arsak ?: throw IllegalArgumentException("arsak is required for $type"),
+                document = document,
+            )
         }
 
         val pdf = vurderingPdfService.createVurderingPdf(
@@ -77,6 +84,7 @@ class VurderingService(
             VurderingType.FORHANDSVARSEL -> Metrics.COUNT_VURDERING_FORHANDSVARSEL.increment()
             VurderingType.OPPFYLT -> Metrics.COUNT_VURDERING_OPPFYLT.increment()
             VurderingType.AVSLAG -> Metrics.COUNT_VURDERING_AVSLAG.increment()
+            VurderingType.IKKE_AKTUELL -> Metrics.COUNT_VURDERING_IKKE_AKTUELL.increment()
         }
 
         return vurdering
@@ -122,6 +130,7 @@ private class Metrics {
         const val VURDERING_FORHANDSVARSEL = "${VURDERING_BASE}_forhandsvarsel"
         const val VURDERING_OPPFYLT = "${VURDERING_BASE}_oppfylt"
         const val VURDERING_AVSLAG = "${VURDERING_BASE}_avslag"
+        const val VURDERING_IKKE_AKTUELL = "${VURDERING_BASE}_ikke_aktuell"
 
         val COUNT_VURDERING_FORHANDSVARSEL: Counter = Counter
             .builder(VURDERING_FORHANDSVARSEL)
@@ -134,6 +143,10 @@ private class Metrics {
         val COUNT_VURDERING_AVSLAG: Counter = Counter
             .builder(VURDERING_AVSLAG)
             .description("Counts the number of successful avslag vurderinger")
+            .register(METRICS_REGISTRY)
+        val COUNT_VURDERING_IKKE_AKTUELL: Counter = Counter
+            .builder(VURDERING_IKKE_AKTUELL)
+            .description("Counts the number of successful ikke-aktuell vurderinger")
             .register(METRICS_REGISTRY)
     }
 }

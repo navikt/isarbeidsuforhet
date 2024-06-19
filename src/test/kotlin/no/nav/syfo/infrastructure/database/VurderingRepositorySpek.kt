@@ -80,6 +80,24 @@ class VurderingRepositorySpek : Spek({
                 pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
                 pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
             }
+
+            it("Creates vurdering IKKE_AKTUELL and pdf without varsel") {
+                val vurderingIkkeAktuell = generateVurdering(type = VurderingType.IKKE_AKTUELL)
+                vurderingRepository.createVurdering(
+                    vurdering = vurderingIkkeAktuell,
+                    pdf = PDF_VURDERING,
+                )
+
+                val vurdering = vurderingRepository.getVurderinger(vurderingIkkeAktuell.personident).firstOrNull()
+                vurdering?.type shouldBeEqualTo VurderingType.IKKE_AKTUELL
+                vurdering?.journalpostId shouldBeEqualTo null
+                vurdering?.varsel shouldBeEqualTo null
+
+                val pdf = database.getVurderingPdf(vurdering!!.uuid)?.pdf
+                pdf shouldNotBeEqualTo null
+                pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
+                pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
+            }
         }
     }
 })
