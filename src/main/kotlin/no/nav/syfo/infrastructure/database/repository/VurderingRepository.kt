@@ -7,10 +7,8 @@ import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
 import no.nav.syfo.util.nowUTC
-import java.sql.Connection
+import java.sql.*
 import java.sql.Date
-import java.sql.ResultSet
-import java.sql.SQLException
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -154,6 +152,11 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setString(7, vurdering.begrunnelse)
             it.setObject(8, mapper.writeValueAsString(vurdering.document))
             it.setObject(9, vurdering.gjelderFom)
+            if (vurdering.arsak != null) {
+                it.setString(10, vurdering.arsak!!.name)
+            } else {
+                it.setNull(10, Types.CHAR)
+            }
             it.executeQuery().toList { toPVurdering() }
         }.single()
     }
@@ -228,8 +231,9 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 type,
                 begrunnelse,
                 document,
-                gjelder_fom
-            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?)
+                gjelder_fom,
+                arsak
+            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?)
             RETURNING *
             """
 
@@ -287,6 +291,7 @@ internal fun ResultSet.toPVurdering(): PVurdering = PVurdering(
     veilederident = getString("veilederident"),
     type = getString("type"),
     begrunnelse = getString("begrunnelse"),
+    arsak = getString("arsak"),
     document = mapper.readValue(
         getString("document"),
         object : TypeReference<List<DocumentComponent>>() {}

@@ -27,7 +27,12 @@ fun generateVurdering(
         begrunnelse = begrunnelse,
         document = document,
     )
-
+    VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
+        personident = personident,
+        veilederident = UserConstants.VEILEDER_IDENT,
+        arsak = VurderingArsak.FRISKMELDT,
+        document = document,
+    )
     VurderingType.OPPFYLT -> Vurdering.Oppfylt(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,

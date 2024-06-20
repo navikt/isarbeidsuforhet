@@ -33,10 +33,6 @@ object JournalforingServiceSpek : Spek({
             pdlClient = externalMockEnvironment.pdlClient,
         )
 
-        val vurderingOppfylt = generateVurdering(type = VurderingType.OPPFYLT)
-        val vurderingAvslag = generateVurdering(type = VurderingType.AVSLAG)
-        val vurderingForhandsvarsel = generateForhandsvarselVurdering()
-
         beforeEachTest {
             clearAllMocks()
             coEvery { dokarkivMock.journalfor(any()) } returns dokarkivResponse
@@ -44,6 +40,7 @@ object JournalforingServiceSpek : Spek({
 
         describe("Journalføring") {
             it("Journalfører OPPFYLT vurdering") {
+                val vurderingOppfylt = generateVurdering(type = VurderingType.OPPFYLT)
                 val journalpostId = runBlocking {
                     journalforingService.journalfor(
                         personident = ARBEIDSTAKER_PERSONIDENT,
@@ -68,6 +65,7 @@ object JournalforingServiceSpek : Spek({
             }
 
             it("Journalfører FORHANDSVARSEL vurdering") {
+                val vurderingForhandsvarsel = generateForhandsvarselVurdering()
                 val journalpostId = runBlocking {
                     journalforingService.journalfor(
                         personident = ARBEIDSTAKER_PERSONIDENT,
@@ -92,6 +90,7 @@ object JournalforingServiceSpek : Spek({
             }
 
             it("Journalfører AVSLAG vurdering") {
+                val vurderingAvslag = generateVurdering(type = VurderingType.AVSLAG)
                 val journalpostId = runBlocking {
                     journalforingService.journalfor(
                         personident = ARBEIDSTAKER_PERSONIDENT,
@@ -110,6 +109,31 @@ object JournalforingServiceSpek : Spek({
                             pdf = PDF_AVSLAG,
                             vurderingUuid = vurderingAvslag.uuid,
                             journalpostType = JournalpostType.NOTAT.name,
+                        )
+                    )
+                }
+            }
+
+            it("Journalfører IKKE_AKTUELL vurdering") {
+                val vurderingIkkeAktuell = generateVurdering(type = VurderingType.IKKE_AKTUELL)
+                val journalpostId = runBlocking {
+                    journalforingService.journalfor(
+                        personident = ARBEIDSTAKER_PERSONIDENT,
+                        pdf = PDF_VURDERING,
+                        vurdering = vurderingIkkeAktuell,
+                    )
+                }
+
+                journalpostId shouldBeEqualTo mockedJournalpostId
+
+                coVerify(exactly = 1) {
+                    dokarkivMock.journalfor(
+                        journalpostRequest = generateJournalpostRequest(
+                            tittel = "Vurdering av §8-4 arbeidsuførhet",
+                            brevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING,
+                            pdf = PDF_VURDERING,
+                            vurderingUuid = vurderingIkkeAktuell.uuid,
+                            journalpostType = JournalpostType.UTGAAENDE.name,
                         )
                     )
                 }

@@ -1,9 +1,6 @@
 package no.nav.syfo.api.model
 
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.Varsel
-import no.nav.syfo.domain.Vurdering
-import no.nav.syfo.domain.VurderingType
+import no.nav.syfo.domain.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -14,6 +11,7 @@ data class VurderingResponseDTO private constructor(
     val createdAt: LocalDateTime,
     val veilederident: String,
     val type: VurderingType,
+    val arsak: VurderingArsak?,
     val begrunnelse: String,
     val document: List<DocumentComponent>,
     val varsel: VarselDTO?,
@@ -26,6 +24,7 @@ data class VurderingResponseDTO private constructor(
             createdAt = vurdering.createdAt.toLocalDateTime(),
             veilederident = vurdering.veilederident,
             type = vurdering.type,
+            arsak = vurdering.arsak,
             begrunnelse = vurdering.begrunnelse,
             document = vurdering.document,
             varsel = vurdering.varsel?.let { VarselDTO.createFromVarsel(it) },

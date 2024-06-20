@@ -15,6 +15,7 @@ import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.Varsel
+import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
@@ -101,6 +102,7 @@ class VurderingServiceSpek : Spek({
         val vurderingForhandsvarsel = generateForhandsvarselVurdering()
         val vurderingOppfylt = generateVurdering(type = VurderingType.OPPFYLT)
         val vurderingAvslag = generateVurdering(type = VurderingType.AVSLAG)
+        val vurderingIkkeAktuell = generateVurdering(type = VurderingType.IKKE_AKTUELL)
 
         describe("Journalføring") {
             it("journalfører FORHANDSVARSEL vurdering") {
@@ -165,6 +167,29 @@ class VurderingServiceSpek : Spek({
 
                 val pVurdering = database.getVurdering(vurderingAvslag.uuid)
                 pVurdering!!.type shouldBeEqualTo VurderingType.AVSLAG.name
+                pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+            }
+
+            it("journalfører IKKE_AKTUELL vurdering") {
+                vurderingRepository.createVurdering(
+                    vurdering = vurderingIkkeAktuell,
+                    pdf = PDF_VURDERING,
+                )
+
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
+                }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val journalfortVurdering = success.first().getOrThrow()
+                journalfortVurdering.journalpostId?.value shouldBeEqualTo mockedJournalpostId.toString()
+
+                val pVurdering = database.getVurdering(journalfortVurdering.uuid)
+                pVurdering!!.updatedAt shouldBeGreaterThan pVurdering.createdAt
+                pVurdering.type shouldBeEqualTo VurderingType.IKKE_AKTUELL.name
                 pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
             }
 
@@ -250,6 +275,7 @@ class VurderingServiceSpek : Spek({
                         personident = ARBEIDSTAKER_PERSONIDENT,
                         veilederident = VEILEDER_IDENT,
                         type = VurderingType.AVSLAG,
+                        arsak = null,
                         begrunnelse = "",
                         document = emptyList(),
                         gjelderFom = LocalDate.now().plusDays(1),
@@ -282,6 +308,41 @@ class VurderingServiceSpek : Spek({
                 avslagVurderingRecord.uuid shouldBeEqualTo unpublishedAvslagVurdering.uuid
                 avslagVurderingRecord.type shouldBeEqualTo unpublishedAvslagVurdering.type
                 avslagVurderingRecord.gjelderFom shouldBeEqualTo unpublishedAvslagVurdering.gjelderFom
+                avslagVurderingRecord.isFinal shouldBeEqualTo true
+
+                val forhandsvarselRecord = producerRecordSlot1.captured.value()
+                forhandsvarselRecord.isFinal shouldBeEqualTo false
+            }
+
+            it("publishes unpublished ikke-aktuell vurdering") {
+                val unpublishedIkkeAktuellVurdering = runBlocking {
+                    vurderingService.createVurdering(
+                        personident = ARBEIDSTAKER_PERSONIDENT,
+                        veilederident = VEILEDER_IDENT,
+                        type = VurderingType.IKKE_AKTUELL,
+                        arsak = VurderingArsak.FRISKMELDT,
+                        begrunnelse = "",
+                        document = emptyList(),
+                        gjelderFom = null,
+                        callId = UUID.randomUUID().toString(),
+                    )
+                }
+
+                val (success, failed) = vurderingService.publishUnpublishedVurderinger().partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val producerRecordSlot = slot<ProducerRecord<String, VurderingRecord>>()
+                verifyOrder {
+                    mockVurderingProducer.send(capture(producerRecordSlot))
+                }
+
+                val ikkeAktuellVurderingRecord = producerRecordSlot.captured.value()
+                ikkeAktuellVurderingRecord.uuid shouldBeEqualTo unpublishedIkkeAktuellVurdering.uuid
+                ikkeAktuellVurderingRecord.type shouldBeEqualTo unpublishedIkkeAktuellVurdering.type
+                ikkeAktuellVurderingRecord.arsak shouldBeEqualTo unpublishedIkkeAktuellVurdering.arsak
+                ikkeAktuellVurderingRecord.gjelderFom.shouldBeNull()
+                ikkeAktuellVurderingRecord.isFinal shouldBeEqualTo true
             }
 
             it("publishes nothing when no unpublished vurdering") {
@@ -297,6 +358,7 @@ class VurderingServiceSpek : Spek({
                         personident = ARBEIDSTAKER_PERSONIDENT,
                         veilederident = VEILEDER_IDENT,
                         type = VurderingType.FORHANDSVARSEL,
+                        arsak = null,
                         begrunnelse = "",
                         document = emptyList(),
                         gjelderFom = null,
@@ -330,6 +392,7 @@ class VurderingServiceSpek : Spek({
                             personident = ARBEIDSTAKER_PERSONIDENT,
                             veilederident = VEILEDER_IDENT,
                             type = VurderingType.FORHANDSVARSEL,
+                            arsak = null,
                             begrunnelse = begrunnelse,
                             document = document,
                             gjelderFom = null,
@@ -358,6 +421,7 @@ class VurderingServiceSpek : Spek({
                             personident = ARBEIDSTAKER_PERSONIDENT,
                             veilederident = VEILEDER_IDENT,
                             type = VurderingType.OPPFYLT,
+                            arsak = null,
                             begrunnelse = begrunnelse,
                             document = document,
                             gjelderFom = null,
@@ -388,6 +452,7 @@ class VurderingServiceSpek : Spek({
                             personident = ARBEIDSTAKER_PERSONIDENT,
                             veilederident = VEILEDER_IDENT,
                             type = VurderingType.AVSLAG,
+                            arsak = null,
                             begrunnelse = "Avslag",
                             document = document,
                             gjelderFom = avslagGjelderFom,
@@ -402,6 +467,35 @@ class VurderingServiceSpek : Spek({
                     vurdering.journalpostId shouldBeEqualTo null
                     vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                     vurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
+
+                    coVerify(exactly = 1) {
+                        vurderingPdfServiceMock.createVurderingPdf(
+                            vurdering = vurdering,
+                            callId = "",
+                        )
+                    }
+                }
+
+                it("lager vurdering IKKE_AKTUELL med pdf") {
+                    coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
+
+                    val vurdering = runBlocking {
+                        vurderingServiceWithMocks.createVurdering(
+                            personident = ARBEIDSTAKER_PERSONIDENT,
+                            veilederident = VEILEDER_IDENT,
+                            type = VurderingType.IKKE_AKTUELL,
+                            arsak = VurderingArsak.FRISKMELDT,
+                            begrunnelse = "",
+                            document = document,
+                            gjelderFom = null,
+                            callId = "",
+                        )
+                    }
+
+                    vurdering.varsel shouldBeEqualTo null
+                    vurdering.type shouldBeEqualTo VurderingType.IKKE_AKTUELL
+                    vurdering.journalpostId shouldBeEqualTo null
+                    vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
 
                     coVerify(exactly = 1) {
                         vurderingPdfServiceMock.createVurderingPdf(
@@ -425,6 +519,7 @@ class VurderingServiceSpek : Spek({
                                 personident = ARBEIDSTAKER_PERSONIDENT,
                                 veilederident = VEILEDER_IDENT,
                                 type = VurderingType.FORHANDSVARSEL,
+                                arsak = null,
                                 begrunnelse = begrunnelse,
                                 document = document,
                                 gjelderFom = null,
@@ -452,6 +547,7 @@ class VurderingServiceSpek : Spek({
                                 personident = ARBEIDSTAKER_PERSONIDENT,
                                 veilederident = VEILEDER_IDENT,
                                 type = VurderingType.FORHANDSVARSEL,
+                                arsak = null,
                                 begrunnelse = begrunnelse,
                                 document = document,
                                 gjelderFom = null,
@@ -480,6 +576,7 @@ class VurderingServiceSpek : Spek({
                                 personident = ARBEIDSTAKER_PERSONIDENT,
                                 veilederident = VEILEDER_IDENT,
                                 type = VurderingType.AVSLAG,
+                                arsak = null,
                                 begrunnelse = "",
                                 document = emptyList(),
                                 gjelderFom = LocalDate.now().plusDays(1),
@@ -501,6 +598,7 @@ class VurderingServiceSpek : Spek({
                                 personident = ARBEIDSTAKER_PERSONIDENT,
                                 veilederident = VEILEDER_IDENT,
                                 type = VurderingType.AVSLAG,
+                                arsak = null,
                                 begrunnelse = "",
                                 document = emptyList(),
                                 gjelderFom = LocalDate.now().plusDays(1),
@@ -517,6 +615,7 @@ class VurderingServiceSpek : Spek({
                                 personident = ARBEIDSTAKER_PERSONIDENT,
                                 veilederident = VEILEDER_IDENT,
                                 type = VurderingType.AVSLAG,
+                                arsak = null,
                                 begrunnelse = "",
                                 document = emptyList(),
                                 gjelderFom = LocalDate.now().plusDays(1),
@@ -536,7 +635,27 @@ class VurderingServiceSpek : Spek({
                                 personident = ARBEIDSTAKER_PERSONIDENT,
                                 veilederident = VEILEDER_IDENT,
                                 type = VurderingType.AVSLAG,
+                                arsak = null,
                                 begrunnelse = "Avslag",
+                                document = document,
+                                gjelderFom = null,
+                                callId = "",
+                            )
+                        }
+                    }
+                }
+
+                it("Ikke aktuell fails when missing arsak") {
+                    coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
+
+                    runBlocking {
+                        assertFailsWith(IllegalArgumentException::class) {
+                            vurderingServiceWithMocks.createVurdering(
+                                personident = ARBEIDSTAKER_PERSONIDENT,
+                                veilederident = VEILEDER_IDENT,
+                                type = VurderingType.IKKE_AKTUELL,
+                                arsak = null,
+                                begrunnelse = "",
                                 document = document,
                                 gjelderFom = null,
                                 callId = "",
