@@ -43,7 +43,7 @@ class CronjobRunner(
                             )
                         }
                     } else {
-                        log.info("Pod is not leader and will not perform cronjob")
+                        log.debug("Pod is not leader and will not perform cronjob")
                     }
                 } catch (ex: Exception) {
                     log.error("Exception in $cronjobName. Job will run again after delay.", ex)
