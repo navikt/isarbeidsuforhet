@@ -42,7 +42,7 @@ import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Future
 
-val expiredForhandsvarsel = generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now()))
+val expiredForhandsvarsel = generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now().minusDays(1)))
 
 class VurderingServiceSpek : Spek({
     describe(VurderingService::class.java.simpleName) {
