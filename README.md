@@ -22,7 +22,7 @@ Se "§ 8-4 Medisinske vilkår" på Navet for mer informasjon.
 
 #### Requirements
 
-* JDK 17
+* JDK 21
 
 ### Build
 
