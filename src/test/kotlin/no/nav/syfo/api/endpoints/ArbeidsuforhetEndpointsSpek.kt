@@ -207,7 +207,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Creates new vurdering AVSLAG and creates PDF") {
                         val expiredForhandsvarsel =
-                            generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now()))
+                            generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now().minusDays(1)))
                         vurderingRepository.createVurdering(
                             vurdering = expiredForhandsvarsel,
                             pdf = PDF_FORHANDSVARSEL,
