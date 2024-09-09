@@ -53,6 +53,7 @@ spec:
   gcp:
     sqlInstances:
       - type: POSTGRES_15
+        tier: db-f1-micro
         databases:
           - name: isarbeidsuforhet-db
         diskAutoresize: true
