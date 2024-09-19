@@ -58,10 +58,10 @@ class JournalforingService(
                 tittel = dokumentTittel,
             )
         )
-
+        val journalpostType = vurdering.type.getJournalpostType()
         return JournalpostRequest(
-            journalpostType = vurdering.type.getJournalpostType().name,
-            avsenderMottaker = avsenderMottaker,
+            journalpostType = journalpostType.name,
+            avsenderMottaker = if (journalpostType == JournalpostType.UTGAAENDE) avsenderMottaker else null,
             tittel = dokumentTittel,
             bruker = bruker,
             dokumenter = dokumenter,
