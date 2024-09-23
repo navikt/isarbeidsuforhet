@@ -11,11 +11,12 @@ fun generateJournalpostRequest(
     vurderingUuid: UUID,
     journalpostType: String = JournalpostType.UTGAAENDE.name,
 ) = JournalpostRequest(
-    avsenderMottaker = AvsenderMottaker.create(
-        id = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
-        idType = BrukerIdType.PERSON_IDENT,
-        navn = UserConstants.PERSON_FULLNAME,
-    ),
+    avsenderMottaker = if (journalpostType == JournalpostType.UTGAAENDE.name)
+        AvsenderMottaker.create(
+            id = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
+            idType = BrukerIdType.PERSON_IDENT,
+            navn = UserConstants.PERSON_FULLNAME,
+        ) else null,
     bruker = Bruker.create(
         id = UserConstants.ARBEIDSTAKER_PERSONIDENT.value,
         idType = BrukerIdType.PERSON_IDENT

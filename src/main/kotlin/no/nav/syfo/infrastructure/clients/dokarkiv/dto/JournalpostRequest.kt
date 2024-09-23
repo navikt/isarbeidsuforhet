@@ -12,7 +12,7 @@ enum class JournalpostTema(val value: String) {
 }
 
 data class JournalpostRequest(
-    val avsenderMottaker: AvsenderMottaker,
+    val avsenderMottaker: AvsenderMottaker? = null,
     val tittel: String,
     val bruker: Bruker? = null,
     val dokumenter: List<Dokument>,
