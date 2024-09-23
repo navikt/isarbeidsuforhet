@@ -32,11 +32,15 @@ class JournalforingService(
         pdf: ByteArray,
         vurdering: Vurdering,
     ): JournalpostRequest {
-        val avsenderMottaker = AvsenderMottaker.create(
-            id = personIdent.value,
-            idType = BrukerIdType.PERSON_IDENT,
-            navn = navn,
-        )
+        val journalpostType = vurdering.type.getJournalpostType()
+        val avsenderMottaker = if (journalpostType != JournalpostType.NOTAT) {
+            AvsenderMottaker.create(
+                id = personIdent.value,
+                idType = BrukerIdType.PERSON_IDENT,
+                navn = navn,
+            )
+        } else null
+
         val bruker = Bruker.create(
             id = personIdent.value,
             idType = BrukerIdType.PERSON_IDENT,
@@ -58,10 +62,9 @@ class JournalforingService(
                 tittel = dokumentTittel,
             )
         )
-        val journalpostType = vurdering.type.getJournalpostType()
         return JournalpostRequest(
             journalpostType = journalpostType.name,
-            avsenderMottaker = if (journalpostType == JournalpostType.UTGAAENDE) avsenderMottaker else null,
+            avsenderMottaker = avsenderMottaker,
             tittel = dokumentTittel,
             bruker = bruker,
             dokumenter = dokumenter,
