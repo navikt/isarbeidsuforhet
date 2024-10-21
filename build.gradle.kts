@@ -1,24 +1,24 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val FLYWAY = "10.8.1"
+val FLYWAY = "10.20.0"
 val HIKARI = "5.1.0"
-val POSTGRES = "42.7.2"
+val POSTGRES = "42.7.4"
 val POSTGRES_EMBEDDED = "2.0.7"
 val KAFKA = "3.7.0"
-val LOGBACK = "1.5.6"
+val LOGBACK = "1.5.11"
 val LOGSTASH_ENCODER = "8.0"
-val MICROMETER_REGISTRY = "1.12.2"
-val JACKSON_DATATYPE = "2.16.1"
+val MICROMETER_REGISTRY = "1.13.6"
+val JACKSON_DATATYPE = "2.18.0"
 val KTOR = "2.3.12"
 val SPEK = "2.0.19"
-val MOCKK = "1.13.9"
-val NIMBUS_JOSE_JWT = "9.40"
+val MOCKK = "1.13.13"
+val NIMBUS_JOSE_JWT = "9.41.2"
 val KLUENT = "1.73"
 
 plugins {
-    kotlin("jvm") version "2.0.20"
-    id("com.gradleup.shadow") version "8.3.0"
+    kotlin("jvm") version "2.0.21"
+    id("com.gradleup.shadow") version "8.3.3"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
