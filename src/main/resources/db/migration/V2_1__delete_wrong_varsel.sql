@@ -1,0 +1,1 @@
+DELETE FROM vurdering WHERE uuid = '8292a37b-f308-44ba-a6f3-450018754070';
