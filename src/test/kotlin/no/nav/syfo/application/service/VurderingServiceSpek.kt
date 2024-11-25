@@ -14,7 +14,6 @@ import no.nav.syfo.application.IVurderingPdfService
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.JournalpostId
-import no.nav.syfo.domain.Varsel
 import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
@@ -42,7 +41,7 @@ import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Future
 
-val expiredForhandsvarsel = generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now().minusDays(1)))
+val expiredForhandsvarsel = generateForhandsvarselVurdering(svarfrist = LocalDate.now().minusDays(1))
 
 class VurderingServiceSpek : Spek({
     describe(VurderingService::class.java.simpleName) {
@@ -224,6 +223,7 @@ class VurderingServiceSpek : Spek({
                 val vurderingFails = generateVurdering(
                     type = VurderingType.FORHANDSVARSEL,
                     personident = ARBEIDSTAKER_PERSONIDENT_PDL_FAILS,
+                    svarfrist = LocalDate.now().plusDays(21),
                 )
                 vurderingRepository.createVurdering(
                     pdf = PDF_FORHANDSVARSEL,
@@ -362,6 +362,7 @@ class VurderingServiceSpek : Spek({
                         begrunnelse = "",
                         document = emptyList(),
                         gjelderFom = null,
+                        svarfrist = LocalDate.now().plusDays(21),
                         callId = UUID.randomUUID().toString(),
                     )
                 }
@@ -396,6 +397,7 @@ class VurderingServiceSpek : Spek({
                             begrunnelse = begrunnelse,
                             document = document,
                             gjelderFom = null,
+                            svarfrist = LocalDate.now().plusDays(21),
                             callId = "",
                         )
                     }
@@ -523,6 +525,7 @@ class VurderingServiceSpek : Spek({
                                 begrunnelse = begrunnelse,
                                 document = document,
                                 gjelderFom = null,
+                                svarfrist = LocalDate.now().plusDays(21),
                                 callId = "",
                             )
                         }
@@ -551,6 +554,7 @@ class VurderingServiceSpek : Spek({
                                 begrunnelse = begrunnelse,
                                 document = document,
                                 gjelderFom = null,
+                                svarfrist = LocalDate.now().plusDays(21),
                                 callId = "",
                             )
                         }

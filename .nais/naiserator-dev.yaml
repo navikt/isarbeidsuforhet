@@ -73,8 +73,6 @@ spec:
   env:
     - name: KTOR_ENV
       value: "production"
-    - name: SVARFRIST_DAGER
-      value: "1"
     - name: ISTILGANGSKONTROLL_CLIENT_ID
       value: "dev-gcp.teamsykefravr.istilgangskontroll"
     - name: ISTILGANGSKONTROLL_URL

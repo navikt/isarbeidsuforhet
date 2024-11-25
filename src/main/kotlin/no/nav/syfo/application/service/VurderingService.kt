@@ -32,11 +32,15 @@ class VurderingService(
         begrunnelse: String,
         document: List<DocumentComponent>,
         gjelderFom: LocalDate?,
+        svarfrist: LocalDate? = null,
         callId: String,
     ): Vurdering {
         val currentVurdering = getVurderinger(personident).firstOrNull()
         if (type == VurderingType.FORHANDSVARSEL && currentVurdering is Vurdering.Forhandsvarsel) {
             throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
+        }
+        if (type == VurderingType.FORHANDSVARSEL && svarfrist == null) {
+            throw IllegalArgumentException("${VurderingType.FORHANDSVARSEL} requires frist")
         }
         if (type == VurderingType.AVSLAG && (currentVurdering == null || !currentVurdering.isExpiredForhandsvarsel())) {
             throw IllegalArgumentException("Cannot create ${VurderingType.AVSLAG} without expired ${VurderingType.FORHANDSVARSEL}")
@@ -48,6 +52,7 @@ class VurderingService(
                 veilederident = veilederident,
                 begrunnelse = begrunnelse,
                 document = document,
+                svarfrist = svarfrist!!,
             )
             VurderingType.OPPFYLT -> Vurdering.Oppfylt(
                 personident = personident,

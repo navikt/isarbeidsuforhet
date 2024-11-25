@@ -44,7 +44,7 @@ sealed interface Vurdering {
         override val veilederident: String,
         override val begrunnelse: String,
         override val document: List<DocumentComponent>,
-        override val varsel: Varsel = Varsel(),
+        override val varsel: Varsel,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null
     ) : Vurdering {
@@ -57,6 +57,7 @@ sealed interface Vurdering {
             veilederident: String,
             begrunnelse: String,
             document: List<DocumentComponent>,
+            svarfrist: LocalDate,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -64,6 +65,7 @@ sealed interface Vurdering {
             document = document,
             journalpostId = null,
             publishedAt = null,
+            varsel = Varsel(svarfrist = svarfrist),
         )
     }
 

@@ -8,11 +8,13 @@ fun generateForhandsvarselVurdering(
     personident: PersonIdent = UserConstants.ARBEIDSTAKER_PERSONIDENT,
     begrunnelse: String = "En begrunnelse",
     document: List<DocumentComponent> = generateDocumentComponent(begrunnelse),
+    svarfrist: LocalDate = LocalDate.now().plusDays(30),
 ) = generateVurdering(
     personident = personident,
     begrunnelse = begrunnelse,
     document = document,
     type = VurderingType.FORHANDSVARSEL,
+    svarfrist = svarfrist,
 ) as Vurdering.Forhandsvarsel
 
 fun generateVurdering(
@@ -20,12 +22,14 @@ fun generateVurdering(
     begrunnelse: String = "En begrunnelse",
     document: List<DocumentComponent> = generateDocumentComponent(begrunnelse),
     type: VurderingType,
+    svarfrist: LocalDate? = null,
 ) = when (type) {
     VurderingType.FORHANDSVARSEL -> Vurdering.Forhandsvarsel(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
         begrunnelse = begrunnelse,
         document = document,
+        svarfrist = svarfrist!!,
     )
     VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
         personident = personident,

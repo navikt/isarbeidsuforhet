@@ -11,4 +11,5 @@ data class VurderingRequestDTO(
     val document: List<DocumentComponent>,
     val gjelderFom: LocalDate? = null,
     val arsak: VurderingArsak? = null,
+    val frist: LocalDate? = null,
 )
