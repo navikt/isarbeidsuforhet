@@ -32,7 +32,7 @@ data class Environment(
             openidConfigTokenEndpoint = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")
         ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
-    val svarfristDager: Long = getEnvVar("SVARFRIST_DAGER").toLong(),
+
     val clients: ClientsEnvironment =
         ClientsEnvironment(
             istilgangskontroll = ClientEnvironment(

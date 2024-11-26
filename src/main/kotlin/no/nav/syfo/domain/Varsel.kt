@@ -11,11 +11,13 @@ data class Varsel private constructor(
     val publishedAt: OffsetDateTime?,
     val svarfrist: LocalDate,
 ) {
-    constructor() : this(
+    constructor(
+        svarfrist: LocalDate,
+    ) : this(
         uuid = UUID.randomUUID(),
         createdAt = nowUTC(),
         publishedAt = null,
-        svarfrist = LocalDate.now().plusDays(svarfristDager),
+        svarfrist = svarfrist,
     )
 
     fun publish(): Varsel = this.copy(publishedAt = nowUTC())
@@ -34,8 +36,5 @@ data class Varsel private constructor(
             publishedAt = publishedAt,
             svarfrist = svarfrist,
         )
-
-        // Overridden in App.kt based on environment
-        var svarfristDager: Long = 21
     }
 }

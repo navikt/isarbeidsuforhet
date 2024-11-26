@@ -11,23 +11,17 @@ import java.time.LocalDate
 class VurderingSpek : Spek({
     describe("isExpiredForhandsvarsel") {
         it("return false when forhandsvarsel with svarfrist tomorrow") {
-            val forhandsvarsel = generateForhandsvarselVurdering().copy(
-                varsel = Varsel().copy(svarfrist = LocalDate.now().plusDays(1))
-            )
+            val forhandsvarsel = generateForhandsvarselVurdering(svarfrist = LocalDate.now().plusDays(1))
             forhandsvarsel.isExpiredForhandsvarsel().shouldBeFalse()
         }
 
         it("return false when forhandsvarsel with svarfrist today") {
-            val forhandsvarsel = generateForhandsvarselVurdering().copy(
-                varsel = Varsel().copy(svarfrist = LocalDate.now())
-            )
+            val forhandsvarsel = generateForhandsvarselVurdering(svarfrist = LocalDate.now())
             forhandsvarsel.isExpiredForhandsvarsel().shouldBeFalse()
         }
 
         it("return true when forhandsvarsel with svarfrist yesterday") {
-            val forhandsvarsel = generateForhandsvarselVurdering().copy(
-                varsel = Varsel().copy(svarfrist = LocalDate.now().minusDays(1))
-            )
+            val forhandsvarsel = generateForhandsvarselVurdering(svarfrist = LocalDate.now().minusDays(1))
             forhandsvarsel.isExpiredForhandsvarsel().shouldBeTrue()
         }
         it("returns false when not forhandsvarsel") {

@@ -86,10 +86,12 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 fritekst = begrunnelse,
                 header = "Avslag",
             )
+            val svarfrist = LocalDate.now().plusDays(30)
             val forhandsvarselRequestDTO = VurderingRequestDTO(
                 type = VurderingType.FORHANDSVARSEL,
                 begrunnelse = begrunnelse,
                 document = forhandsvarselDocument,
+                frist = svarfrist,
             )
             val vurderingRequestDTO = VurderingRequestDTO(
                 type = VurderingType.OPPFYLT,
@@ -102,7 +104,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 personident: PersonIdent = PersonIdent(personIdent),
                 veilederident: String = VEILEDER_IDENT,
                 type: VurderingType,
-                document: List<DocumentComponent>
+                document: List<DocumentComponent>,
+                svarfrist: LocalDate? = null,
             ) = vurderingService.createVurdering(
                 personident = personident,
                 veilederident = veilederident,
@@ -112,6 +115,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 document = document,
                 gjelderFom = null,
                 callId = UUID.randomUUID().toString(),
+                svarfrist = svarfrist,
             )
 
             beforeEachTest {
@@ -139,6 +143,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             responseDTO.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                             responseDTO.gjelderFom.shouldBeNull()
                             responseDTO.varsel shouldNotBeEqualTo null
+                            responseDTO.varsel!!.svarfrist shouldBeEqualTo svarfrist
 
                             val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
                             vurdering.begrunnelse shouldBeEqualTo begrunnelse
@@ -157,7 +162,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         runBlocking {
                             createVurdering(
                                 type = VurderingType.FORHANDSVARSEL,
-                                document = forhandsvarselDocument
+                                document = forhandsvarselDocument,
+                                svarfrist = LocalDate.now().plusDays(21),
                             )
                         }
                         with(
@@ -207,7 +213,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Creates new vurdering AVSLAG and creates PDF") {
                         val expiredForhandsvarsel =
-                            generateForhandsvarselVurdering().copy(varsel = Varsel().copy(svarfrist = LocalDate.now().minusDays(1)))
+                            generateForhandsvarselVurdering(svarfrist = LocalDate.now().minusDays(1))
                         vurderingRepository.createVurdering(
                             vurdering = expiredForhandsvarsel,
                             pdf = PDF_FORHANDSVARSEL,
@@ -301,7 +307,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         runBlocking {
                             createVurdering(
                                 type = VurderingType.FORHANDSVARSEL,
-                                document = forhandsvarselDocument
+                                document = forhandsvarselDocument,
+                                svarfrist = LocalDate.now().plusDays(21),
                             )
                         }
                         with(
@@ -342,7 +349,11 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                     it("Successfully gets multiple vurderinger") {
                         runBlocking {
-                            createVurdering(type = VurderingType.FORHANDSVARSEL, document = forhandsvarselDocument)
+                            createVurdering(
+                                type = VurderingType.FORHANDSVARSEL,
+                                document = forhandsvarselDocument,
+                                svarfrist = LocalDate.now().plusDays(21),
+                            )
                             createVurdering(type = VurderingType.OPPFYLT, document = generateDocumentComponent("Oppfylt"))
                         }
                         with(
@@ -373,6 +384,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                                 veilederident = VEILEDER_IDENT,
                                 type = type,
                                 document = forhandsvarselDocument,
+                                svarfrist = if (type == VurderingType.FORHANDSVARSEL) LocalDate.now().plusDays(21) else null,
                             )
                         }
                     }
