@@ -10,7 +10,7 @@ val LOGBACK = "1.5.6"
 val LOGSTASH_ENCODER = "8.0"
 val MICROMETER_REGISTRY = "1.12.2"
 val JACKSON_DATATYPE = "2.16.1"
-val KTOR = "2.3.12"
+val KTOR = "3.0.2"
 val SPEK = "2.0.19"
 val MOCKK = "1.13.9"
 val NIMBUS_JOSE_JWT = "9.40"
@@ -64,7 +64,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$JACKSON_DATATYPE")
 
     // Tests
-    testImplementation("io.ktor:ktor-server-tests:$KTOR")
+    testImplementation("io.ktor:ktor-server-test-host:$KTOR")
     testImplementation("io.mockk:mockk:$MOCKK")
     testImplementation("io.ktor:ktor-client-mock:$KTOR")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$NIMBUS_JOSE_JWT")
