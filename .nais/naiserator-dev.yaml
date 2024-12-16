@@ -75,6 +75,8 @@ spec:
       value: "production"
     - name: ISTILGANGSKONTROLL_CLIENT_ID
       value: "dev-gcp.teamsykefravr.istilgangskontroll"
+    - name: JOURNALFORING_CRONJOB_ENABLED
+      value: "false"
     - name: ISTILGANGSKONTROLL_URL
       value: "http://istilgangskontroll"
     - name: PDL_CLIENT_ID
