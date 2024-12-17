@@ -73,7 +73,7 @@ spec:
   env:
     - name: KTOR_ENV
       value: "production"
-    - name: JOURNALFORING_CRONJOB_ENABLED
+    - name: JOURNALFORING_RETRY_ENABLED
       value: "false"
     - name: ISTILGANGSKONTROLL_CLIENT_ID
       value: "dev-gcp.teamsykefravr.istilgangskontroll"

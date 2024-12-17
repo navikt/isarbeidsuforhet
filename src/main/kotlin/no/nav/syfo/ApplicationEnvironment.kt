@@ -32,7 +32,7 @@ data class Environment(
             openidConfigTokenEndpoint = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")
         ),
     val electorPath: String = getEnvVar("ELECTOR_PATH"),
-    val journalforingCronjobEnabled: Boolean = getEnvVar("JOURNALFORING_CRONJOB_ENABLED").toBoolean(),
+    val isJournalforingRetryEnabled: Boolean = getEnvVar("JOURNALFORING_RETRY_ENABLED").toBoolean(),
 
     val clients: ClientsEnvironment =
         ClientsEnvironment(
