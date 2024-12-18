@@ -72,6 +72,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
         val journalforingService = JournalforingService(
             dokarkivClient = externalMockEnvironment.dokarkivClient,
             pdlClient = externalMockEnvironment.pdlClient,
+            isJournalforingRetryEnabled = externalMockEnvironment.environment.isJournalforingRetryEnabled,
         )
 
         val vurderingRepository = VurderingRepository(database)
