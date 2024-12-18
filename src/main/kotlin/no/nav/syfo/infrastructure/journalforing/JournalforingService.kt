@@ -36,7 +36,6 @@ class JournalforingService(
                 // på personer som mangler aktør-id.
                 DEFAULT_FAILED_JP_ID
             }
-
         }
     }
 
@@ -90,5 +89,4 @@ class JournalforingService(
         private const val DEFAULT_FAILED_JP_ID = 0
         private val log = LoggerFactory.getLogger(JournalforingService::class.java)
     }
-
 }
