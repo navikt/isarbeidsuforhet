@@ -1,24 +1,24 @@
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val FLYWAY = "10.8.1"
-val HIKARI = "5.1.0"
-val POSTGRES = "42.7.2"
-val POSTGRES_EMBEDDED = "2.0.7"
-val KAFKA = "3.7.0"
-val LOGBACK = "1.5.6"
+val FLYWAY = "11.3.0"
+val HIKARI = "6.2.1"
+val POSTGRES = "42.7.5"
+val POSTGRES_EMBEDDED = "2.1.0"
+val KAFKA = "3.9.0"
+val LOGBACK = "1.5.16"
 val LOGSTASH_ENCODER = "8.0"
-val MICROMETER_REGISTRY = "1.12.2"
-val JACKSON_DATATYPE = "2.16.1"
-val KTOR = "3.0.2"
+val MICROMETER_REGISTRY = "1.12.13"
+val JACKSON_DATATYPE = "2.18.2"
+val KTOR = "3.0.3"
 val SPEK = "2.0.19"
-val MOCKK = "1.13.9"
-val NIMBUS_JOSE_JWT = "9.40"
+val MOCKK = "1.13.16"
+val NIMBUS_JOSE_JWT = "10.0.1"
 val KLUENT = "1.73"
 
 plugins {
-    kotlin("jvm") version "2.0.20"
-    id("com.gradleup.shadow") version "8.3.0"
+    kotlin("jvm") version "2.1.10"
+    id("com.gradleup.shadow") version "8.3.5"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
@@ -59,6 +59,14 @@ dependencies {
         exclude(group = "log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
+    constraints {
+        implementation("org.apache.zookeeper:zookeeper") {
+            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
+            version {
+                require("3.9.3")
+            }
+        }
+    }
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$JACKSON_DATATYPE")
