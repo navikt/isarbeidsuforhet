@@ -24,4 +24,6 @@ interface IVurderingRepository {
     fun setJournalpostId(vurdering: Vurdering)
 
     fun getNotJournalforteVurderinger(): List<Pair<Vurdering, ByteArray>>
+
+    fun updatePersonident(nyPersonident: PersonIdent, vurderinger: List<Vurdering>)
 }
