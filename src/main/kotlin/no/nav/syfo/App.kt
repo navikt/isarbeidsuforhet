@@ -24,6 +24,9 @@ import no.nav.syfo.infrastructure.clients.pdl.PdlClient
 import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontrollClient
 import no.nav.syfo.infrastructure.clients.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.kafka.*
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumer
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
+import no.nav.syfo.infrastructure.kafka.identhendelse.launchIdenthendelseConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -139,6 +142,15 @@ fun main() {
                     environment = environment,
                     vurderingService = vurderingService,
                     varselService = varselService,
+                )
+                launchIdenthendelseConsumer(
+                    applicationState = applicationState,
+                    kafkaEnvironment = environment.kafka,
+                    identhendelseConsumer = IdenthendelseConsumer(
+                        identhendelseService = IdenthendelseService(
+                            vurderingRepository = vurderingRepository,
+                        )
+                    )
                 )
             }
         }
