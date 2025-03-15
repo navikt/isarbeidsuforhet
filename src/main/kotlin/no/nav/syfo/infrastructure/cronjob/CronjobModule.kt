@@ -31,6 +31,13 @@ fun launchCronjobs(
     val publishVurderingerCronJob = PublishVurderingerCronjob(vurderingService = vurderingService)
     cronjobs.add(publishVurderingerCronJob)
 
+    if (environment.republishForhandsvarselWithAdditionalInfoCronjobEnabled) {
+        val republishForhandsvarselWithAdditionalInfoCronjob = RepublishForhandsvarselWithAdditionalInfoCronjob(
+            vurderingService = vurderingService,
+            uuids = UUIDS,
+        )
+        cronjobs.add(republishForhandsvarselWithAdditionalInfoCronjob)
+    }
     cronjobs.forEach {
         launchBackgroundTask(
             applicationState = applicationState,
@@ -39,3 +46,6 @@ fun launchCronjobs(
         }
     }
 }
+
+// TODO: Add UUIDs to update
+val UUIDS = listOf("")
