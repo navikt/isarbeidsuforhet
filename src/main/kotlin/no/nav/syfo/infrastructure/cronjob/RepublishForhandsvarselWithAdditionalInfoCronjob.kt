@@ -19,7 +19,7 @@ class RepublishForhandsvarselWithAdditionalInfoCronjob(
     private val log = LoggerFactory.getLogger(RepublishForhandsvarselWithAdditionalInfoCronjob::class.java)
 
     override suspend fun run(): List<Result<Vurdering>> {
-        val newFrist = LocalDate.of(2025, 4, 7) // 7. april 2025
+        val newFrist = LocalDate.of(2025, 4, 9) // 7. april 2025
         val result = uuids.map { uuid ->
             try {
                 val vurdering = vurderingService.getVurdering(UUID.fromString(uuid))

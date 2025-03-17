@@ -47,5 +47,4 @@ fun launchCronjobs(
     }
 }
 
-// TODO: Add UUIDs to update
-val UUIDS = listOf("")
+val UUIDS = listOf("ba7c38cc-5190-4d04-ac89-f18d9f4a5290")
