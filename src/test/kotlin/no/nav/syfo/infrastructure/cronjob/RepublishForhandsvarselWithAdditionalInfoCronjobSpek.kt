@@ -119,10 +119,10 @@ class RepublishForhandsvarselWithAdditionalInfoCronjobSpek : Spek({
                     vurderinger1.size shouldBeEqualTo 2 // Har både nytt og gammelt varsel i databasen
                     vurderinger1.all { it.type == VurderingType.FORHANDSVARSEL }.shouldBeTrue()
                     vurderinger1.first().createdAt shouldBeGreaterThan vurderinger1.last().createdAt // Sortert DESC på created_at, så første er den nyeste
-                    vurderinger1.first().varsel?.svarfrist shouldBeEqualTo LocalDate.of(2025, 4, 7)
+                    vurderinger1.first().varsel?.svarfrist shouldBeEqualTo LocalDate.of(2025, 4, 9)
                     vurderinger1.first().document.filter { documentComponent ->
                         documentComponent.texts.contains(
-                            "OBS! På grunn av en teknisk feil på vår side, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. Vi har derfor forlenget fristen for å svare til 07.04.2025. Dette brevet er en eksakt kopi av det du skulle ha mottatt tidligere, men med ny utvidet frist."
+                            "OBS! På grunn av en teknisk feil på vår side, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. Vi har derfor forlenget fristen for å svare til 09.04.2025. Dette brevet er en eksakt kopi av det du skulle ha mottatt tidligere, men med ny utvidet frist."
                         )
                     }.size shouldBeEqualTo 1
                     vurderinger1.first().document.filter { documentComponent ->
@@ -138,10 +138,10 @@ class RepublishForhandsvarselWithAdditionalInfoCronjobSpek : Spek({
                     vurderinger2.size shouldBeEqualTo 2 // Har både nytt og gammelt varsel i databasen
                     vurderinger2.all { it.type == VurderingType.FORHANDSVARSEL }.shouldBeTrue()
                     vurderinger2.first().createdAt shouldBeGreaterThan vurderinger2.last().createdAt // Sortert DESC på created_at, så første er den nyeste
-                    vurderinger2.first().varsel?.svarfrist shouldBeEqualTo LocalDate.of(2025, 4, 7)
+                    vurderinger2.first().varsel?.svarfrist shouldBeEqualTo LocalDate.of(2025, 4, 9)
                     vurderinger2.first().document.filter { documentComponent ->
                         documentComponent.texts.contains(
-                            "OBS! På grunn av en teknisk feil på vår side, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. Vi har derfor forlenget fristen for å svare til 07.04.2025. Dette brevet er en eksakt kopi av det du skulle ha mottatt tidligere, men med ny utvidet frist."
+                            "OBS! På grunn av en teknisk feil på vår side, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. Vi har derfor forlenget fristen for å svare til 09.04.2025. Dette brevet er en eksakt kopi av det du skulle ha mottatt tidligere, men med ny utvidet frist."
                         )
                     }.size shouldBeEqualTo 1
                     vurderinger2.first().document.filter { documentComponent ->
