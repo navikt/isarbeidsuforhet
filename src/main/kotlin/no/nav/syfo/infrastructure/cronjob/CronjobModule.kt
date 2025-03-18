@@ -47,4 +47,4 @@ fun launchCronjobs(
     }
 }
 
-val UUIDS = listOf("38eae7a7-c82f-47c9-8bf5-d8634d42f4ac")
+val UUIDS = listOf("38eae7a7-c82f-47c9-8bf5-d8634d42f4ac", "1e47f57f-5a0b-488e-b2a2-87976e893147")

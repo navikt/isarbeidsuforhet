@@ -24,20 +24,25 @@ class RepublishForhandsvarselWithAdditionalInfoCronjob(
             try {
                 val vurdering = vurderingService.getVurdering(UUID.fromString(uuid))
                 if (vurdering != null) {
-                    val newDocument = generateNewDocument(vurdering, newFrist)
-                    val newVurdering = vurderingService.createVurdering(
-                        personident = vurdering.personident,
-                        veilederident = vurdering.veilederident,
-                        type = vurdering.type,
-                        arsak = vurdering.arsak,
-                        begrunnelse = vurdering.begrunnelse,
-                        document = newDocument,
-                        gjelderFom = vurdering.gjelderFom,
-                        svarfrist = newFrist,
-                        callId = "cronjob-republish-forhandsvarsel",
-                        overrideForhandsvarselChecks = true,
-                    )
-                    Result.success(newVurdering)
+                    val vurderingerForPerson = vurderingService.getVurderinger(vurdering.personident)
+                    if (vurderingerForPerson.firstOrNull().uuid == uuid) {
+                        val newDocument = generateNewDocument(vurdering, newFrist)
+                        val newVurdering = vurderingService.createVurdering(
+                            personident = vurdering.personident,
+                            veilederident = vurdering.veilederident,
+                            type = vurdering.type,
+                            arsak = vurdering.arsak,
+                            begrunnelse = vurdering.begrunnelse,
+                            document = newDocument,
+                            gjelderFom = vurdering.gjelderFom,
+                            svarfrist = newFrist,
+                            callId = "cronjob-republish-forhandsvarsel",
+                            overrideForhandsvarselChecks = true,
+                        )
+                        Result.success(newVurdering)
+                    } else {
+                        Result.failure(IllegalArgumentException("Vurdering with UUID $uuid already revarslet"))
+                    }
                 } else {
                     Result.failure(IllegalArgumentException("Vurdering with UUID $uuid not found"))
                 }
@@ -61,9 +66,7 @@ class RepublishForhandsvarselWithAdditionalInfoCronjob(
             if (documentComponent.type == DocumentComponentType.PARAGRAPH &&
                 documentComponent.texts.any { it.contains("Nav vurderer å avslå sykepengene dine fra og med") }
             ) {
-                val extraText = "OBS! På grunn av en teknisk feil på vår side, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. Vi har derfor forlenget fristen for å svare til ${newFrist.format(
-                    DateTimeFormatter.ofPattern("dd.MM.yyyy")
-                )}. Dette brevet er en eksakt kopi av det du skulle ha mottatt tidligere, men med ny utvidet frist."
+                val extraText = "Viktig informasjon: På grunn av en teknisk feil, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. På grunn av denne feilen mottar du derfor et nytt brev, med ny frist for tilbakemelding. Dette brevet erstatter tidligere brev som du ikke ble varslet om, og det er kun dette brevet du skal forholde deg til. Det opprinnelige brevet kan du finne under Mine dokumenter på innloggede sider på nav.no.\n"
                 DocumentComponent(
                     type = DocumentComponentType.PARAGRAPH,
                     title = null,
