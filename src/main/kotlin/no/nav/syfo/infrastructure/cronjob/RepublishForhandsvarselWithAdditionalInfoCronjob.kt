@@ -20,12 +20,13 @@ class RepublishForhandsvarselWithAdditionalInfoCronjob(
 
     override suspend fun run(): List<Result<Vurdering>> {
         val newFrist = LocalDate.of(2025, 4, 9) // 7. april 2025
-        val result = uuids.map { uuid ->
+        val result = uuids.map { uuidString ->
             try {
-                val vurdering = vurderingService.getVurdering(UUID.fromString(uuid))
+                val uuid = UUID.fromString(uuidString)
+                val vurdering = vurderingService.getVurdering(uuid)
                 if (vurdering != null) {
                     val vurderingerForPerson = vurderingService.getVurderinger(vurdering.personident)
-                    if (vurderingerForPerson.firstOrNull().uuid == uuid) {
+                    if (vurderingerForPerson.firstOrNull()?.uuid == uuid) {
                         val newDocument = generateNewDocument(vurdering, newFrist)
                         val newVurdering = vurderingService.createVurdering(
                             personident = vurdering.personident,
@@ -47,7 +48,7 @@ class RepublishForhandsvarselWithAdditionalInfoCronjob(
                     Result.failure(IllegalArgumentException("Vurdering with UUID $uuid not found"))
                 }
             } catch (e: Exception) {
-                log.error("Exception caught while attempting to republish forhandsvarsel with UUID $uuid", e)
+                log.error("Exception caught while attempting to republish forhandsvarsel with UUID $uuidString", e)
                 Result.failure(e)
             }
         }
