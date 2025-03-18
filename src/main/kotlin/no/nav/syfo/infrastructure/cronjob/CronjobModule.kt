@@ -48,6 +48,7 @@ fun launchCronjobs(
 }
 
 val UUIDS = listOf(
+    "8e70a999-cf7e-4fc3-aa10-7b7e66fc7437",
     "9db72978-e5ea-4b78-bd64-232635ad79bd",
     "a58440a7-f2f6-441b-8fc7-2f6402cdb8c9",
     "4b018f3f-db57-4be6-bd7e-99bb7ba369a0",
