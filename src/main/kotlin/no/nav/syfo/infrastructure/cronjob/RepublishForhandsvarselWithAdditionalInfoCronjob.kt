@@ -67,7 +67,7 @@ class RepublishForhandsvarselWithAdditionalInfoCronjob(
             if (documentComponent.type == DocumentComponentType.PARAGRAPH &&
                 documentComponent.texts.any { it.contains("Nav vurderer å avslå sykepengene dine fra og med") }
             ) {
-                val extraText = "Viktig informasjon: På grunn av en teknisk feil, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. På grunn av denne feilen mottar du derfor et nytt brev, med ny frist for tilbakemelding. Dette brevet erstatter tidligere brev som du ikke ble varslet om, og det er kun dette brevet du skal forholde deg til. Det opprinnelige brevet kan du finne under Mine dokumenter på innloggede sider på nav.no.\n"
+                val extraText = "Viktig informasjon: På grunn av en teknisk feil, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. Dette brevet erstatter tidligere brev som du ikke ble varslet om, og det er kun dette brevet du skal forholde deg til. Det opprinnelige brevet kan du finne under Mine dokumenter på innloggede sider på nav.no.\n"
                 DocumentComponent(
                     type = DocumentComponentType.PARAGRAPH,
                     title = null,

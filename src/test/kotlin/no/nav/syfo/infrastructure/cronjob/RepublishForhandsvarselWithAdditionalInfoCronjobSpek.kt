@@ -122,7 +122,7 @@ class RepublishForhandsvarselWithAdditionalInfoCronjobSpek : Spek({
                     vurderinger1.first().varsel?.svarfrist shouldBeEqualTo LocalDate.of(2025, 4, 9)
                     vurderinger1.first().document.filter { documentComponent ->
                         documentComponent.texts.contains(
-                            "Viktig informasjon: På grunn av en teknisk feil, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. På grunn av denne feilen mottar du derfor et nytt brev, med ny frist for tilbakemelding. Dette brevet erstatter tidligere brev som du ikke ble varslet om, og det er kun dette brevet du skal forholde deg til. Det opprinnelige brevet kan du finne under Mine dokumenter på innloggede sider på nav.no.\n"
+                            "Viktig informasjon: På grunn av en teknisk feil, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. Dette brevet erstatter tidligere brev som du ikke ble varslet om, og det er kun dette brevet du skal forholde deg til. Det opprinnelige brevet kan du finne under Mine dokumenter på innloggede sider på nav.no.\n"
                         )
                     }.size shouldBeEqualTo 1
                     vurderinger1.first().document.filter { documentComponent ->
@@ -141,7 +141,7 @@ class RepublishForhandsvarselWithAdditionalInfoCronjobSpek : Spek({
                     vurderinger2.first().varsel?.svarfrist shouldBeEqualTo LocalDate.of(2025, 4, 9)
                     vurderinger2.first().document.filter { documentComponent ->
                         documentComponent.texts.contains(
-                            "Viktig informasjon: På grunn av en teknisk feil, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. På grunn av denne feilen mottar du derfor et nytt brev, med ny frist for tilbakemelding. Dette brevet erstatter tidligere brev som du ikke ble varslet om, og det er kun dette brevet du skal forholde deg til. Det opprinnelige brevet kan du finne under Mine dokumenter på innloggede sider på nav.no.\n"
+                            "Viktig informasjon: På grunn av en teknisk feil, har vi ikke klart å varsle deg om dette brevet tidligere. Vi beklager ulempen. Dette brevet erstatter tidligere brev som du ikke ble varslet om, og det er kun dette brevet du skal forholde deg til. Det opprinnelige brevet kan du finne under Mine dokumenter på innloggede sider på nav.no.\n"
                         )
                     }.size shouldBeEqualTo 1
                     vurderinger2.first().document.filter { documentComponent ->
