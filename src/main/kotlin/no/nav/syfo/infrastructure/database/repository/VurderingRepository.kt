@@ -151,6 +151,18 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
         connection.commit()
     }
 
+    override fun getVurdering(uuid: UUID): Vurdering? =
+        database.connection.use { connection ->
+            connection.prepareStatement(GET_VURDERING_BY_UUID).use {
+                it.setString(1, uuid.toString())
+                it.executeQuery().toList { toPVurdering() }
+            }.map {
+                it.toVurdering(
+                    varsel = connection.getVarselForVurdering(it)
+                )
+            }.firstOrNull()
+        }
+
     private fun Connection.createVurdering(
         vurdering: Vurdering,
     ): PVurdering {
@@ -297,6 +309,11 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                  FROM vurdering vu
                  INNER JOIN vurdering_pdf vup ON vu.id = vup.vurdering_id
                  WHERE vu.journalpost_id IS NULL
+            """
+
+        private const val GET_VURDERING_BY_UUID =
+            """
+                SELECT * FROM VURDERING WHERE uuid=?
             """
     }
 }

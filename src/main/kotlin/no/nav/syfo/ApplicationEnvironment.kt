@@ -55,6 +55,7 @@ data class Environment(
                 clientId = getEnvVar("DOKARKIV_CLIENT_ID"),
             ),
         ),
+    val republishForhandsvarselWithAdditionalInfoCronjobEnabled: Boolean = getEnvVar("REPUBLISH_FORHANDSVARSEL_WITH_ADDITIONAL_INFO_CRONJOB_ENABLED").toBoolean(),
 )
 
 fun getEnvVar(
