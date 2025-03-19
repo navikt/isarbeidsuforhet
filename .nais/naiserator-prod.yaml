@@ -87,5 +87,3 @@ spec:
       value: "prod-fss.teamdokumenthandtering.dokarkiv"
     - name: DOKARKIV_URL
       value: "https://dokarkiv.prod-fss-pub.nais.io"
-    - name: REPUBLISH_FORHANDSVARSEL_WITH_ADDITIONAL_INFO_CRONJOB_ENABLED
-      value: "true"

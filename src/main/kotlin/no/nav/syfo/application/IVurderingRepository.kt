@@ -2,7 +2,6 @@ package no.nav.syfo.application
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.domain.Vurdering
-import java.util.*
 
 interface IVurderingRepository {
     fun getVurderinger(
@@ -27,6 +26,4 @@ interface IVurderingRepository {
     fun getNotJournalforteVurderinger(): List<Pair<Vurdering, ByteArray>>
 
     fun updatePersonident(nyPersonident: PersonIdent, vurderinger: List<Vurdering>)
-
-    fun getVurdering(uuid: UUID): Vurdering?
 }

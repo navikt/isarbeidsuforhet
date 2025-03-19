@@ -9,7 +9,6 @@ import no.nav.syfo.domain.*
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import java.time.LocalDate
-import java.util.UUID
 
 class VurderingService(
     private val vurderingRepository: IVurderingRepository,
@@ -35,10 +34,9 @@ class VurderingService(
         gjelderFom: LocalDate?,
         svarfrist: LocalDate? = null,
         callId: String,
-        overrideForhandsvarselChecks: Boolean = false,
     ): Vurdering {
         val currentVurdering = getVurderinger(personident).firstOrNull()
-        if (!overrideForhandsvarselChecks && (type == VurderingType.FORHANDSVARSEL && currentVurdering is Vurdering.Forhandsvarsel)) {
+        if (type == VurderingType.FORHANDSVARSEL && currentVurdering is Vurdering.Forhandsvarsel) {
             throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
         }
         if (type == VurderingType.FORHANDSVARSEL && svarfrist == null) {
@@ -128,8 +126,6 @@ class VurderingService(
             }
         }
     }
-
-    fun getVurdering(uuid: UUID): Vurdering? = vurderingRepository.getVurdering(uuid)
 }
 
 private class Metrics {
