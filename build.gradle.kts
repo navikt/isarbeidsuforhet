@@ -20,7 +20,7 @@ val KLUENT = "1.73"
 plugins {
     kotlin("jvm") version "2.1.10"
     id("com.gradleup.shadow") version "8.3.5"
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
 }
 
 repositories {
