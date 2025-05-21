@@ -60,6 +60,12 @@ class VurderingService(
                 begrunnelse = begrunnelse,
                 document = document,
             )
+            VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Vurdering.OppfyltUtenForhandsvarsel(
+                personident = personident,
+                veilederident = veilederident,
+                begrunnelse = begrunnelse,
+                document = document,
+            )
             VurderingType.AVSLAG -> Vurdering.Avslag(
                 personident = personident,
                 veilederident = veilederident,
@@ -88,6 +94,7 @@ class VurderingService(
         when (type) {
             VurderingType.FORHANDSVARSEL -> Metrics.COUNT_VURDERING_FORHANDSVARSEL.increment()
             VurderingType.OPPFYLT -> Metrics.COUNT_VURDERING_OPPFYLT.increment()
+            VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Metrics.COUNT_VURDERING_OPPFYLT.increment()
             VurderingType.AVSLAG -> Metrics.COUNT_VURDERING_AVSLAG.increment()
             VurderingType.IKKE_AKTUELL -> Metrics.COUNT_VURDERING_IKKE_AKTUELL.increment()
         }
@@ -134,6 +141,7 @@ private class Metrics {
 
         const val VURDERING_FORHANDSVARSEL = "${VURDERING_BASE}_forhandsvarsel"
         const val VURDERING_OPPFYLT = "${VURDERING_BASE}_oppfylt"
+        const val VURDERING_OPPFYLT_UTEN_FORHANDSVARSEL = "${VURDERING_BASE}_oppfylt_uten_forhandsvarsel"
         const val VURDERING_AVSLAG = "${VURDERING_BASE}_avslag"
         const val VURDERING_IKKE_AKTUELL = "${VURDERING_BASE}_ikke_aktuell"
 
@@ -144,6 +152,10 @@ private class Metrics {
         val COUNT_VURDERING_OPPFYLT: Counter = Counter
             .builder(VURDERING_OPPFYLT)
             .description("Counts the number of successful oppfylt vurderinger")
+            .register(METRICS_REGISTRY)
+        val COUNT_VURDERING_UTEN_FORHANDSVARSEL_OPPFYLT: Counter = Counter
+            .builder(VURDERING_OPPFYLT_UTEN_FORHANDSVARSEL)
+            .description("Counts the number of successful oppfylt vurderinger uten forhandsvarsel")
             .register(METRICS_REGISTRY)
         val COUNT_VURDERING_AVSLAG: Counter = Counter
             .builder(VURDERING_AVSLAG)
