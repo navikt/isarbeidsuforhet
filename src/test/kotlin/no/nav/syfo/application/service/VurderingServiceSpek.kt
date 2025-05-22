@@ -102,6 +102,7 @@ class VurderingServiceSpek : Spek({
         val vurderingForhandsvarsel = generateForhandsvarselVurdering()
         val vurderingOppfylt = generateVurdering(type = VurderingType.OPPFYLT)
         val vurderingAvslag = generateVurdering(type = VurderingType.AVSLAG)
+        val vurderingAvslagUtenForhandsvarsel = generateVurdering(type = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL)
         val vurderingIkkeAktuell = generateVurdering(type = VurderingType.IKKE_AKTUELL)
 
         describe("Journalføring") {
@@ -167,6 +168,25 @@ class VurderingServiceSpek : Spek({
 
                 val pVurdering = database.getVurdering(vurderingAvslag.uuid)
                 pVurdering!!.type shouldBeEqualTo VurderingType.AVSLAG.name
+                pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
+            }
+
+            it("journalfører AVSLAG_UTEN_FORHANDSVARSEL vurdering") {
+                vurderingRepository.createVurdering(
+                    vurdering = vurderingAvslagUtenForhandsvarsel,
+                    pdf = PDF_AVSLAG,
+                )
+
+                val journalforteVurderinger = runBlocking {
+                    vurderingService.journalforVurderinger()
+                }
+
+                val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
+                failed.size shouldBeEqualTo 0
+                success.size shouldBeEqualTo 1
+
+                val pVurdering = database.getVurdering(vurderingAvslagUtenForhandsvarsel.uuid)
+                pVurdering!!.type shouldBeEqualTo VurderingType.AVSLAG_UTEN_FORHANDSVARSEL.name
                 pVurdering.journalpostId shouldBeEqualTo mockedJournalpostId.toString()
             }
 
