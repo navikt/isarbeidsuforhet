@@ -26,6 +26,7 @@ sealed interface Vurdering {
         is Oppfylt -> this.copy(journalpostId = journalpostId)
         is OppfyltUtenForhandsvarsel -> this.copy(journalpostId = journalpostId)
         is Avslag -> this.copy(journalpostId = journalpostId)
+        is AvslagUtenForhandsvarsel -> this.copy(journalpostId = journalpostId)
         is IkkeAktuell -> this.copy(journalpostId = journalpostId)
     }
 
@@ -34,6 +35,7 @@ sealed interface Vurdering {
         is Oppfylt -> this.copy(publishedAt = nowUTC())
         is OppfyltUtenForhandsvarsel -> this.copy(publishedAt = nowUTC())
         is Avslag -> this.copy(publishedAt = nowUTC())
+        is AvslagUtenForhandsvarsel -> this.copy(publishedAt = nowUTC())
         is IkkeAktuell -> this.copy(publishedAt = nowUTC())
     }
 
@@ -163,6 +165,38 @@ sealed interface Vurdering {
         )
     }
 
+    data class AvslagUtenForhandsvarsel internal constructor(
+        override val uuid: UUID = UUID.randomUUID(),
+        override val createdAt: OffsetDateTime = nowUTC(),
+        override val personident: PersonIdent,
+        override val veilederident: String,
+        override val begrunnelse: String,
+        override val document: List<DocumentComponent>,
+        override val gjelderFom: LocalDate,
+        override val journalpostId: JournalpostId? = null,
+        override val publishedAt: OffsetDateTime? = null
+    ) : Vurdering {
+        override val type: VurderingType = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
+        override val varsel: Varsel? = null
+        override val arsak: VurderingArsak? = null
+
+        constructor(
+            personident: PersonIdent,
+            veilederident: String,
+            begrunnelse: String,
+            document: List<DocumentComponent>,
+            gjelderFom: LocalDate,
+        ) : this(
+            personident = personident,
+            veilederident = veilederident,
+            begrunnelse = begrunnelse,
+            document = document,
+            gjelderFom = gjelderFom,
+            journalpostId = null,
+            publishedAt = null,
+        )
+    }
+
     data class IkkeAktuell internal constructor(
         override val uuid: UUID = UUID.randomUUID(),
         override val createdAt: OffsetDateTime = nowUTC(),
@@ -255,6 +289,18 @@ sealed interface Vurdering {
                     publishedAt = publishedAt
                 )
 
+                VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> AvslagUtenForhandsvarsel(
+                    uuid = uuid,
+                    createdAt = createdAt,
+                    personident = personident,
+                    veilederident = veilederident,
+                    begrunnelse = begrunnelse,
+                    document = document,
+                    gjelderFom = gjelderFom!!,
+                    journalpostId = journalpostId,
+                    publishedAt = publishedAt
+                )
+
                 VurderingType.IKKE_AKTUELL -> IkkeAktuell(
                     uuid = uuid,
                     createdAt = createdAt,
@@ -275,24 +321,25 @@ enum class VurderingType(val isFinal: Boolean) {
     OPPFYLT(true),
     OPPFYLT_UTEN_FORHANDSVARSEL(true),
     AVSLAG(true),
+    AVSLAG_UTEN_FORHANDSVARSEL(true),
     IKKE_AKTUELL(true);
 }
 
 fun VurderingType.getDokumentTittel(): String = when (this) {
     VurderingType.FORHANDSVARSEL -> "Forhåndsvarsel om avslag på sykepenger"
     VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> "Vurdering av §8-4 arbeidsuførhet"
-    VurderingType.AVSLAG -> "Innstilling om avslag"
+    VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> "Innstilling om avslag"
 }
 
 fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
     VurderingType.FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
     VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> BrevkodeType.ARBEIDSUFORHET_VURDERING
-    VurderingType.AVSLAG -> BrevkodeType.ARBEIDSUFORHET_AVSLAG
+    VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_AVSLAG
 }
 
 fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
     VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> JournalpostType.UTGAAENDE
-    VurderingType.AVSLAG -> JournalpostType.NOTAT
+    VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> JournalpostType.NOTAT
 }
 
 enum class VurderingArsak {

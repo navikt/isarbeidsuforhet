@@ -73,6 +73,13 @@ class VurderingService(
                 document = document,
                 gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type")
             )
+            VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Vurdering.AvslagUtenForhandsvarsel(
+                personident = personident,
+                veilederident = veilederident,
+                begrunnelse = begrunnelse,
+                document = document,
+                gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type")
+            )
             VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
                 personident = personident,
                 veilederident = veilederident,
@@ -96,6 +103,7 @@ class VurderingService(
             VurderingType.OPPFYLT -> Metrics.COUNT_VURDERING_OPPFYLT.increment()
             VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Metrics.COUNT_VURDERING_OPPFYLT.increment()
             VurderingType.AVSLAG -> Metrics.COUNT_VURDERING_AVSLAG.increment()
+            VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Metrics.COUNT_VURDERING_AVSLAG_UTEN_FORHANDSVARSEL.increment()
             VurderingType.IKKE_AKTUELL -> Metrics.COUNT_VURDERING_IKKE_AKTUELL.increment()
         }
 
@@ -143,6 +151,7 @@ private class Metrics {
         const val VURDERING_OPPFYLT = "${VURDERING_BASE}_oppfylt"
         const val VURDERING_OPPFYLT_UTEN_FORHANDSVARSEL = "${VURDERING_BASE}_oppfylt_uten_forhandsvarsel"
         const val VURDERING_AVSLAG = "${VURDERING_BASE}_avslag"
+        const val VURDERING_AVSLAG_UTEN_FORHANDSVARSEL = "${VURDERING_BASE}_avslag_uten_forhandsvarsel"
         const val VURDERING_IKKE_AKTUELL = "${VURDERING_BASE}_ikke_aktuell"
 
         val COUNT_VURDERING_FORHANDSVARSEL: Counter = Counter
@@ -160,6 +169,10 @@ private class Metrics {
         val COUNT_VURDERING_AVSLAG: Counter = Counter
             .builder(VURDERING_AVSLAG)
             .description("Counts the number of successful avslag vurderinger")
+            .register(METRICS_REGISTRY)
+        val COUNT_VURDERING_AVSLAG_UTEN_FORHANDSVARSEL: Counter = Counter
+            .builder(VURDERING_AVSLAG_UTEN_FORHANDSVARSEL)
+            .description("Counts the number of successful avslag uten forhandsvarsel vurderinger")
             .register(METRICS_REGISTRY)
         val COUNT_VURDERING_IKKE_AKTUELL: Counter = Counter
             .builder(VURDERING_IKKE_AKTUELL)
