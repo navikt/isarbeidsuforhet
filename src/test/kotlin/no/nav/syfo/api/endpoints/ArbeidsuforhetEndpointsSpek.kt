@@ -308,6 +308,47 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                     }
                 }
 
+                it("Creates new vurdering AVSLAG_UTEN_FORHANDSVARSEL and creates PDF") {
+                    val avslagGjelderFom = LocalDate.now().plusDays(1)
+                    val vurderingAvslagRequestDTO = VurderingRequestDTO(
+                        type = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL,
+                        begrunnelse = "Avslag",
+                        document = vurderingDocumentAvslag,
+                        gjelderFom = avslagGjelderFom
+                    )
+                    testApplication {
+                        val client = setupApiAndClient()
+                        val response = client.postVurdering(vurderingAvslagRequestDTO)
+
+                        response.status shouldBeEqualTo HttpStatusCode.Created
+
+                        val responseDTO = response.body<VurderingResponseDTO>()
+                        responseDTO.begrunnelse shouldBeEqualTo "Avslag"
+                        responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
+                        responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
+                        responseDTO.document shouldBeEqualTo vurderingDocumentAvslag
+                        responseDTO.type shouldBeEqualTo VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
+                        responseDTO.arsak.shouldBeNull()
+                        responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
+                        responseDTO.varsel shouldBeEqualTo null
+
+                        val vurderinger = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
+                        vurderinger.size shouldBeEqualTo 1
+                        val avslagVurdering = vurderinger.first()
+                        avslagVurdering.begrunnelse shouldBeEqualTo "Avslag"
+                        avslagVurdering.document shouldBeEqualTo vurderingDocumentAvslag
+                        avslagVurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
+                        avslagVurdering.type shouldBeEqualTo VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
+                        avslagVurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
+                        avslagVurdering.varsel shouldBeEqualTo null
+
+                        val pVurderingPdf = database.getVurderingPdf(avslagVurdering.uuid)
+                        pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_AVSLAG.size
+                        pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_AVSLAG[0]
+                        pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_AVSLAG[1]
+                    }
+                }
+
                 it("Creates new vurdering IKKE_AKTUELL and creates PDF") {
                     val ikkeAktuellRequestDTO = VurderingRequestDTO(
                         type = VurderingType.IKKE_AKTUELL,

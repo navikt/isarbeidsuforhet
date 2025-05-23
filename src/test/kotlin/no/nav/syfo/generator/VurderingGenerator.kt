@@ -56,4 +56,11 @@ fun generateVurdering(
         document = document,
         gjelderFom = LocalDate.now(),
     )
+    VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Vurdering.AvslagUtenForhandsvarsel(
+        personident = personident,
+        veilederident = UserConstants.VEILEDER_IDENT,
+        begrunnelse = begrunnelse,
+        document = document,
+        gjelderFom = LocalDate.now(),
+    )
 }

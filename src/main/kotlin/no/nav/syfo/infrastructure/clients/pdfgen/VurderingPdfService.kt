@@ -30,7 +30,7 @@ class VurderingPdfService(
                 callId = callId,
                 vurderingPdfDTO = vurderingPdfDTO,
             )
-            VurderingType.AVSLAG -> pdfGenClient.createAvslagPdf(
+            VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> pdfGenClient.createAvslagPdf(
                 callId = callId,
                 vurderingPdfDTO = vurderingPdfDTO,
             )
