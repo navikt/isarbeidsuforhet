@@ -24,6 +24,7 @@ sealed interface Vurdering {
     fun journalfor(journalpostId: JournalpostId): Vurdering = when (this) {
         is Forhandsvarsel -> this.copy(journalpostId = journalpostId)
         is Oppfylt -> this.copy(journalpostId = journalpostId)
+        is OppfyltUtenForhandsvarsel -> this.copy(journalpostId = journalpostId)
         is Avslag -> this.copy(journalpostId = journalpostId)
         is IkkeAktuell -> this.copy(journalpostId = journalpostId)
     }
@@ -31,6 +32,7 @@ sealed interface Vurdering {
     fun publish(): Vurdering = when (this) {
         is Forhandsvarsel -> this.copy(publishedAt = nowUTC())
         is Oppfylt -> this.copy(publishedAt = nowUTC())
+        is OppfyltUtenForhandsvarsel -> this.copy(publishedAt = nowUTC())
         is Avslag -> this.copy(publishedAt = nowUTC())
         is IkkeAktuell -> this.copy(publishedAt = nowUTC())
     }
@@ -80,6 +82,36 @@ sealed interface Vurdering {
         override val publishedAt: OffsetDateTime? = null
     ) : Vurdering {
         override val type: VurderingType = VurderingType.OPPFYLT
+        override val varsel: Varsel? = null
+        override val gjelderFom: LocalDate? = null
+        override val arsak: VurderingArsak? = null
+
+        constructor(
+            personident: PersonIdent,
+            veilederident: String,
+            begrunnelse: String,
+            document: List<DocumentComponent>,
+        ) : this(
+            personident = personident,
+            veilederident = veilederident,
+            begrunnelse = begrunnelse,
+            document = document,
+            journalpostId = null,
+            publishedAt = null,
+        )
+    }
+
+    data class OppfyltUtenForhandsvarsel internal constructor(
+        override val uuid: UUID = UUID.randomUUID(),
+        override val createdAt: OffsetDateTime = nowUTC(),
+        override val personident: PersonIdent,
+        override val veilederident: String,
+        override val begrunnelse: String,
+        override val document: List<DocumentComponent>,
+        override val journalpostId: JournalpostId? = null,
+        override val publishedAt: OffsetDateTime? = null
+    ) : Vurdering {
+        override val type: VurderingType = VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
         override val varsel: Varsel? = null
         override val gjelderFom: LocalDate? = null
         override val arsak: VurderingArsak? = null
@@ -200,6 +232,17 @@ sealed interface Vurdering {
                     publishedAt = publishedAt
                 )
 
+                VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> OppfyltUtenForhandsvarsel(
+                    uuid = uuid,
+                    createdAt = createdAt,
+                    personident = personident,
+                    veilederident = veilederident,
+                    begrunnelse = begrunnelse,
+                    document = document,
+                    journalpostId = journalpostId,
+                    publishedAt = publishedAt
+                )
+
                 VurderingType.AVSLAG -> Avslag(
                     uuid = uuid,
                     createdAt = createdAt,
@@ -228,23 +271,27 @@ sealed interface Vurdering {
 }
 
 enum class VurderingType(val isFinal: Boolean) {
-    FORHANDSVARSEL(false), OPPFYLT(true), AVSLAG(true), IKKE_AKTUELL(true);
+    FORHANDSVARSEL(false),
+    OPPFYLT(true),
+    OPPFYLT_UTEN_FORHANDSVARSEL(true),
+    AVSLAG(true),
+    IKKE_AKTUELL(true);
 }
 
 fun VurderingType.getDokumentTittel(): String = when (this) {
     VurderingType.FORHANDSVARSEL -> "Forhåndsvarsel om avslag på sykepenger"
-    VurderingType.OPPFYLT, VurderingType.IKKE_AKTUELL -> "Vurdering av §8-4 arbeidsuførhet"
+    VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> "Vurdering av §8-4 arbeidsuførhet"
     VurderingType.AVSLAG -> "Innstilling om avslag"
 }
 
 fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
     VurderingType.FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
-    VurderingType.OPPFYLT, VurderingType.IKKE_AKTUELL -> BrevkodeType.ARBEIDSUFORHET_VURDERING
+    VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> BrevkodeType.ARBEIDSUFORHET_VURDERING
     VurderingType.AVSLAG -> BrevkodeType.ARBEIDSUFORHET_AVSLAG
 }
 
 fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
-    VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, VurderingType.IKKE_AKTUELL -> JournalpostType.UTGAAENDE
+    VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> JournalpostType.UTGAAENDE
     VurderingType.AVSLAG -> JournalpostType.NOTAT
 }
 

@@ -43,6 +43,12 @@ fun generateVurdering(
         begrunnelse = begrunnelse,
         document = document,
     )
+    VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Vurdering.OppfyltUtenForhandsvarsel(
+        personident = personident,
+        veilederident = UserConstants.VEILEDER_IDENT,
+        begrunnelse = begrunnelse,
+        document = document,
+    )
     VurderingType.AVSLAG -> Vurdering.Avslag(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,

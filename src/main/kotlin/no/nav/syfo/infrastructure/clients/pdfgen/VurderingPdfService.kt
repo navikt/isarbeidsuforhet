@@ -26,7 +26,7 @@ class VurderingPdfService(
                 callId = callId,
                 forhandsvarselPdfDTO = vurderingPdfDTO,
             )
-            VurderingType.OPPFYLT, VurderingType.IKKE_AKTUELL -> pdfGenClient.createVurderingPdf(
+            VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> pdfGenClient.createVurderingPdf(
                 callId = callId,
                 vurderingPdfDTO = vurderingPdfDTO,
             )
