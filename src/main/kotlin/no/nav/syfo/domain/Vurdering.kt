@@ -111,18 +111,19 @@ sealed interface Vurdering {
         override val begrunnelse: String,
         override val document: List<DocumentComponent>,
         override val journalpostId: JournalpostId? = null,
-        override val publishedAt: OffsetDateTime? = null
+        override val publishedAt: OffsetDateTime? = null,
+        override val arsak: VurderingArsak,
     ) : Vurdering {
         override val type: VurderingType = VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
         override val varsel: Varsel? = null
         override val gjelderFom: LocalDate? = null
-        override val arsak: VurderingArsak? = null
 
         constructor(
             personident: PersonIdent,
             veilederident: String,
             begrunnelse: String,
             document: List<DocumentComponent>,
+            arsak: VurderingArsak,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -130,6 +131,7 @@ sealed interface Vurdering {
             document = document,
             journalpostId = null,
             publishedAt = null,
+            arsak = arsak,
         )
     }
 
@@ -174,11 +176,11 @@ sealed interface Vurdering {
         override val document: List<DocumentComponent>,
         override val gjelderFom: LocalDate,
         override val journalpostId: JournalpostId? = null,
-        override val publishedAt: OffsetDateTime? = null
+        override val publishedAt: OffsetDateTime? = null,
+        override val arsak: VurderingArsak,
     ) : Vurdering {
         override val type: VurderingType = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
         override val varsel: Varsel? = null
-        override val arsak: VurderingArsak? = null
 
         constructor(
             personident: PersonIdent,
@@ -186,6 +188,7 @@ sealed interface Vurdering {
             begrunnelse: String,
             document: List<DocumentComponent>,
             gjelderFom: LocalDate,
+            arsak: VurderingArsak,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -194,6 +197,7 @@ sealed interface Vurdering {
             gjelderFom = gjelderFom,
             journalpostId = null,
             publishedAt = null,
+            arsak = arsak,
         )
     }
 
@@ -271,6 +275,7 @@ sealed interface Vurdering {
                     createdAt = createdAt,
                     personident = personident,
                     veilederident = veilederident,
+                    arsak = VurderingArsak.valueOf(arsak!!),
                     begrunnelse = begrunnelse,
                     document = document,
                     journalpostId = journalpostId,
@@ -294,6 +299,7 @@ sealed interface Vurdering {
                     createdAt = createdAt,
                     personident = personident,
                     veilederident = veilederident,
+                    arsak = VurderingArsak.valueOf(arsak!!),
                     begrunnelse = begrunnelse,
                     document = document,
                     gjelderFom = gjelderFom!!,
@@ -345,4 +351,6 @@ fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
 enum class VurderingArsak {
     FRISKMELDT,
     FRISKMELDING_TIL_ARBEIDSFORMIDLING,
+    SYKEPENGER_IKKE_UTBETALT,
+    NY_VURDERING_NAY,
 }

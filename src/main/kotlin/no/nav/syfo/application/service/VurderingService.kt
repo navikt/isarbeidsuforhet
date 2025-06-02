@@ -63,6 +63,7 @@ class VurderingService(
             VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Vurdering.OppfyltUtenForhandsvarsel(
                 personident = personident,
                 veilederident = veilederident,
+                arsak = arsak ?: throw IllegalArgumentException("arsak is required for $type"),
                 begrunnelse = begrunnelse,
                 document = document,
             )
@@ -76,6 +77,7 @@ class VurderingService(
             VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Vurdering.AvslagUtenForhandsvarsel(
                 personident = personident,
                 veilederident = veilederident,
+                arsak = arsak ?: throw IllegalArgumentException("arsak is required for $type"),
                 begrunnelse = begrunnelse,
                 document = document,
                 gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type")

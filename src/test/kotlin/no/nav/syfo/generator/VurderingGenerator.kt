@@ -46,6 +46,7 @@ fun generateVurdering(
     VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Vurdering.OppfyltUtenForhandsvarsel(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
+        arsak = VurderingArsak.NY_VURDERING_NAY,
         begrunnelse = begrunnelse,
         document = document,
     )
@@ -59,6 +60,7 @@ fun generateVurdering(
     VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Vurdering.AvslagUtenForhandsvarsel(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
+        arsak = VurderingArsak.NY_VURDERING_NAY,
         begrunnelse = begrunnelse,
         document = document,
         gjelderFom = LocalDate.now(),

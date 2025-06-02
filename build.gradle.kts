@@ -6,7 +6,7 @@ val FLYWAY = "11.8.2"
 val HIKARI = "6.3.0"
 val POSTGRES = "42.7.6"
 val POSTGRES_EMBEDDED = "2.1.0"
-val KAFKA = "3.9.0"
+val KAFKA = "3.9.1"
 val LOGBACK = "1.5.18"
 val LOGSTASH_ENCODER = "8.1"
 val MICROMETER_REGISTRY = "1.12.13"
@@ -65,6 +65,12 @@ dependencies {
             because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
             version {
                 require("3.9.3")
+            }
+        }
+        implementation("commons-beanutils:commons-beanutils") {
+            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+            version {
+                require("1.11.0")
             }
         }
     }
