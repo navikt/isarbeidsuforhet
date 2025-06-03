@@ -166,8 +166,8 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setString(7, vurdering.begrunnelse)
             it.setObject(8, mapper.writeValueAsString(vurdering.document))
             it.setObject(9, vurdering.gjelderFom)
-            if (vurdering.arsak != null) {
-                it.setString(10, vurdering.arsak!!.name)
+            if (vurdering.arsak() != null) {
+                it.setString(10, vurdering.arsak())
             } else {
                 it.setNull(10, Types.CHAR)
             }
