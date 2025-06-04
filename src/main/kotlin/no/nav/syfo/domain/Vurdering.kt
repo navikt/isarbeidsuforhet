@@ -7,19 +7,19 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
-sealed interface Vurdering {
-    val uuid: UUID
-    val personident: PersonIdent
-    val createdAt: OffsetDateTime
-    val veilederident: String
-    val type: VurderingType
-    val begrunnelse: String
-    val varsel: Varsel?
-    val document: List<DocumentComponent>
-    val journalpostId: JournalpostId?
-    val publishedAt: OffsetDateTime?
-    val gjelderFom: LocalDate?
-    val arsak: VurderingArsak?
+sealed class Vurdering(
+    open val uuid: UUID,
+    open val createdAt: OffsetDateTime,
+    open val personident: PersonIdent,
+    open val veilederident: String,
+    open val type: VurderingType,
+    open val begrunnelse: String,
+    open val varsel: Varsel?,
+    open val document: List<DocumentComponent>,
+    open val journalpostId: JournalpostId?,
+    open val publishedAt: OffsetDateTime?,
+    open val gjelderFom: LocalDate?,
+) {
 
     fun journalfor(journalpostId: JournalpostId): Vurdering = when (this) {
         is Forhandsvarsel -> this.copy(journalpostId = journalpostId)
@@ -51,10 +51,7 @@ sealed interface Vurdering {
         override val varsel: Varsel,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering {
-        override val type: VurderingType = VurderingType.FORHANDSVARSEL
-        override val gjelderFom: LocalDate? = null
-        override val arsak: VurderingArsak? = null
+    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.FORHANDSVARSEL, begrunnelse, varsel, document, journalpostId, publishedAt, null) {
 
         constructor(
             personident: PersonIdent,
@@ -82,11 +79,7 @@ sealed interface Vurdering {
         override val document: List<DocumentComponent>,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering {
-        override val type: VurderingType = VurderingType.OPPFYLT
-        override val varsel: Varsel? = null
-        override val gjelderFom: LocalDate? = null
-        override val arsak: VurderingArsak? = null
+    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.OPPFYLT, begrunnelse, null, document, journalpostId, publishedAt, null) {
 
         constructor(
             personident: PersonIdent,
@@ -111,18 +104,16 @@ sealed interface Vurdering {
         override val begrunnelse: String,
         override val document: List<DocumentComponent>,
         override val journalpostId: JournalpostId? = null,
-        override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering {
-        override val type: VurderingType = VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
-        override val varsel: Varsel? = null
-        override val gjelderFom: LocalDate? = null
-        override val arsak: VurderingArsak? = null
+        override val publishedAt: OffsetDateTime? = null,
+        val arsak: Arsak,
+    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, begrunnelse, null, document, journalpostId, publishedAt, null) {
 
         constructor(
             personident: PersonIdent,
             veilederident: String,
             begrunnelse: String,
             document: List<DocumentComponent>,
+            arsak: Arsak,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -130,7 +121,13 @@ sealed interface Vurdering {
             document = document,
             journalpostId = null,
             publishedAt = null,
+            arsak = arsak
         )
+
+        enum class Arsak {
+            SYKEPENGER_IKKE_UTBETALT,
+            NY_VURDERING_NAY,
+        }
     }
 
     data class Avslag internal constructor(
@@ -143,10 +140,7 @@ sealed interface Vurdering {
         override val gjelderFom: LocalDate,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering {
-        override val type: VurderingType = VurderingType.AVSLAG
-        override val varsel: Varsel? = null
-        override val arsak: VurderingArsak? = null
+    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.AVSLAG, begrunnelse, null, document, journalpostId, publishedAt, gjelderFom) {
 
         constructor(
             personident: PersonIdent,
@@ -174,11 +168,9 @@ sealed interface Vurdering {
         override val document: List<DocumentComponent>,
         override val gjelderFom: LocalDate,
         override val journalpostId: JournalpostId? = null,
-        override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering {
-        override val type: VurderingType = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
-        override val varsel: Varsel? = null
-        override val arsak: VurderingArsak? = null
+        override val publishedAt: OffsetDateTime? = null,
+        val arsak: Arsak,
+    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL, begrunnelse, null, document, journalpostId, publishedAt, gjelderFom) {
 
         constructor(
             personident: PersonIdent,
@@ -186,6 +178,7 @@ sealed interface Vurdering {
             begrunnelse: String,
             document: List<DocumentComponent>,
             gjelderFom: LocalDate,
+            arsak: Arsak,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -194,7 +187,13 @@ sealed interface Vurdering {
             gjelderFom = gjelderFom,
             journalpostId = null,
             publishedAt = null,
+            arsak = arsak,
         )
+
+        enum class Arsak {
+            SYKEPENGER_IKKE_UTBETALT,
+            NY_VURDERING_NAY,
+        }
     }
 
     data class IkkeAktuell internal constructor(
@@ -202,29 +201,30 @@ sealed interface Vurdering {
         override val createdAt: OffsetDateTime = nowUTC(),
         override val personident: PersonIdent,
         override val veilederident: String,
-        override val arsak: VurderingArsak,
         override val document: List<DocumentComponent>,
         override val journalpostId: JournalpostId? = null,
-        override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering {
-        override val begrunnelse = ""
-        override val type: VurderingType = VurderingType.IKKE_AKTUELL
-        override val varsel: Varsel? = null
-        override val gjelderFom: LocalDate? = null
+        override val publishedAt: OffsetDateTime? = null,
+        val arsak: Arsak,
+    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.IKKE_AKTUELL, "", null, document, journalpostId, publishedAt, null) {
 
         constructor(
-            arsak: VurderingArsak,
             personident: PersonIdent,
             veilederident: String,
             document: List<DocumentComponent>,
+            arsak: Arsak,
         ) : this(
-            arsak = arsak,
             personident = personident,
             veilederident = veilederident,
             document = document,
             journalpostId = null,
             publishedAt = null,
+            arsak = arsak,
         )
+
+        enum class Arsak {
+            FRISKMELDT,
+            FRISKMELDING_TIL_ARBEIDSFORMIDLING,
+        }
     }
 
     companion object {
@@ -271,6 +271,7 @@ sealed interface Vurdering {
                     createdAt = createdAt,
                     personident = personident,
                     veilederident = veilederident,
+                    arsak = OppfyltUtenForhandsvarsel.Arsak.valueOf(arsak!!),
                     begrunnelse = begrunnelse,
                     document = document,
                     journalpostId = journalpostId,
@@ -294,6 +295,7 @@ sealed interface Vurdering {
                     createdAt = createdAt,
                     personident = personident,
                     veilederident = veilederident,
+                    arsak = AvslagUtenForhandsvarsel.Arsak.valueOf(arsak!!),
                     begrunnelse = begrunnelse,
                     document = document,
                     gjelderFom = gjelderFom!!,
@@ -306,7 +308,7 @@ sealed interface Vurdering {
                     createdAt = createdAt,
                     personident = personident,
                     veilederident = veilederident,
-                    arsak = VurderingArsak.valueOf(arsak!!),
+                    arsak = IkkeAktuell.Arsak.valueOf(arsak!!),
                     document = document,
                     journalpostId = journalpostId,
                     publishedAt = publishedAt
@@ -314,6 +316,14 @@ sealed interface Vurdering {
             }
         }
     }
+
+    fun arsak(): String? =
+        when (this) {
+            is OppfyltUtenForhandsvarsel -> arsak.name
+            is AvslagUtenForhandsvarsel -> arsak.name
+            is IkkeAktuell -> arsak.name
+            else -> null
+        }
 }
 
 enum class VurderingType(val isFinal: Boolean) {
@@ -340,9 +350,4 @@ fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
 fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
     VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> JournalpostType.UTGAAENDE
     VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> JournalpostType.NOTAT
-}
-
-enum class VurderingArsak {
-    FRISKMELDT,
-    FRISKMELDING_TIL_ARBEIDSFORMIDLING,
 }

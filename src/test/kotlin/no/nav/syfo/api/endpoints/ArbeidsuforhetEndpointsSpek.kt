@@ -20,6 +20,7 @@ import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.api.generateJWT
+import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.api.model.VurderingerRequestDTO
@@ -29,7 +30,6 @@ import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
 import no.nav.syfo.domain.DocumentComponent
 import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
@@ -231,6 +231,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             type = VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL,
                             begrunnelse = begrunnelse,
                             document = vurderingDocumentOppfylt,
+                            arsak = VurderingArsak.NY_VURDERING_NAY,
                         )
 
                         val client = setupApiAndClient()
@@ -244,7 +245,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                         responseDTO.document shouldBeEqualTo vurderingDocumentOppfylt
                         responseDTO.type shouldBeEqualTo VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
-                        responseDTO.arsak.shouldBeNull()
+                        responseDTO.arsak shouldBeEqualTo VurderingArsak.NY_VURDERING_NAY
                         responseDTO.gjelderFom.shouldBeNull()
                         responseDTO.varsel shouldBeEqualTo null
 
@@ -254,6 +255,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         vurdering.type shouldBeEqualTo VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
                         vurdering.gjelderFom.shouldBeNull()
                         vurdering.varsel shouldBeEqualTo null
+                        vurdering.arsak() shouldBeEqualTo VurderingArsak.NY_VURDERING_NAY.name
 
                         val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
@@ -314,7 +316,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         type = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL,
                         begrunnelse = "Avslag",
                         document = vurderingDocumentAvslag,
-                        gjelderFom = avslagGjelderFom
+                        gjelderFom = avslagGjelderFom,
+                        arsak = VurderingArsak.SYKEPENGER_IKKE_UTBETALT,
                     )
                     testApplication {
                         val client = setupApiAndClient()
@@ -328,7 +331,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                         responseDTO.document shouldBeEqualTo vurderingDocumentAvslag
                         responseDTO.type shouldBeEqualTo VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
-                        responseDTO.arsak.shouldBeNull()
+                        responseDTO.arsak shouldBeEqualTo VurderingArsak.SYKEPENGER_IKKE_UTBETALT
                         responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                         responseDTO.varsel shouldBeEqualTo null
 
@@ -341,6 +344,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         avslagVurdering.type shouldBeEqualTo VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
                         avslagVurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
                         avslagVurdering.varsel shouldBeEqualTo null
+                        avslagVurdering.arsak() shouldBeEqualTo VurderingArsak.SYKEPENGER_IKKE_UTBETALT.name
 
                         val pVurderingPdf = database.getVurderingPdf(avslagVurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_AVSLAG.size

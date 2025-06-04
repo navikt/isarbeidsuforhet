@@ -1,8 +1,8 @@
 package no.nav.syfo.infrastructure.kafka
 
+import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.domain.Vurdering
-import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.domain.asProducerRecordKey
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -55,7 +55,7 @@ data class VurderingRecord(
                 personident = vurdering.personident.value,
                 veilederident = vurdering.veilederident,
                 type = vurdering.type,
-                arsak = vurdering.arsak,
+                arsak = vurdering.arsak()?.let { VurderingArsak.valueOf(it) },
                 begrunnelse = vurdering.begrunnelse,
                 gjelderFom = vurdering.gjelderFom,
                 isFinal = vurdering.type.isFinal

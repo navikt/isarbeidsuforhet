@@ -1,6 +1,7 @@
 package no.nav.syfo.application.service
 
 import io.micrometer.core.instrument.Counter
+import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVurderingPdfService
 import no.nav.syfo.application.IVurderingProducer
@@ -45,6 +46,9 @@ class VurderingService(
         if (type == VurderingType.AVSLAG && (currentVurdering == null || !currentVurdering.isExpiredForhandsvarsel())) {
             throw IllegalArgumentException("Cannot create ${VurderingType.AVSLAG} without expired ${VurderingType.FORHANDSVARSEL}")
         }
+        if (listOf(VurderingType.AVSLAG_UTEN_FORHANDSVARSEL, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL).contains(type) && arsak == null) {
+            throw IllegalArgumentException("$type requires arsak")
+        }
 
         val vurdering = when (type) {
             VurderingType.FORHANDSVARSEL -> Vurdering.Forhandsvarsel(
@@ -63,6 +67,7 @@ class VurderingService(
             VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Vurdering.OppfyltUtenForhandsvarsel(
                 personident = personident,
                 veilederident = veilederident,
+                arsak = Vurdering.OppfyltUtenForhandsvarsel.Arsak.valueOf(arsak!!.name),
                 begrunnelse = begrunnelse,
                 document = document,
             )
@@ -76,6 +81,7 @@ class VurderingService(
             VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Vurdering.AvslagUtenForhandsvarsel(
                 personident = personident,
                 veilederident = veilederident,
+                arsak = Vurdering.AvslagUtenForhandsvarsel.Arsak.valueOf(arsak!!.name),
                 begrunnelse = begrunnelse,
                 document = document,
                 gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type")
@@ -83,7 +89,7 @@ class VurderingService(
             VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
                 personident = personident,
                 veilederident = veilederident,
-                arsak = arsak ?: throw IllegalArgumentException("arsak is required for $type"),
+                arsak = Vurdering.IkkeAktuell.Arsak.valueOf(arsak!!.name),
                 document = document,
             )
         }
@@ -101,7 +107,7 @@ class VurderingService(
         when (type) {
             VurderingType.FORHANDSVARSEL -> Metrics.COUNT_VURDERING_FORHANDSVARSEL.increment()
             VurderingType.OPPFYLT -> Metrics.COUNT_VURDERING_OPPFYLT.increment()
-            VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Metrics.COUNT_VURDERING_OPPFYLT.increment()
+            VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Metrics.COUNT_VURDERING_UTEN_FORHANDSVARSEL_OPPFYLT.increment()
             VurderingType.AVSLAG -> Metrics.COUNT_VURDERING_AVSLAG.increment()
             VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Metrics.COUNT_VURDERING_AVSLAG_UTEN_FORHANDSVARSEL.increment()
             VurderingType.IKKE_AKTUELL -> Metrics.COUNT_VURDERING_IKKE_AKTUELL.increment()

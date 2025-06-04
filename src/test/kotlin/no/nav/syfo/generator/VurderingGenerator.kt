@@ -34,7 +34,7 @@ fun generateVurdering(
     VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
-        arsak = VurderingArsak.FRISKMELDT,
+        arsak = Vurdering.IkkeAktuell.Arsak.FRISKMELDT,
         document = document,
     )
     VurderingType.OPPFYLT -> Vurdering.Oppfylt(
@@ -46,6 +46,7 @@ fun generateVurdering(
     VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Vurdering.OppfyltUtenForhandsvarsel(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
+        arsak = Vurdering.OppfyltUtenForhandsvarsel.Arsak.NY_VURDERING_NAY,
         begrunnelse = begrunnelse,
         document = document,
     )
@@ -59,6 +60,7 @@ fun generateVurdering(
     VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Vurdering.AvslagUtenForhandsvarsel(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
+        arsak = Vurdering.AvslagUtenForhandsvarsel.Arsak.NY_VURDERING_NAY,
         begrunnelse = begrunnelse,
         document = document,
         gjelderFom = LocalDate.now(),

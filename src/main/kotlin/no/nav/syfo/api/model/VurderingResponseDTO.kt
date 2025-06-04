@@ -24,7 +24,7 @@ data class VurderingResponseDTO private constructor(
             createdAt = vurdering.createdAt.toLocalDateTime(),
             veilederident = vurdering.veilederident,
             type = vurdering.type,
-            arsak = vurdering.arsak,
+            arsak = vurdering.arsak()?.let { VurderingArsak.valueOf(it) },
             begrunnelse = vurdering.begrunnelse,
             document = vurdering.document,
             varsel = vurdering.varsel?.let { VarselDTO.createFromVarsel(it) },

@@ -9,12 +9,12 @@ import no.nav.syfo.UserConstants.ARBEIDSTAKER_PERSONIDENT_PDL_FAILS
 import no.nav.syfo.UserConstants.PDF_AVSLAG
 import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
+import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVurderingPdfService
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.JournalpostId
-import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
@@ -361,7 +361,7 @@ class VurderingServiceSpek : Spek({
                 val ikkeAktuellVurderingRecord = producerRecordSlot.captured.value()
                 ikkeAktuellVurderingRecord.uuid shouldBeEqualTo unpublishedIkkeAktuellVurdering.uuid
                 ikkeAktuellVurderingRecord.type shouldBeEqualTo unpublishedIkkeAktuellVurdering.type
-                ikkeAktuellVurderingRecord.arsak shouldBeEqualTo unpublishedIkkeAktuellVurdering.arsak
+                ikkeAktuellVurderingRecord.arsak?.name shouldBeEqualTo unpublishedIkkeAktuellVurdering.arsak()
                 ikkeAktuellVurderingRecord.gjelderFom.shouldBeNull()
                 ikkeAktuellVurderingRecord.isFinal shouldBeEqualTo true
             }
