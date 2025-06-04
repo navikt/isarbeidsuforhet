@@ -12,4 +12,5 @@ data class VurderingRequestDTO(
     val gjelderFom: LocalDate? = null,
     val arsak: VurderingArsak? = null,
     val frist: LocalDate? = null,
+    val nayOppgaveDato: LocalDate? = null,
 )

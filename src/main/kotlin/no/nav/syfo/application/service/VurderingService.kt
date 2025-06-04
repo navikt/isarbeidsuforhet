@@ -34,6 +34,7 @@ class VurderingService(
         document: List<DocumentComponent>,
         gjelderFom: LocalDate?,
         svarfrist: LocalDate? = null,
+        nayOppgaveDato: LocalDate? = null,
         callId: String,
     ): Vurdering {
         val currentVurdering = getVurderinger(personident).firstOrNull()
@@ -70,6 +71,7 @@ class VurderingService(
                 arsak = Vurdering.OppfyltUtenForhandsvarsel.Arsak.valueOf(arsak!!.name),
                 begrunnelse = begrunnelse,
                 document = document,
+                nayOppgaveDato = nayOppgaveDato,
             )
             VurderingType.AVSLAG -> Vurdering.Avslag(
                 personident = personident,
@@ -84,7 +86,8 @@ class VurderingService(
                 arsak = Vurdering.AvslagUtenForhandsvarsel.Arsak.valueOf(arsak!!.name),
                 begrunnelse = begrunnelse,
                 document = document,
-                gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type")
+                gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type"),
+                nayOppgaveDato = nayOppgaveDato,
             )
             VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
                 personident = personident,

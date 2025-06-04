@@ -171,6 +171,8 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             } else {
                 it.setNull(10, Types.CHAR)
             }
+            it.setObject(11, vurdering.nayOppgaveDato())
+
             it.executeQuery().toList { toPVurdering() }
         }.single()
     }
@@ -246,8 +248,9 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 begrunnelse,
                 document,
                 gjelder_fom,
-                arsak
-            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?)
+                arsak,
+                nay_oppgave_dato
+            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?)
             RETURNING *
             """
 
@@ -318,6 +321,7 @@ internal fun ResultSet.toPVurdering(): PVurdering = PVurdering(
     journalpostId = getString("journalpost_id"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
     gjelderFom = getDate("gjelder_fom")?.toLocalDate(),
+    nayOppgaveDato = getDate("nay_oppgave_dato")?.toLocalDate(),
 )
 
 internal fun ResultSet.toPVurderingPdf(): PVurderingPdf = PVurderingPdf(

@@ -106,6 +106,7 @@ sealed class Vurdering(
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null,
         val arsak: Arsak,
+        val nayOppgaveDato: LocalDate? = null,
     ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, begrunnelse, null, document, journalpostId, publishedAt, null) {
 
         constructor(
@@ -114,6 +115,7 @@ sealed class Vurdering(
             begrunnelse: String,
             document: List<DocumentComponent>,
             arsak: Arsak,
+            nayOppgaveDato: LocalDate?,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -121,7 +123,8 @@ sealed class Vurdering(
             document = document,
             journalpostId = null,
             publishedAt = null,
-            arsak = arsak
+            arsak = arsak,
+            nayOppgaveDato = nayOppgaveDato,
         )
 
         enum class Arsak {
@@ -170,6 +173,7 @@ sealed class Vurdering(
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null,
         val arsak: Arsak,
+        val nayOppgaveDato: LocalDate? = null,
     ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL, begrunnelse, null, document, journalpostId, publishedAt, gjelderFom) {
 
         constructor(
@@ -179,6 +183,7 @@ sealed class Vurdering(
             document: List<DocumentComponent>,
             gjelderFom: LocalDate,
             arsak: Arsak,
+            nayOppgaveDato: LocalDate?,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -188,6 +193,7 @@ sealed class Vurdering(
             journalpostId = null,
             publishedAt = null,
             arsak = arsak,
+            nayOppgaveDato = nayOppgaveDato,
         )
 
         enum class Arsak {
@@ -240,7 +246,8 @@ sealed class Vurdering(
             journalpostId: JournalpostId?,
             varsel: Varsel?,
             publishedAt: OffsetDateTime?,
-            gjelderFom: LocalDate?
+            gjelderFom: LocalDate?,
+            nayOppgaveDato: LocalDate?,
         ): Vurdering {
             return when (VurderingType.valueOf(type)) {
                 VurderingType.FORHANDSVARSEL -> Forhandsvarsel(
@@ -275,7 +282,8 @@ sealed class Vurdering(
                     begrunnelse = begrunnelse,
                     document = document,
                     journalpostId = journalpostId,
-                    publishedAt = publishedAt
+                    publishedAt = publishedAt,
+                    nayOppgaveDato = nayOppgaveDato,
                 )
 
                 VurderingType.AVSLAG -> Avslag(
@@ -300,7 +308,8 @@ sealed class Vurdering(
                     document = document,
                     gjelderFom = gjelderFom!!,
                     journalpostId = journalpostId,
-                    publishedAt = publishedAt
+                    publishedAt = publishedAt,
+                    nayOppgaveDato = nayOppgaveDato,
                 )
 
                 VurderingType.IKKE_AKTUELL -> IkkeAktuell(
@@ -322,6 +331,13 @@ sealed class Vurdering(
             is OppfyltUtenForhandsvarsel -> arsak.name
             is AvslagUtenForhandsvarsel -> arsak.name
             is IkkeAktuell -> arsak.name
+            else -> null
+        }
+
+    fun nayOppgaveDato(): LocalDate? =
+        when (this) {
+            is OppfyltUtenForhandsvarsel -> nayOppgaveDato
+            is AvslagUtenForhandsvarsel -> nayOppgaveDato
             else -> null
         }
 }

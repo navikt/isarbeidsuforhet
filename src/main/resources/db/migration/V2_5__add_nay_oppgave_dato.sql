@@ -1,0 +1,1 @@
+ALTER TABLE VURDERING ADD COLUMN nay_oppgave_dato DATE;

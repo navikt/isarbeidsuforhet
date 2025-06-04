@@ -292,6 +292,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         responseDTO.arsak.shouldBeNull()
                         responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                         responseDTO.varsel shouldBeEqualTo null
+                        responseDTO.nayOppgaveDato shouldBeEqualTo null
 
                         val vurderinger = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
                         vurderinger.size shouldBeEqualTo 2
@@ -312,12 +313,14 @@ object ArbeidsuforhetEndpointsSpek : Spek({
 
                 it("Creates new vurdering AVSLAG_UTEN_FORHANDSVARSEL and creates PDF") {
                     val avslagGjelderFom = LocalDate.now().plusDays(1)
+                    val oppgaveDato = LocalDate.now().minusDays(1)
                     val vurderingAvslagRequestDTO = VurderingRequestDTO(
                         type = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL,
                         begrunnelse = "Avslag",
                         document = vurderingDocumentAvslag,
                         gjelderFom = avslagGjelderFom,
                         arsak = VurderingArsak.SYKEPENGER_IKKE_UTBETALT,
+                        nayOppgaveDato = oppgaveDato,
                     )
                     testApplication {
                         val client = setupApiAndClient()
@@ -334,6 +337,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         responseDTO.arsak shouldBeEqualTo VurderingArsak.SYKEPENGER_IKKE_UTBETALT
                         responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                         responseDTO.varsel shouldBeEqualTo null
+                        responseDTO.nayOppgaveDato shouldBeEqualTo oppgaveDato
 
                         val vurderinger = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
                         vurderinger.size shouldBeEqualTo 1

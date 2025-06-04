@@ -64,5 +64,6 @@ fun generateVurdering(
         begrunnelse = begrunnelse,
         document = document,
         gjelderFom = LocalDate.now(),
+        nayOppgaveDato = LocalDate.now().minusDays(1),
     )
 }
