@@ -30,7 +30,7 @@ data class VurderingResponseDTO private constructor(
             document = vurdering.document,
             varsel = vurdering.varsel?.let { VarselDTO.createFromVarsel(it) },
             gjelderFom = vurdering.gjelderFom,
-            oppgaveFraNayDato = vurdering.nayOppgaveDato(),
+            oppgaveFraNayDato = vurdering.oppgaveFraNayDato(),
         )
     }
 }

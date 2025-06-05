@@ -67,7 +67,7 @@ fun Route.registerArbeidsuforhetEndpoints(
                     document = requestDTO.document,
                     gjelderFom = requestDTO.gjelderFom,
                     svarfrist = requestDTO.frist,
-                    nayOppgaveDato = requestDTO.oppgaveFraNayDato,
+                    oppgaveFraNayDato = requestDTO.oppgaveFraNayDato,
                     callId = callId,
                 )
 

@@ -247,7 +247,7 @@ sealed class Vurdering(
             varsel: Varsel?,
             publishedAt: OffsetDateTime?,
             gjelderFom: LocalDate?,
-            nayOppgaveDato: LocalDate?,
+            oppgaveFraNayDato: LocalDate?,
         ): Vurdering {
             return when (VurderingType.valueOf(type)) {
                 VurderingType.FORHANDSVARSEL -> Forhandsvarsel(
@@ -259,7 +259,7 @@ sealed class Vurdering(
                     document = document,
                     varsel = varsel!!,
                     journalpostId = journalpostId,
-                    publishedAt = publishedAt
+                    publishedAt = publishedAt,
                 )
 
                 VurderingType.OPPFYLT -> Oppfylt(
@@ -270,7 +270,7 @@ sealed class Vurdering(
                     begrunnelse = begrunnelse,
                     document = document,
                     journalpostId = journalpostId,
-                    publishedAt = publishedAt
+                    publishedAt = publishedAt,
                 )
 
                 VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> OppfyltUtenForhandsvarsel(
@@ -283,7 +283,7 @@ sealed class Vurdering(
                     document = document,
                     journalpostId = journalpostId,
                     publishedAt = publishedAt,
-                    oppgaveFraNayDato = nayOppgaveDato,
+                    oppgaveFraNayDato = oppgaveFraNayDato,
                 )
 
                 VurderingType.AVSLAG -> Avslag(
@@ -295,7 +295,7 @@ sealed class Vurdering(
                     document = document,
                     gjelderFom = gjelderFom!!,
                     journalpostId = journalpostId,
-                    publishedAt = publishedAt
+                    publishedAt = publishedAt,
                 )
 
                 VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> AvslagUtenForhandsvarsel(
@@ -309,7 +309,7 @@ sealed class Vurdering(
                     gjelderFom = gjelderFom!!,
                     journalpostId = journalpostId,
                     publishedAt = publishedAt,
-                    oppgaveFraNayDato = nayOppgaveDato,
+                    oppgaveFraNayDato = oppgaveFraNayDato,
                 )
 
                 VurderingType.IKKE_AKTUELL -> IkkeAktuell(
@@ -320,7 +320,7 @@ sealed class Vurdering(
                     arsak = IkkeAktuell.Arsak.valueOf(arsak!!),
                     document = document,
                     journalpostId = journalpostId,
-                    publishedAt = publishedAt
+                    publishedAt = publishedAt,
                 )
             }
         }
@@ -334,7 +334,7 @@ sealed class Vurdering(
             else -> null
         }
 
-    fun nayOppgaveDato(): LocalDate? =
+    fun oppgaveFraNayDato(): LocalDate? =
         when (this) {
             is OppfyltUtenForhandsvarsel -> oppgaveFraNayDato
             is AvslagUtenForhandsvarsel -> oppgaveFraNayDato
