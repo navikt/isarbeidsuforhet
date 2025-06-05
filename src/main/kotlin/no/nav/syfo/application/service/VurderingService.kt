@@ -71,7 +71,7 @@ class VurderingService(
                 arsak = Vurdering.OppfyltUtenForhandsvarsel.Arsak.valueOf(arsak!!.name),
                 begrunnelse = begrunnelse,
                 document = document,
-                nayOppgaveDato = nayOppgaveDato,
+                oppgaveFraNayDato = nayOppgaveDato,
             )
             VurderingType.AVSLAG -> Vurdering.Avslag(
                 personident = personident,
@@ -87,7 +87,7 @@ class VurderingService(
                 begrunnelse = begrunnelse,
                 document = document,
                 gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type"),
-                nayOppgaveDato = nayOppgaveDato,
+                oppgaveFraNayDato = nayOppgaveDato,
             )
             VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
                 personident = personident,

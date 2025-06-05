@@ -16,7 +16,7 @@ data class VurderingResponseDTO private constructor(
     val document: List<DocumentComponent>,
     val varsel: VarselDTO?,
     val gjelderFom: LocalDate?,
-    val nayOppgaveDato: LocalDate?,
+    val oppgaveFraNayDato: LocalDate?,
 ) {
     companion object {
         fun createFromVurdering(vurdering: Vurdering) = VurderingResponseDTO(
@@ -30,7 +30,7 @@ data class VurderingResponseDTO private constructor(
             document = vurdering.document,
             varsel = vurdering.varsel?.let { VarselDTO.createFromVarsel(it) },
             gjelderFom = vurdering.gjelderFom,
-            nayOppgaveDato = vurdering.nayOppgaveDato(),
+            oppgaveFraNayDato = vurdering.nayOppgaveDato(),
         )
     }
 }

@@ -106,7 +106,7 @@ sealed class Vurdering(
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null,
         val arsak: Arsak,
-        val nayOppgaveDato: LocalDate? = null,
+        val oppgaveFraNayDato: LocalDate? = null,
     ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, begrunnelse, null, document, journalpostId, publishedAt, null) {
 
         constructor(
@@ -115,7 +115,7 @@ sealed class Vurdering(
             begrunnelse: String,
             document: List<DocumentComponent>,
             arsak: Arsak,
-            nayOppgaveDato: LocalDate?,
+            oppgaveFraNayDato: LocalDate?,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -124,12 +124,12 @@ sealed class Vurdering(
             journalpostId = null,
             publishedAt = null,
             arsak = arsak,
-            nayOppgaveDato = nayOppgaveDato,
+            oppgaveFraNayDato = oppgaveFraNayDato,
         )
 
         enum class Arsak {
             SYKEPENGER_IKKE_UTBETALT,
-            NY_VURDERING_NAY,
+            NAY_BER_OM_NY_VURDERING,
         }
     }
 
@@ -173,7 +173,7 @@ sealed class Vurdering(
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null,
         val arsak: Arsak,
-        val nayOppgaveDato: LocalDate? = null,
+        val oppgaveFraNayDato: LocalDate? = null,
     ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL, begrunnelse, null, document, journalpostId, publishedAt, gjelderFom) {
 
         constructor(
@@ -183,7 +183,7 @@ sealed class Vurdering(
             document: List<DocumentComponent>,
             gjelderFom: LocalDate,
             arsak: Arsak,
-            nayOppgaveDato: LocalDate?,
+            oppgaveFraNayDato: LocalDate?,
         ) : this(
             personident = personident,
             veilederident = veilederident,
@@ -193,12 +193,12 @@ sealed class Vurdering(
             journalpostId = null,
             publishedAt = null,
             arsak = arsak,
-            nayOppgaveDato = nayOppgaveDato,
+            oppgaveFraNayDato = oppgaveFraNayDato,
         )
 
         enum class Arsak {
             SYKEPENGER_IKKE_UTBETALT,
-            NY_VURDERING_NAY,
+            NAY_BER_OM_NY_VURDERING,
         }
     }
 
@@ -283,7 +283,7 @@ sealed class Vurdering(
                     document = document,
                     journalpostId = journalpostId,
                     publishedAt = publishedAt,
-                    nayOppgaveDato = nayOppgaveDato,
+                    oppgaveFraNayDato = nayOppgaveDato,
                 )
 
                 VurderingType.AVSLAG -> Avslag(
@@ -309,7 +309,7 @@ sealed class Vurdering(
                     gjelderFom = gjelderFom!!,
                     journalpostId = journalpostId,
                     publishedAt = publishedAt,
-                    nayOppgaveDato = nayOppgaveDato,
+                    oppgaveFraNayDato = nayOppgaveDato,
                 )
 
                 VurderingType.IKKE_AKTUELL -> IkkeAktuell(
@@ -336,8 +336,8 @@ sealed class Vurdering(
 
     fun nayOppgaveDato(): LocalDate? =
         when (this) {
-            is OppfyltUtenForhandsvarsel -> nayOppgaveDato
-            is AvslagUtenForhandsvarsel -> nayOppgaveDato
+            is OppfyltUtenForhandsvarsel -> oppgaveFraNayDato
+            is AvslagUtenForhandsvarsel -> oppgaveFraNayDato
             else -> null
         }
 }

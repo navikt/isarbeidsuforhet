@@ -231,7 +231,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             type = VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL,
                             begrunnelse = begrunnelse,
                             document = vurderingDocumentOppfylt,
-                            arsak = VurderingArsak.NY_VURDERING_NAY,
+                            arsak = VurderingArsak.NAY_BER_OM_NY_VURDERING,
                         )
 
                         val client = setupApiAndClient()
@@ -245,7 +245,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                         responseDTO.document shouldBeEqualTo vurderingDocumentOppfylt
                         responseDTO.type shouldBeEqualTo VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
-                        responseDTO.arsak shouldBeEqualTo VurderingArsak.NY_VURDERING_NAY
+                        responseDTO.arsak shouldBeEqualTo VurderingArsak.NAY_BER_OM_NY_VURDERING
                         responseDTO.gjelderFom.shouldBeNull()
                         responseDTO.varsel shouldBeEqualTo null
 
@@ -255,7 +255,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         vurdering.type shouldBeEqualTo VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
                         vurdering.gjelderFom.shouldBeNull()
                         vurdering.varsel shouldBeEqualTo null
-                        vurdering.arsak() shouldBeEqualTo VurderingArsak.NY_VURDERING_NAY.name
+                        vurdering.arsak() shouldBeEqualTo VurderingArsak.NAY_BER_OM_NY_VURDERING.name
 
                         val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
@@ -292,7 +292,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         responseDTO.arsak.shouldBeNull()
                         responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                         responseDTO.varsel shouldBeEqualTo null
-                        responseDTO.nayOppgaveDato shouldBeEqualTo null
+                        responseDTO.oppgaveFraNayDato shouldBeEqualTo null
 
                         val vurderinger = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
                         vurderinger.size shouldBeEqualTo 2
@@ -320,7 +320,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         document = vurderingDocumentAvslag,
                         gjelderFom = avslagGjelderFom,
                         arsak = VurderingArsak.SYKEPENGER_IKKE_UTBETALT,
-                        nayOppgaveDato = oppgaveDato,
+                        oppgaveFraNayDato = oppgaveDato,
                     )
                     testApplication {
                         val client = setupApiAndClient()
@@ -337,7 +337,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         responseDTO.arsak shouldBeEqualTo VurderingArsak.SYKEPENGER_IKKE_UTBETALT
                         responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                         responseDTO.varsel shouldBeEqualTo null
-                        responseDTO.nayOppgaveDato shouldBeEqualTo oppgaveDato
+                        responseDTO.oppgaveFraNayDato shouldBeEqualTo oppgaveDato
 
                         val vurderinger = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
                         vurderinger.size shouldBeEqualTo 1
