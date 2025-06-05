@@ -19,6 +19,7 @@ data class PVurdering(
     val journalpostId: String?,
     val publishedAt: OffsetDateTime?,
     val gjelderFom: LocalDate?,
+    val oppgaveFraNayDato: LocalDate?,
 ) {
 
     fun toVurdering(
@@ -36,5 +37,6 @@ data class PVurdering(
         varsel = varsel,
         publishedAt = publishedAt,
         gjelderFom = gjelderFom,
+        oppgaveFraNayDato = oppgaveFraNayDato,
     )
 }

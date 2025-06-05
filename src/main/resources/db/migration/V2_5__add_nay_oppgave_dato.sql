@@ -1,0 +1,1 @@
+ALTER TABLE VURDERING ADD COLUMN oppgave_fra_nay_dato DATE;
