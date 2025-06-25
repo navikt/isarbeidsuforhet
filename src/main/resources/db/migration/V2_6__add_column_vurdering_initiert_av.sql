@@ -1,0 +1,1 @@
+ALTER TABLE VURDERING ADD COLUMN vurdering_initiert_av TEXT;
