@@ -2,7 +2,11 @@ package no.nav.syfo.infrastructure.database.repository
 
 import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.syfo.application.IVurderingRepository
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.DocumentComponent
+import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Varsel
+import no.nav.syfo.domain.Vurdering
+import no.nav.syfo.domain.Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.infrastructure.database.toList
 import no.nav.syfo.util.configuredJacksonMapper
@@ -137,19 +141,20 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             }
         }
 
-    override fun updatePersonident(nyPersonident: PersonIdent, vurderinger: List<Vurdering>) = database.connection.use { connection ->
-        connection.prepareStatement(UPDATE_PERSONIDENT).use {
-            vurderinger.forEach { vurdering ->
-                it.setString(1, nyPersonident.value)
-                it.setString(2, vurdering.uuid.toString())
-                val updated = it.executeUpdate()
-                if (updated != 1) {
-                    throw SQLException("Expected a single row to be updated, got update count $updated")
+    override fun updatePersonident(nyPersonident: PersonIdent, vurderinger: List<Vurdering>) =
+        database.connection.use { connection ->
+            connection.prepareStatement(UPDATE_PERSONIDENT).use {
+                vurderinger.forEach { vurdering ->
+                    it.setString(1, nyPersonident.value)
+                    it.setString(2, vurdering.uuid.toString())
+                    val updated = it.executeUpdate()
+                    if (updated != 1) {
+                        throw SQLException("Expected a single row to be updated, got update count $updated")
+                    }
                 }
             }
+            connection.commit()
         }
-        connection.commit()
-    }
 
     private fun Connection.createVurdering(
         vurdering: Vurdering,
@@ -171,7 +176,12 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             } else {
                 it.setNull(10, Types.CHAR)
             }
-            it.setObject(11, vurdering.oppgaveFraNayDato())
+            if (vurdering is Vurdering.AvslagUtenForhandsvarsel) {
+                it.setString(11, vurdering.vurderingInitiertAv.name)
+            } else {
+                it.setNull(11, Types.CHAR)
+            }
+            it.setObject(12, vurdering.oppgaveFraNayDato())
 
             it.executeQuery().toList { toPVurdering() }
         }.single()
@@ -249,8 +259,9 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
                 document,
                 gjelder_fom,
                 arsak,
+                vurdering_initiert_av,
                 oppgave_fra_nay_dato
-            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?)
+            ) values (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?)
             RETURNING *
             """
 
@@ -321,6 +332,9 @@ internal fun ResultSet.toPVurdering(): PVurdering = PVurdering(
     journalpostId = getString("journalpost_id"),
     publishedAt = getObject("published_at", OffsetDateTime::class.java),
     gjelderFom = getDate("gjelder_fom")?.toLocalDate(),
+    vurderingInitiertAv = getString("vurdering_initiert_av")?.let {
+        VurderingInitiertAv.valueOf(it)
+    },
     oppgaveFraNayDato = getDate("oppgave_fra_nay_dato")?.toLocalDate(),
 )
 

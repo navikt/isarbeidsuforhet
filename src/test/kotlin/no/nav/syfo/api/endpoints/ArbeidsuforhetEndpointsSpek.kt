@@ -20,7 +20,6 @@ import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
 import no.nav.syfo.api.generateJWT
-import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.api.model.VurderingerRequestDTO
@@ -28,9 +27,7 @@ import no.nav.syfo.api.model.VurderingerResponseDTO
 import no.nav.syfo.api.testApiModule
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
-import no.nav.syfo.domain.DocumentComponent
-import no.nav.syfo.domain.PersonIdent
-import no.nav.syfo.domain.VurderingType
+import no.nav.syfo.domain.*
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.NAV_PERSONIDENT_HEADER
@@ -133,6 +130,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
             gjelderFom = null,
             callId = UUID.randomUUID().toString(),
             svarfrist = svarfrist,
+            vurderingInitiertAv = null,
         )
 
         suspend fun HttpClient.postVurdering(vurderingRequest: VurderingRequestDTO): HttpResponse =
@@ -225,44 +223,6 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
                     }
                 }
-                it("Creates new vurdering OPPFYLT_UTEN_FORHANDSVARSEL and creates PDF") {
-                    testApplication {
-                        val request = VurderingRequestDTO(
-                            type = VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL,
-                            begrunnelse = begrunnelse,
-                            document = vurderingDocumentOppfylt,
-                            arsak = VurderingArsak.NAY_BER_OM_NY_VURDERING,
-                        )
-
-                        val client = setupApiAndClient()
-                        val response = client.postVurdering(request)
-
-                        response.status shouldBeEqualTo HttpStatusCode.Created
-
-                        val responseDTO = response.body<VurderingResponseDTO>()
-                        responseDTO.begrunnelse shouldBeEqualTo begrunnelse
-                        responseDTO.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT.value
-                        responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
-                        responseDTO.document shouldBeEqualTo vurderingDocumentOppfylt
-                        responseDTO.type shouldBeEqualTo VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
-                        responseDTO.arsak shouldBeEqualTo VurderingArsak.NAY_BER_OM_NY_VURDERING
-                        responseDTO.gjelderFom.shouldBeNull()
-                        responseDTO.varsel shouldBeEqualTo null
-
-                        val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
-                        vurdering.begrunnelse shouldBeEqualTo begrunnelse
-                        vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-                        vurdering.type shouldBeEqualTo VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
-                        vurdering.gjelderFom.shouldBeNull()
-                        vurdering.varsel shouldBeEqualTo null
-                        vurdering.arsak() shouldBeEqualTo VurderingArsak.NAY_BER_OM_NY_VURDERING.name
-
-                        val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
-                        pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
-                        pVurderingPdf?.pdf?.get(0) shouldBeEqualTo PDF_VURDERING[0]
-                        pVurderingPdf?.pdf?.get(1) shouldBeEqualTo PDF_VURDERING[1]
-                    }
-                }
                 it("Creates new vurdering AVSLAG and creates PDF") {
                     val expiredForhandsvarsel =
                         generateForhandsvarselVurdering(svarfrist = LocalDate.now().minusDays(1))
@@ -319,7 +279,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         begrunnelse = "Avslag",
                         document = vurderingDocumentAvslag,
                         gjelderFom = avslagGjelderFom,
-                        arsak = VurderingArsak.SYKEPENGER_IKKE_UTBETALT,
+                        vurderingInitiertAv = Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv.NAV_KONTOR,
                         oppgaveFraNayDato = oppgaveDato,
                     )
                     testApplication {
@@ -334,9 +294,9 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         responseDTO.veilederident shouldBeEqualTo VEILEDER_IDENT
                         responseDTO.document shouldBeEqualTo vurderingDocumentAvslag
                         responseDTO.type shouldBeEqualTo VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
-                        responseDTO.arsak shouldBeEqualTo VurderingArsak.SYKEPENGER_IKKE_UTBETALT
                         responseDTO.gjelderFom shouldBeEqualTo avslagGjelderFom
                         responseDTO.varsel shouldBeEqualTo null
+                        responseDTO.vurderingInitiertAv shouldBeEqualTo Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv.NAV_KONTOR
                         responseDTO.oppgaveFraNayDato shouldBeEqualTo oppgaveDato
 
                         val vurderinger = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT)
@@ -348,7 +308,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         avslagVurdering.type shouldBeEqualTo VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
                         avslagVurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
                         avslagVurdering.varsel shouldBeEqualTo null
-                        avslagVurdering.arsak() shouldBeEqualTo VurderingArsak.SYKEPENGER_IKKE_UTBETALT.name
+                        (avslagVurdering as Vurdering.AvslagUtenForhandsvarsel).vurderingInitiertAv shouldBeEqualTo Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv.NAV_KONTOR
 
                         val pVurderingPdf = database.getVurderingPdf(avslagVurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_AVSLAG.size
@@ -464,7 +424,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                 }
             }
             describe("POST: Get vurderinger for several persons") {
-                val personidenter = listOf(ARBEIDSTAKER_PERSONIDENT, ARBEIDSTAKER_2_PERSONIDENT, ARBEIDSTAKER_3_PERSONIDENT)
+                val personidenter =
+                    listOf(ARBEIDSTAKER_PERSONIDENT, ARBEIDSTAKER_2_PERSONIDENT, ARBEIDSTAKER_3_PERSONIDENT)
                 val requestDTO = VurderingerRequestDTO(personidenter.map { it.value })
                 val url = "$arbeidsuforhetApiBasePath/get-vurderinger"
 
@@ -478,7 +439,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                             veilederident = VEILEDER_IDENT,
                             type = type,
                             document = forhandsvarselDocument,
-                            svarfrist = if (type == VurderingType.FORHANDSVARSEL) LocalDate.now().plusDays(21) else null,
+                            svarfrist = if (type == VurderingType.FORHANDSVARSEL) LocalDate.now()
+                                .plusDays(21) else null,
                         )
                     }
                 }

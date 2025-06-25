@@ -1,7 +1,10 @@
 package no.nav.syfo.generator
 
 import no.nav.syfo.UserConstants
-import no.nav.syfo.domain.*
+import no.nav.syfo.domain.DocumentComponent
+import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.domain.Vurdering
+import no.nav.syfo.domain.VurderingType
 import java.time.LocalDate
 
 fun generateForhandsvarselVurdering(
@@ -31,25 +34,28 @@ fun generateVurdering(
         document = document,
         svarfrist = svarfrist!!,
     )
+
     VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
         arsak = Vurdering.IkkeAktuell.Arsak.FRISKMELDT,
         document = document,
     )
+
     VurderingType.OPPFYLT -> Vurdering.Oppfylt(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
         begrunnelse = begrunnelse,
         document = document,
     )
+
     VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Vurdering.OppfyltUtenForhandsvarsel(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
-        arsak = Vurdering.OppfyltUtenForhandsvarsel.Arsak.NAY_BER_OM_NY_VURDERING,
         begrunnelse = begrunnelse,
         document = document,
     )
+
     VurderingType.AVSLAG -> Vurdering.Avslag(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
@@ -57,13 +63,14 @@ fun generateVurdering(
         document = document,
         gjelderFom = LocalDate.now(),
     )
+
     VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Vurdering.AvslagUtenForhandsvarsel(
         personident = personident,
         veilederident = UserConstants.VEILEDER_IDENT,
-        arsak = Vurdering.AvslagUtenForhandsvarsel.Arsak.NAY_BER_OM_NY_VURDERING,
         begrunnelse = begrunnelse,
         document = document,
         gjelderFom = LocalDate.now(),
+        vurderingInitiertAv = Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv.NAV_KONTOR,
         oppgaveFraNayDato = LocalDate.now().minusDays(1),
     )
 }
