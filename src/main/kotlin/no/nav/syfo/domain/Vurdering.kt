@@ -51,7 +51,19 @@ sealed class Vurdering(
         override val varsel: Varsel,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.FORHANDSVARSEL, begrunnelse, varsel, document, journalpostId, publishedAt, null) {
+    ) : Vurdering(
+        uuid,
+        createdAt,
+        personident,
+        veilederident,
+        VurderingType.FORHANDSVARSEL,
+        begrunnelse,
+        varsel,
+        document,
+        journalpostId,
+        publishedAt,
+        null
+    ) {
 
         constructor(
             personident: PersonIdent,
@@ -79,7 +91,19 @@ sealed class Vurdering(
         override val document: List<DocumentComponent>,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.OPPFYLT, begrunnelse, null, document, journalpostId, publishedAt, null) {
+    ) : Vurdering(
+        uuid,
+        createdAt,
+        personident,
+        veilederident,
+        VurderingType.OPPFYLT,
+        begrunnelse,
+        null,
+        document,
+        journalpostId,
+        publishedAt,
+        null
+    ) {
 
         constructor(
             personident: PersonIdent,
@@ -105,16 +129,26 @@ sealed class Vurdering(
         override val document: List<DocumentComponent>,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null,
-        val arsak: Arsak,
         val oppgaveFraNayDato: LocalDate? = null,
-    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, begrunnelse, null, document, journalpostId, publishedAt, null) {
+    ) : Vurdering(
+        uuid,
+        createdAt,
+        personident,
+        veilederident,
+        VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL,
+        begrunnelse,
+        null,
+        document,
+        journalpostId,
+        publishedAt,
+        null
+    ) {
 
         constructor(
             personident: PersonIdent,
             veilederident: String,
             begrunnelse: String,
             document: List<DocumentComponent>,
-            arsak: Arsak,
             oppgaveFraNayDato: LocalDate?,
         ) : this(
             personident = personident,
@@ -123,14 +157,8 @@ sealed class Vurdering(
             document = document,
             journalpostId = null,
             publishedAt = null,
-            arsak = arsak,
             oppgaveFraNayDato = oppgaveFraNayDato,
         )
-
-        enum class Arsak {
-            SYKEPENGER_IKKE_UTBETALT,
-            NAY_BER_OM_NY_VURDERING,
-        }
     }
 
     data class Avslag internal constructor(
@@ -143,7 +171,19 @@ sealed class Vurdering(
         override val gjelderFom: LocalDate,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null
-    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.AVSLAG, begrunnelse, null, document, journalpostId, publishedAt, gjelderFom) {
+    ) : Vurdering(
+        uuid,
+        createdAt,
+        personident,
+        veilederident,
+        VurderingType.AVSLAG,
+        begrunnelse,
+        null,
+        document,
+        journalpostId,
+        publishedAt,
+        gjelderFom
+    ) {
 
         constructor(
             personident: PersonIdent,
@@ -172,9 +212,21 @@ sealed class Vurdering(
         override val gjelderFom: LocalDate,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null,
-        val arsak: Arsak,
+        val vurderingInitiertAv: VurderingInitiertAv,
         val oppgaveFraNayDato: LocalDate? = null,
-    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL, begrunnelse, null, document, journalpostId, publishedAt, gjelderFom) {
+    ) : Vurdering(
+        uuid,
+        createdAt,
+        personident,
+        veilederident,
+        VurderingType.AVSLAG_UTEN_FORHANDSVARSEL,
+        begrunnelse,
+        null,
+        document,
+        journalpostId,
+        publishedAt,
+        gjelderFom
+    ) {
 
         constructor(
             personident: PersonIdent,
@@ -182,7 +234,7 @@ sealed class Vurdering(
             begrunnelse: String,
             document: List<DocumentComponent>,
             gjelderFom: LocalDate,
-            arsak: Arsak,
+            vurderingInitiertAv: VurderingInitiertAv,
             oppgaveFraNayDato: LocalDate?,
         ) : this(
             personident = personident,
@@ -192,13 +244,13 @@ sealed class Vurdering(
             gjelderFom = gjelderFom,
             journalpostId = null,
             publishedAt = null,
-            arsak = arsak,
+            vurderingInitiertAv = vurderingInitiertAv,
             oppgaveFraNayDato = oppgaveFraNayDato,
         )
 
-        enum class Arsak {
-            SYKEPENGER_IKKE_UTBETALT,
-            NAY_BER_OM_NY_VURDERING,
+        enum class VurderingInitiertAv {
+            NAV_KONTOR,
+            NAY,
         }
     }
 
@@ -211,7 +263,19 @@ sealed class Vurdering(
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null,
         val arsak: Arsak,
-    ) : Vurdering(uuid, createdAt, personident, veilederident, VurderingType.IKKE_AKTUELL, "", null, document, journalpostId, publishedAt, null) {
+    ) : Vurdering(
+        uuid,
+        createdAt,
+        personident,
+        veilederident,
+        VurderingType.IKKE_AKTUELL,
+        "",
+        null,
+        document,
+        journalpostId,
+        publishedAt,
+        null
+    ) {
 
         constructor(
             personident: PersonIdent,
@@ -247,6 +311,7 @@ sealed class Vurdering(
             varsel: Varsel?,
             publishedAt: OffsetDateTime?,
             gjelderFom: LocalDate?,
+            vurderingInitiertAv: AvslagUtenForhandsvarsel.VurderingInitiertAv?,
             oppgaveFraNayDato: LocalDate?,
         ): Vurdering {
             return when (VurderingType.valueOf(type)) {
@@ -278,7 +343,6 @@ sealed class Vurdering(
                     createdAt = createdAt,
                     personident = personident,
                     veilederident = veilederident,
-                    arsak = OppfyltUtenForhandsvarsel.Arsak.valueOf(arsak!!),
                     begrunnelse = begrunnelse,
                     document = document,
                     journalpostId = journalpostId,
@@ -303,12 +367,12 @@ sealed class Vurdering(
                     createdAt = createdAt,
                     personident = personident,
                     veilederident = veilederident,
-                    arsak = AvslagUtenForhandsvarsel.Arsak.valueOf(arsak!!),
                     begrunnelse = begrunnelse,
                     document = document,
                     gjelderFom = gjelderFom!!,
                     journalpostId = journalpostId,
                     publishedAt = publishedAt,
+                    vurderingInitiertAv = vurderingInitiertAv!!,
                     oppgaveFraNayDato = oppgaveFraNayDato,
                 )
 
@@ -328,8 +392,6 @@ sealed class Vurdering(
 
     fun arsak(): String? =
         when (this) {
-            is OppfyltUtenForhandsvarsel -> arsak.name
-            is AvslagUtenForhandsvarsel -> arsak.name
             is IkkeAktuell -> arsak.name
             else -> null
         }

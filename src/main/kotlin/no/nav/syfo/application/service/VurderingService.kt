@@ -1,12 +1,12 @@
 package no.nav.syfo.application.service
 
 import io.micrometer.core.instrument.Counter
-import no.nav.syfo.domain.VurderingArsak
 import no.nav.syfo.application.IJournalforingService
 import no.nav.syfo.application.IVurderingPdfService
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.*
+import no.nav.syfo.domain.Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import java.time.LocalDate
@@ -34,6 +34,7 @@ class VurderingService(
         document: List<DocumentComponent>,
         gjelderFom: LocalDate?,
         svarfrist: LocalDate? = null,
+        vurderingInitiertAv: VurderingInitiertAv? = null,
         oppgaveFraNayDato: LocalDate? = null,
         callId: String,
     ): Vurdering {
@@ -47,7 +48,11 @@ class VurderingService(
         if (type == VurderingType.AVSLAG && (currentVurdering == null || !currentVurdering.isExpiredForhandsvarsel())) {
             throw IllegalArgumentException("Cannot create ${VurderingType.AVSLAG} without expired ${VurderingType.FORHANDSVARSEL}")
         }
-        if (listOf(VurderingType.AVSLAG_UTEN_FORHANDSVARSEL, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL).contains(type) && arsak == null) {
+        if (listOf(
+                VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL,
+                VurderingType.IKKE_AKTUELL
+            ).contains(type) && arsak == null
+        ) {
             throw IllegalArgumentException("$type requires arsak")
         }
 
@@ -59,20 +64,22 @@ class VurderingService(
                 document = document,
                 svarfrist = svarfrist!!,
             )
+
             VurderingType.OPPFYLT -> Vurdering.Oppfylt(
                 personident = personident,
                 veilederident = veilederident,
                 begrunnelse = begrunnelse,
                 document = document,
             )
+
             VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL -> Vurdering.OppfyltUtenForhandsvarsel(
                 personident = personident,
                 veilederident = veilederident,
-                arsak = Vurdering.OppfyltUtenForhandsvarsel.Arsak.valueOf(arsak!!.name),
                 begrunnelse = begrunnelse,
                 document = document,
                 oppgaveFraNayDato = oppgaveFraNayDato,
             )
+
             VurderingType.AVSLAG -> Vurdering.Avslag(
                 personident = personident,
                 veilederident = veilederident,
@@ -80,15 +87,18 @@ class VurderingService(
                 document = document,
                 gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type")
             )
+
             VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> Vurdering.AvslagUtenForhandsvarsel(
                 personident = personident,
                 veilederident = veilederident,
-                arsak = Vurdering.AvslagUtenForhandsvarsel.Arsak.valueOf(arsak!!.name),
                 begrunnelse = begrunnelse,
                 document = document,
                 gjelderFom = gjelderFom ?: throw IllegalArgumentException("gjelderFom is required for $type"),
+                vurderingInitiertAv = vurderingInitiertAv
+                    ?: throw IllegalArgumentException("vurderingInitiertAv is required for $type"),
                 oppgaveFraNayDato = oppgaveFraNayDato,
             )
+
             VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
                 personident = personident,
                 veilederident = veilederident,

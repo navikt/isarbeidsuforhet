@@ -1,9 +1,10 @@
 package no.nav.syfo.api.model
 
 import no.nav.syfo.domain.*
+import no.nav.syfo.domain.Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class VurderingResponseDTO private constructor(
     val uuid: UUID,
@@ -16,6 +17,7 @@ data class VurderingResponseDTO private constructor(
     val document: List<DocumentComponent>,
     val varsel: VarselDTO?,
     val gjelderFom: LocalDate?,
+    val vurderingInitiertAv: VurderingInitiertAv?,
     val oppgaveFraNayDato: LocalDate?,
 ) {
     companion object {
@@ -30,6 +32,7 @@ data class VurderingResponseDTO private constructor(
             document = vurdering.document,
             varsel = vurdering.varsel?.let { VarselDTO.createFromVarsel(it) },
             gjelderFom = vurdering.gjelderFom,
+            vurderingInitiertAv = if (vurdering is Vurdering.AvslagUtenForhandsvarsel) vurdering.vurderingInitiertAv else null,
             oppgaveFraNayDato = vurdering.oppgaveFraNayDato(),
         )
     }
