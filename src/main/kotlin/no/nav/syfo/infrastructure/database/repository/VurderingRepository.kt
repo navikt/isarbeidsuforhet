@@ -170,17 +170,12 @@ class VurderingRepository(private val database: DatabaseInterface) : IVurderingR
             it.setString(6, vurdering.type.name)
             it.setString(7, vurdering.begrunnelse)
             it.setObject(8, mapper.writeValueAsString(vurdering.document))
-            it.setObject(9, vurdering.gjelderFom)
-            if (vurdering.arsak() != null) {
-                it.setString(10, vurdering.arsak())
-            } else {
-                it.setNull(10, Types.CHAR)
-            }
-            if (vurdering is Vurdering.AvslagUtenForhandsvarsel) {
-                it.setString(11, vurdering.vurderingInitiertAv.name)
-            } else {
-                it.setNull(11, Types.CHAR)
-            }
+            it.setObject(9, vurdering.gjelderFom())
+            it.setString(10, if (vurdering is Vurdering.IkkeAktuell) vurdering.arsak.name else null)
+            it.setString(
+                11,
+                if (vurdering is Vurdering.AvslagUtenForhandsvarsel) vurdering.vurderingInitiertAv.name else null
+            )
             it.setObject(12, vurdering.oppgaveFraNayDato())
 
             it.executeQuery().toList { toPVurdering() }

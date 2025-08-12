@@ -14,11 +14,9 @@ sealed class Vurdering(
     open val veilederident: String,
     open val type: VurderingType,
     open val begrunnelse: String,
-    open val varsel: Varsel?,
     open val document: List<DocumentComponent>,
     open val journalpostId: JournalpostId?,
     open val publishedAt: OffsetDateTime?,
-    open val gjelderFom: LocalDate?,
 ) {
 
     fun journalfor(journalpostId: JournalpostId): Vurdering = when (this) {
@@ -48,9 +46,9 @@ sealed class Vurdering(
         override val veilederident: String,
         override val begrunnelse: String,
         override val document: List<DocumentComponent>,
-        override val varsel: Varsel,
         override val journalpostId: JournalpostId? = null,
-        override val publishedAt: OffsetDateTime? = null
+        override val publishedAt: OffsetDateTime? = null,
+        val varsel: Varsel,
     ) : Vurdering(
         uuid,
         createdAt,
@@ -58,11 +56,9 @@ sealed class Vurdering(
         veilederident,
         VurderingType.FORHANDSVARSEL,
         begrunnelse,
-        varsel,
         document,
         journalpostId,
         publishedAt,
-        null
     ) {
 
         constructor(
@@ -98,11 +94,9 @@ sealed class Vurdering(
         veilederident,
         VurderingType.OPPFYLT,
         begrunnelse,
-        null,
         document,
         journalpostId,
         publishedAt,
-        null
     ) {
 
         constructor(
@@ -137,11 +131,9 @@ sealed class Vurdering(
         veilederident,
         VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL,
         begrunnelse,
-        null,
         document,
         journalpostId,
         publishedAt,
-        null
     ) {
 
         constructor(
@@ -168,9 +160,9 @@ sealed class Vurdering(
         override val veilederident: String,
         override val begrunnelse: String,
         override val document: List<DocumentComponent>,
-        override val gjelderFom: LocalDate,
         override val journalpostId: JournalpostId? = null,
-        override val publishedAt: OffsetDateTime? = null
+        override val publishedAt: OffsetDateTime? = null,
+        val gjelderFom: LocalDate,
     ) : Vurdering(
         uuid,
         createdAt,
@@ -178,11 +170,9 @@ sealed class Vurdering(
         veilederident,
         VurderingType.AVSLAG,
         begrunnelse,
-        null,
         document,
         journalpostId,
         publishedAt,
-        gjelderFom
     ) {
 
         constructor(
@@ -209,9 +199,9 @@ sealed class Vurdering(
         override val veilederident: String,
         override val begrunnelse: String,
         override val document: List<DocumentComponent>,
-        override val gjelderFom: LocalDate,
         override val journalpostId: JournalpostId? = null,
         override val publishedAt: OffsetDateTime? = null,
+        val gjelderFom: LocalDate,
         val vurderingInitiertAv: VurderingInitiertAv,
         val oppgaveFraNayDato: LocalDate? = null,
     ) : Vurdering(
@@ -221,11 +211,9 @@ sealed class Vurdering(
         veilederident,
         VurderingType.AVSLAG_UTEN_FORHANDSVARSEL,
         begrunnelse,
-        null,
         document,
         journalpostId,
         publishedAt,
-        gjelderFom
     ) {
 
         constructor(
@@ -241,9 +229,9 @@ sealed class Vurdering(
             veilederident = veilederident,
             begrunnelse = begrunnelse,
             document = document,
-            gjelderFom = gjelderFom,
             journalpostId = null,
             publishedAt = null,
+            gjelderFom = gjelderFom,
             vurderingInitiertAv = vurderingInitiertAv,
             oppgaveFraNayDato = oppgaveFraNayDato,
         )
@@ -270,11 +258,9 @@ sealed class Vurdering(
         veilederident,
         VurderingType.IKKE_AKTUELL,
         "",
-        null,
         document,
         journalpostId,
         publishedAt,
-        null
     ) {
 
         constructor(
@@ -296,6 +282,20 @@ sealed class Vurdering(
             FRISKMELDING_TIL_ARBEIDSFORMIDLING,
         }
     }
+
+    fun gjelderFom(): LocalDate? =
+        when (this) {
+            is Avslag -> gjelderFom
+            is AvslagUtenForhandsvarsel -> gjelderFom
+            else -> null
+        }
+
+    fun oppgaveFraNayDato(): LocalDate? =
+        when (this) {
+            is OppfyltUtenForhandsvarsel -> oppgaveFraNayDato
+            is AvslagUtenForhandsvarsel -> oppgaveFraNayDato
+            else -> null
+        }
 
     companion object {
         fun createFromDatabase(
@@ -389,19 +389,6 @@ sealed class Vurdering(
             }
         }
     }
-
-    fun arsak(): String? =
-        when (this) {
-            is IkkeAktuell -> arsak.name
-            else -> null
-        }
-
-    fun oppgaveFraNayDato(): LocalDate? =
-        when (this) {
-            is OppfyltUtenForhandsvarsel -> oppgaveFraNayDato
-            is AvslagUtenForhandsvarsel -> oppgaveFraNayDato
-            else -> null
-        }
 }
 
 enum class VurderingType(val isFinal: Boolean) {

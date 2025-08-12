@@ -15,6 +15,7 @@ import no.nav.syfo.application.IVurderingPdfService
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.JournalpostId
+import no.nav.syfo.domain.Vurdering
 import no.nav.syfo.domain.VurderingType
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
@@ -228,7 +229,8 @@ class VurderingServiceSpek : Spek({
                     pdf = PDF_FORHANDSVARSEL,
                     vurdering = vurderingForhandsvarsel,
                 )
-                val journalfortVarsel = vurderingForhandsvarsel.journalfor(journalpostId = JournalpostId(mockedJournalpostId.toString()))
+                val journalfortVarsel =
+                    vurderingForhandsvarsel.journalfor(journalpostId = JournalpostId(mockedJournalpostId.toString()))
                 vurderingRepository.setJournalpostId(journalfortVarsel)
 
                 val journalforteVurderinger = runBlocking {
@@ -328,7 +330,7 @@ class VurderingServiceSpek : Spek({
                 val avslagVurderingRecord = producerRecordSlot2.captured.value()
                 avslagVurderingRecord.uuid shouldBeEqualTo unpublishedAvslagVurdering.uuid
                 avslagVurderingRecord.type shouldBeEqualTo unpublishedAvslagVurdering.type
-                avslagVurderingRecord.gjelderFom shouldBeEqualTo unpublishedAvslagVurdering.gjelderFom
+                avslagVurderingRecord.gjelderFom shouldBeEqualTo (unpublishedAvslagVurdering as Vurdering.Avslag).gjelderFom
                 avslagVurderingRecord.isFinal shouldBeEqualTo true
 
                 val forhandsvarselRecord = producerRecordSlot1.captured.value()
@@ -361,7 +363,7 @@ class VurderingServiceSpek : Spek({
                 val ikkeAktuellVurderingRecord = producerRecordSlot.captured.value()
                 ikkeAktuellVurderingRecord.uuid shouldBeEqualTo unpublishedIkkeAktuellVurdering.uuid
                 ikkeAktuellVurderingRecord.type shouldBeEqualTo unpublishedIkkeAktuellVurdering.type
-                ikkeAktuellVurderingRecord.arsak?.name shouldBeEqualTo unpublishedIkkeAktuellVurdering.arsak()
+                ikkeAktuellVurderingRecord.arsak?.name shouldBeEqualTo (unpublishedIkkeAktuellVurdering as Vurdering.IkkeAktuell).arsak.name
                 ikkeAktuellVurderingRecord.gjelderFom.shouldBeNull()
                 ikkeAktuellVurderingRecord.isFinal shouldBeEqualTo true
             }
@@ -423,7 +425,7 @@ class VurderingServiceSpek : Spek({
                         )
                     }
 
-                    vurdering.varsel shouldNotBeEqualTo null
+                    (vurdering as Vurdering.Forhandsvarsel).varsel shouldNotBeEqualTo null
                     vurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
                     vurdering.journalpostId shouldBeEqualTo null
                     vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
@@ -452,7 +454,6 @@ class VurderingServiceSpek : Spek({
                         )
                     }
 
-                    vurdering.varsel shouldBeEqualTo null
                     vurdering.type shouldBeEqualTo VurderingType.OPPFYLT
                     vurdering.journalpostId shouldBeEqualTo null
                     vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
@@ -466,7 +467,9 @@ class VurderingServiceSpek : Spek({
                 }
 
                 it("lager vurdering AVSLAG med pdf") {
-                    every { vurderingRepositoryMock.getVurderinger(ARBEIDSTAKER_PERSONIDENT) } returns listOf(expiredForhandsvarsel)
+                    every { vurderingRepositoryMock.getVurderinger(ARBEIDSTAKER_PERSONIDENT) } returns listOf(
+                        expiredForhandsvarsel
+                    )
                     coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_AVSLAG
                     val avslagGjelderFom = LocalDate.now().plusDays(1)
 
@@ -483,13 +486,12 @@ class VurderingServiceSpek : Spek({
                         )
                     }
 
-                    vurdering.varsel shouldBeEqualTo null
                     vurdering.begrunnelse shouldBeEqualTo "Avslag"
                     vurdering.document shouldBeEqualTo document
                     vurdering.type shouldBeEqualTo VurderingType.AVSLAG
                     vurdering.journalpostId shouldBeEqualTo null
                     vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
-                    vurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
+                    (vurdering as Vurdering.Avslag).gjelderFom shouldBeEqualTo avslagGjelderFom
 
                     coVerify(exactly = 1) {
                         vurderingPdfServiceMock.createVurderingPdf(
@@ -515,7 +517,6 @@ class VurderingServiceSpek : Spek({
                         )
                     }
 
-                    vurdering.varsel shouldBeEqualTo null
                     vurdering.type shouldBeEqualTo VurderingType.IKKE_AKTUELL
                     vurdering.journalpostId shouldBeEqualTo null
                     vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
@@ -651,7 +652,9 @@ class VurderingServiceSpek : Spek({
                 }
 
                 it("Avslag fails when missing gjelderFom") {
-                    every { vurderingRepositoryMock.getVurderinger(ARBEIDSTAKER_PERSONIDENT) } returns listOf(expiredForhandsvarsel)
+                    every { vurderingRepositoryMock.getVurderinger(ARBEIDSTAKER_PERSONIDENT) } returns listOf(
+                        expiredForhandsvarsel
+                    )
                     coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_AVSLAG
 
                     runBlocking {

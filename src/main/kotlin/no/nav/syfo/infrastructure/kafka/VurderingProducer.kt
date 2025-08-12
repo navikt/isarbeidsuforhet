@@ -55,9 +55,9 @@ data class VurderingRecord(
                 personident = vurdering.personident.value,
                 veilederident = vurdering.veilederident,
                 type = vurdering.type,
-                arsak = vurdering.arsak()?.let { VurderingArsak.valueOf(it) },
+                arsak = if (vurdering is Vurdering.IkkeAktuell) VurderingArsak.valueOf(vurdering.arsak.name) else null,
                 begrunnelse = vurdering.begrunnelse,
-                gjelderFom = vurdering.gjelderFom,
+                gjelderFom = vurdering.gjelderFom(),
                 isFinal = vurdering.type.isFinal
             )
     }
