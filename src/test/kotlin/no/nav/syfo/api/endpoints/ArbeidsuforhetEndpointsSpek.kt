@@ -168,8 +168,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         vurdering.begrunnelse shouldBeEqualTo begrunnelse
                         vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                         vurdering.type shouldBeEqualTo VurderingType.FORHANDSVARSEL
-                        vurdering.gjelderFom.shouldBeNull()
-                        vurdering.varsel shouldNotBeEqualTo null
+                        (vurdering as Vurdering.Forhandsvarsel).varsel shouldNotBeEqualTo null
 
                         val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_FORHANDSVARSEL.size
@@ -214,8 +213,6 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         vurdering.begrunnelse shouldBeEqualTo begrunnelse
                         vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                         vurdering.type shouldBeEqualTo VurderingType.OPPFYLT
-                        vurdering.gjelderFom.shouldBeNull()
-                        vurdering.varsel shouldBeEqualTo null
 
                         val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
@@ -261,8 +258,7 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         avslagVurdering.document shouldBeEqualTo vurderingDocumentAvslag
                         avslagVurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                         avslagVurdering.type shouldBeEqualTo VurderingType.AVSLAG
-                        avslagVurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
-                        avslagVurdering.varsel shouldBeEqualTo null
+                        (avslagVurdering as Vurdering.Avslag).gjelderFom shouldBeEqualTo avslagGjelderFom
 
                         val pVurderingPdf = database.getVurderingPdf(avslagVurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_AVSLAG.size
@@ -306,9 +302,8 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         avslagVurdering.document shouldBeEqualTo vurderingDocumentAvslag
                         avslagVurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                         avslagVurdering.type shouldBeEqualTo VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
-                        avslagVurdering.gjelderFom shouldBeEqualTo avslagGjelderFom
-                        avslagVurdering.varsel shouldBeEqualTo null
-                        (avslagVurdering as Vurdering.AvslagUtenForhandsvarsel).vurderingInitiertAv shouldBeEqualTo Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv.NAV_KONTOR
+                        (avslagVurdering as Vurdering.AvslagUtenForhandsvarsel).gjelderFom shouldBeEqualTo avslagGjelderFom
+                        avslagVurdering.vurderingInitiertAv shouldBeEqualTo Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv.NAV_KONTOR
 
                         val pVurderingPdf = database.getVurderingPdf(avslagVurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_AVSLAG.size
@@ -344,8 +339,6 @@ object ArbeidsuforhetEndpointsSpek : Spek({
                         vurdering.begrunnelse.shouldBeEmpty()
                         vurdering.personident shouldBeEqualTo ARBEIDSTAKER_PERSONIDENT
                         vurdering.type shouldBeEqualTo VurderingType.IKKE_AKTUELL
-                        vurdering.gjelderFom.shouldBeNull()
-                        vurdering.varsel.shouldBeNull()
 
                         val pVurderingPdf = database.getVurderingPdf(vurdering.uuid)
                         pVurderingPdf?.pdf?.size shouldBeEqualTo PDF_VURDERING.size
