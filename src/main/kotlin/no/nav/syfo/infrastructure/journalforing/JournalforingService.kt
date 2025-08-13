@@ -45,7 +45,7 @@ class JournalforingService(
         pdf: ByteArray,
         vurdering: Vurdering,
     ): JournalpostRequest {
-        val journalpostType = vurdering.type.getJournalpostType()
+        val journalpostType = vurdering.journalpostType
         val avsenderMottaker = if (journalpostType != JournalpostType.NOTAT) {
             AvsenderMottaker.create(
                 id = personIdent.value,

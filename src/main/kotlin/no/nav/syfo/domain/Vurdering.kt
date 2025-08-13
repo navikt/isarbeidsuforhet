@@ -18,6 +18,7 @@ sealed class Vurdering(
     open val journalpostId: JournalpostId?,
     open val publishedAt: OffsetDateTime?,
 ) {
+    abstract val journalpostType: JournalpostType
 
     fun journalfor(journalpostId: JournalpostId): Vurdering = when (this) {
         is Forhandsvarsel -> this.copy(journalpostId = journalpostId)
@@ -38,6 +39,20 @@ sealed class Vurdering(
     }
 
     fun isExpiredForhandsvarsel(): Boolean = this is Forhandsvarsel && this.varsel.isExpired()
+
+    fun gjelderFom(): LocalDate? =
+        when (this) {
+            is Avslag -> gjelderFom
+            is AvslagUtenForhandsvarsel -> gjelderFom
+            else -> null
+        }
+
+    fun oppgaveFraNayDato(): LocalDate? =
+        when (this) {
+            is OppfyltUtenForhandsvarsel -> oppgaveFraNayDato
+            is AvslagUtenForhandsvarsel -> oppgaveFraNayDato
+            else -> null
+        }
 
     data class Forhandsvarsel internal constructor(
         override val uuid: UUID = UUID.randomUUID(),
@@ -60,6 +75,7 @@ sealed class Vurdering(
         journalpostId,
         publishedAt,
     ) {
+        override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
 
         constructor(
             personident: PersonIdent,
@@ -98,6 +114,7 @@ sealed class Vurdering(
         journalpostId,
         publishedAt,
     ) {
+        override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
 
         constructor(
             personident: PersonIdent,
@@ -135,6 +152,7 @@ sealed class Vurdering(
         journalpostId,
         publishedAt,
     ) {
+        override val journalpostType: JournalpostType = JournalpostType.NOTAT
 
         constructor(
             personident: PersonIdent,
@@ -174,6 +192,10 @@ sealed class Vurdering(
         journalpostId,
         publishedAt,
     ) {
+        /**
+         * `Vurdering.Avslag` har JournalpostType.NOTAT fordi NAY har vedtaksmyndighet og det er de som skal sende ut selve vedtaket.
+         */
+        override val journalpostType: JournalpostType = JournalpostType.NOTAT
 
         constructor(
             personident: PersonIdent,
@@ -215,6 +237,10 @@ sealed class Vurdering(
         journalpostId,
         publishedAt,
     ) {
+        /**
+         * `Vurdering.AvslagUtenForhandsvarsel` har JournalpostType.NOTAT fordi NAY har vedtaksmyndighet og det er de som skal sende ut selve vedtaket.
+         */
+        override val journalpostType: JournalpostType = JournalpostType.NOTAT
 
         constructor(
             personident: PersonIdent,
@@ -262,6 +288,7 @@ sealed class Vurdering(
         journalpostId,
         publishedAt,
     ) {
+        override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
 
         constructor(
             personident: PersonIdent,
@@ -282,20 +309,6 @@ sealed class Vurdering(
             FRISKMELDING_TIL_ARBEIDSFORMIDLING,
         }
     }
-
-    fun gjelderFom(): LocalDate? =
-        when (this) {
-            is Avslag -> gjelderFom
-            is AvslagUtenForhandsvarsel -> gjelderFom
-            else -> null
-        }
-
-    fun oppgaveFraNayDato(): LocalDate? =
-        when (this) {
-            is OppfyltUtenForhandsvarsel -> oppgaveFraNayDato
-            is AvslagUtenForhandsvarsel -> oppgaveFraNayDato
-            else -> null
-        }
 
     companion object {
         fun createFromDatabase(
@@ -410,9 +423,4 @@ fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
     VurderingType.FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
     VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> BrevkodeType.ARBEIDSUFORHET_VURDERING
     VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_AVSLAG
-}
-
-fun VurderingType.getJournalpostType(): JournalpostType = when (this) {
-    VurderingType.FORHANDSVARSEL, VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> JournalpostType.UTGAAENDE
-    VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> JournalpostType.NOTAT
 }

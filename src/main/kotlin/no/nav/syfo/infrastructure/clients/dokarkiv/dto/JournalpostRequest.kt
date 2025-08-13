@@ -2,6 +2,11 @@ package no.nav.syfo.infrastructure.clients.dokarkiv.dto
 
 const val JOURNALFORENDE_ENHET = 9999
 
+/**
+ * UTGAAENDE brukes for dokumentasjon som NAV har produsert og sendt ut til en ekstern part. Dette kan for eksempel være informasjons- eller vedtaksbrev til privatpersoner eller organisasjoner.
+ *
+ * NOTAT brukes for dokumentasjon som NAV har produsert selv og uten mål om å distribuere dette ut av NAV. Eksempler på dette er forvaltningsnotater og referater fra telefonsamtaler med brukere.
+ */
 enum class JournalpostType {
     UTGAAENDE,
     NOTAT,
