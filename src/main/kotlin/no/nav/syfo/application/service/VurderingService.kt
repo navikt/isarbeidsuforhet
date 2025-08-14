@@ -42,18 +42,8 @@ class VurderingService(
         if (type == VurderingType.FORHANDSVARSEL && currentVurdering is Vurdering.Forhandsvarsel) {
             throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
         }
-        if (type == VurderingType.FORHANDSVARSEL && svarfrist == null) {
-            throw IllegalArgumentException("${VurderingType.FORHANDSVARSEL} requires frist")
-        }
         if (type == VurderingType.AVSLAG && (currentVurdering == null || !currentVurdering.isExpiredForhandsvarsel())) {
             throw IllegalArgumentException("Cannot create ${VurderingType.AVSLAG} without expired ${VurderingType.FORHANDSVARSEL}")
-        }
-        if (listOf(
-                VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL,
-                VurderingType.IKKE_AKTUELL
-            ).contains(type) && arsak == null
-        ) {
-            throw IllegalArgumentException("$type requires arsak")
         }
 
         val vurdering = when (type) {
@@ -62,7 +52,8 @@ class VurderingService(
                 veilederident = veilederident,
                 begrunnelse = begrunnelse,
                 document = document,
-                svarfrist = svarfrist!!,
+                svarfrist = svarfrist
+                    ?: throw IllegalArgumentException("${VurderingType.FORHANDSVARSEL} requires frist"),
             )
 
             VurderingType.OPPFYLT -> Vurdering.Oppfylt(
@@ -102,7 +93,8 @@ class VurderingService(
             VurderingType.IKKE_AKTUELL -> Vurdering.IkkeAktuell(
                 personident = personident,
                 veilederident = veilederident,
-                arsak = Vurdering.IkkeAktuell.Arsak.valueOf(arsak!!.name),
+                arsak = arsak?.let { Vurdering.IkkeAktuell.Arsak.valueOf(arsak.name) }
+                    ?: throw IllegalArgumentException("arsak is required for $type"),
                 document = document,
             )
         }
