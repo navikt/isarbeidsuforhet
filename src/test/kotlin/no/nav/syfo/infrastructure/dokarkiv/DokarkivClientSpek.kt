@@ -7,6 +7,7 @@ import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.generator.generateJournalpostRequest
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.clients.dokarkiv.dto.BrevkodeType
+import no.nav.syfo.infrastructure.clients.dokarkiv.dto.JournalpostKanal
 import no.nav.syfo.infrastructure.mock.dokarkivConflictResponse
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -26,6 +27,7 @@ class DokarkivClientSpek : Spek({
                 pdf = PDF_FORHANDSVARSEL,
                 vurderingUuid = UUID.randomUUID(),
             )
+            journalpostRequestForhandsvarsel.kanal shouldBeEqualTo JournalpostKanal.DITT_NAV.value
 
             runBlocking {
                 val response = dokarkivClient.journalfor(
