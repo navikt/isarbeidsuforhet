@@ -55,7 +55,7 @@ object JournalforingServiceSpek : Spek({
                 coVerify(exactly = 1) {
                     dokarkivMock.journalfor(
                         journalpostRequest = generateJournalpostRequest(
-                            tittel = "Vurdering av §8-4 arbeidsuførhet",
+                            tittel = "Vurdering av § 8-4 arbeidsuførhet",
                             brevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING,
                             pdf = PDF_VURDERING,
                             vurderingUuid = vurderingOppfylt.uuid,
@@ -130,7 +130,7 @@ object JournalforingServiceSpek : Spek({
                 coVerify(exactly = 1) {
                     dokarkivMock.journalfor(
                         journalpostRequest = generateJournalpostRequest(
-                            tittel = "Vurdering av §8-4 arbeidsuførhet",
+                            tittel = "Vurdering av § 8-4 arbeidsuførhet",
                             brevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING,
                             pdf = PDF_VURDERING,
                             vurderingUuid = vurderingIkkeAktuell.uuid,
