@@ -19,6 +19,8 @@ sealed class Vurdering(
     open val publishedAt: OffsetDateTime?,
 ) {
     abstract val journalpostType: JournalpostType
+    abstract val brevkode: BrevkodeType
+    abstract val dokumentTittel: String
 
     fun journalfor(journalpostId: JournalpostId): Vurdering = when (this) {
         is Forhandsvarsel -> this.copy(journalpostId = journalpostId)
@@ -76,6 +78,8 @@ sealed class Vurdering(
         publishedAt,
     ) {
         override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
+        override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
+        override val dokumentTittel: String = "Forhåndsvarsel om avslag på sykepenger"
 
         constructor(
             personident: PersonIdent,
@@ -115,6 +119,8 @@ sealed class Vurdering(
         publishedAt,
     ) {
         override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
+        override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING
+        override val dokumentTittel: String = "Vurdering av § 8-4 arbeidsuførhet"
 
         constructor(
             personident: PersonIdent,
@@ -153,6 +159,8 @@ sealed class Vurdering(
         publishedAt,
     ) {
         override val journalpostType: JournalpostType = JournalpostType.NOTAT
+        override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING
+        override val dokumentTittel: String = "Vurdering av § 8-4 arbeidsuførhet"
 
         constructor(
             personident: PersonIdent,
@@ -196,6 +204,8 @@ sealed class Vurdering(
          * `Vurdering.Avslag` har JournalpostType.NOTAT fordi NAY har vedtaksmyndighet og det er de som skal sende ut selve vedtaket.
          */
         override val journalpostType: JournalpostType = JournalpostType.NOTAT
+        override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_AVSLAG
+        override val dokumentTittel = "Innstilling om avslag"
 
         constructor(
             personident: PersonIdent,
@@ -241,6 +251,8 @@ sealed class Vurdering(
          * `Vurdering.AvslagUtenForhandsvarsel` har JournalpostType.NOTAT fordi NAY har vedtaksmyndighet og det er de som skal sende ut selve vedtaket.
          */
         override val journalpostType: JournalpostType = JournalpostType.NOTAT
+        override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_AVSLAG
+        override val dokumentTittel: String = "Innstilling om avslag"
 
         constructor(
             personident: PersonIdent,
@@ -289,6 +301,8 @@ sealed class Vurdering(
         publishedAt,
     ) {
         override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
+        override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING
+        override val dokumentTittel: String = "Vurdering av § 8-4 arbeidsuførhet"
 
         constructor(
             personident: PersonIdent,
@@ -411,16 +425,4 @@ enum class VurderingType(val isFinal: Boolean) {
     AVSLAG(true),
     AVSLAG_UTEN_FORHANDSVARSEL(true),
     IKKE_AKTUELL(true);
-}
-
-fun VurderingType.getDokumentTittel(): String = when (this) {
-    VurderingType.FORHANDSVARSEL -> "Forhåndsvarsel om avslag på sykepenger"
-    VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> "Vurdering av §8-4 arbeidsuførhet"
-    VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> "Innstilling om avslag"
-}
-
-fun VurderingType.getBrevkode(): BrevkodeType = when (this) {
-    VurderingType.FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
-    VurderingType.OPPFYLT, VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL, VurderingType.IKKE_AKTUELL -> BrevkodeType.ARBEIDSUFORHET_VURDERING
-    VurderingType.AVSLAG, VurderingType.AVSLAG_UTEN_FORHANDSVARSEL -> BrevkodeType.ARBEIDSUFORHET_AVSLAG
 }

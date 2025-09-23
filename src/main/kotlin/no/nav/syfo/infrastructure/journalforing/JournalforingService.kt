@@ -59,26 +59,24 @@ class JournalforingService(
             idType = BrukerIdType.PERSON_IDENT,
         )
 
-        val dokumentTittel = vurdering.type.getDokumentTittel()
-
         val dokumenter = listOf(
             Dokument.create(
-                brevkode = vurdering.type.getBrevkode(),
+                brevkode = vurdering.brevkode,
                 dokumentvarianter = listOf(
                     Dokumentvariant.create(
-                        filnavn = dokumentTittel,
+                        filnavn = vurdering.dokumentTittel,
                         filtype = FiltypeType.PDFA,
                         fysiskDokument = pdf,
                         variantformat = VariantformatType.ARKIV,
                     )
                 ),
-                tittel = dokumentTittel,
+                tittel = vurdering.dokumentTittel,
             )
         )
         return JournalpostRequest(
             journalpostType = journalpostType.name,
             avsenderMottaker = avsenderMottaker,
-            tittel = dokumentTittel,
+            tittel = vurdering.dokumentTittel,
             bruker = bruker,
             dokumenter = dokumenter,
             eksternReferanseId = vurdering.uuid.toString(),
