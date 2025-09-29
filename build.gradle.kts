@@ -66,7 +66,7 @@ dependencies {
         implementation("org.apache.zookeeper:zookeeper") {
             because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
             version {
-                require("3.9.3")
+                require("3.9.4")
             }
         }
         implementation("commons-beanutils:commons-beanutils") {
