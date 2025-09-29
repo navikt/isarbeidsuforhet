@@ -16,6 +16,12 @@ enum class JournalpostTema(val value: String) {
     OPPFOLGING("OPP"),
 }
 
+enum class JournalpostKanal(
+    val value: String,
+) {
+    DITT_NAV("NAV_NO"),
+}
+
 data class JournalpostRequest(
     val avsenderMottaker: AvsenderMottaker? = null,
     val tittel: String,
@@ -27,4 +33,5 @@ data class JournalpostRequest(
     val sak: Sak = Sak(),
     val eksternReferanseId: String,
     val overstyrInnsynsregler: String? = null,
+    val kanal: String = JournalpostKanal.DITT_NAV.value,
 )
