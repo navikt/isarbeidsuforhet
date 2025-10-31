@@ -12,12 +12,12 @@ sealed class Vurdering(
     open val createdAt: OffsetDateTime,
     open val personident: PersonIdent,
     open val veilederident: String,
-    open val type: VurderingType,
     open val begrunnelse: String,
     open val document: List<DocumentComponent>,
     open val journalpostId: JournalpostId?,
     open val publishedAt: OffsetDateTime?,
 ) {
+    abstract val type: VurderingType
     abstract val journalpostType: JournalpostType
     abstract val brevkode: BrevkodeType
     abstract val dokumentTittel: String
@@ -71,12 +71,12 @@ sealed class Vurdering(
         createdAt,
         personident,
         veilederident,
-        VurderingType.FORHANDSVARSEL,
         begrunnelse,
         document,
         journalpostId,
         publishedAt,
     ) {
+        override val type: VurderingType = VurderingType.FORHANDSVARSEL
         override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
         override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_FORHANDSVARSEL
         override val dokumentTittel: String = "Forhåndsvarsel om avslag på sykepenger"
@@ -112,12 +112,12 @@ sealed class Vurdering(
         createdAt,
         personident,
         veilederident,
-        VurderingType.OPPFYLT,
         begrunnelse,
         document,
         journalpostId,
         publishedAt,
     ) {
+        override val type: VurderingType = VurderingType.OPPFYLT
         override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
         override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING
         override val dokumentTittel: String = "Vurdering av § 8-4 arbeidsuførhet"
@@ -152,12 +152,12 @@ sealed class Vurdering(
         createdAt,
         personident,
         veilederident,
-        VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL,
         begrunnelse,
         document,
         journalpostId,
         publishedAt,
     ) {
+        override val type: VurderingType = VurderingType.OPPFYLT_UTEN_FORHANDSVARSEL
         override val journalpostType: JournalpostType = JournalpostType.NOTAT
         override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING
         override val dokumentTittel: String = "Vurdering av § 8-4 arbeidsuførhet"
@@ -194,12 +194,13 @@ sealed class Vurdering(
         createdAt,
         personident,
         veilederident,
-        VurderingType.AVSLAG,
         begrunnelse,
         document,
         journalpostId,
         publishedAt,
     ) {
+        override val type: VurderingType = VurderingType.AVSLAG
+
         /**
          * `Vurdering.Avslag` har JournalpostType.NOTAT fordi NAY har vedtaksmyndighet og det er de som skal sende ut selve vedtaket.
          */
@@ -241,12 +242,13 @@ sealed class Vurdering(
         createdAt,
         personident,
         veilederident,
-        VurderingType.AVSLAG_UTEN_FORHANDSVARSEL,
         begrunnelse,
         document,
         journalpostId,
         publishedAt,
     ) {
+        override val type: VurderingType = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
+
         /**
          * `Vurdering.AvslagUtenForhandsvarsel` har JournalpostType.NOTAT fordi NAY har vedtaksmyndighet og det er de som skal sende ut selve vedtaket.
          */
@@ -294,12 +296,12 @@ sealed class Vurdering(
         createdAt,
         personident,
         veilederident,
-        VurderingType.IKKE_AKTUELL,
         "",
         document,
         journalpostId,
         publishedAt,
     ) {
+        override val type: VurderingType = VurderingType.IKKE_AKTUELL
         override val journalpostType: JournalpostType = JournalpostType.UTGAAENDE
         override val brevkode: BrevkodeType = BrevkodeType.ARBEIDSUFORHET_VURDERING
         override val dokumentTittel: String = "Vurdering av § 8-4 arbeidsuførhet"

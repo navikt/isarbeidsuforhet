@@ -116,8 +116,8 @@ class VurderingServiceTest {
         @Test
         fun `journalfører OPPFYLT vurdering`() {
             vurderingRepository.createVurdering(vurdering = vurderingOppfylt, pdf = PDF_VURDERING)
-            val results = runBlocking { vurderingService.journalforVurderinger() }
-            val (success, failed) = results.partition { it.isSuccess }
+            val journalforteVurderinger = runBlocking { vurderingService.journalforVurderinger() }
+            val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(1, success.size)
             val journalfort = success.first().getOrThrow()
@@ -131,8 +131,8 @@ class VurderingServiceTest {
         @Test
         fun `journalfører AVSLAG vurdering`() {
             vurderingRepository.createVurdering(vurdering = vurderingAvslag, pdf = PDF_AVSLAG)
-            val results = runBlocking { vurderingService.journalforVurderinger() }
-            val (success, failed) = results.partition { it.isSuccess }
+            val journalforteVurderinger = runBlocking { vurderingService.journalforVurderinger() }
+            val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(1, success.size)
             val p = database.getVurdering(vurderingAvslag.uuid)!!
@@ -143,8 +143,8 @@ class VurderingServiceTest {
         @Test
         fun `journalfører AVSLAG_UTEN_FORHANDSVARSEL vurdering`() {
             vurderingRepository.createVurdering(vurdering = vurderingAvslagUtenForhandsvarsel, pdf = PDF_AVSLAG)
-            val results = runBlocking { vurderingService.journalforVurderinger() }
-            val (success, failed) = results.partition { it.isSuccess }
+            val journalforteVurderinger = runBlocking { vurderingService.journalforVurderinger() }
+            val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(1, success.size)
             val p = database.getVurdering(vurderingAvslagUtenForhandsvarsel.uuid)!!
@@ -155,8 +155,8 @@ class VurderingServiceTest {
         @Test
         fun `journalfører IKKE_AKTUELL vurdering`() {
             vurderingRepository.createVurdering(vurdering = vurderingIkkeAktuell, pdf = PDF_VURDERING)
-            val results = runBlocking { vurderingService.journalforVurderinger() }
-            val (success, failed) = results.partition { it.isSuccess }
+            val journalforteVurderinger = runBlocking { vurderingService.journalforVurderinger() }
+            val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(1, success.size)
             val journalfort = success.first().getOrThrow()
@@ -169,8 +169,8 @@ class VurderingServiceTest {
 
         @Test
         fun `journalfører ikke når ingen vurderinger`() {
-            val results = runBlocking { vurderingService.journalforVurderinger() }
-            val (success, failed) = results.partition { it.isSuccess }
+            val journalforteVurderinger = runBlocking { vurderingService.journalforVurderinger() }
+            val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(0, success.size)
         }
@@ -181,8 +181,8 @@ class VurderingServiceTest {
             val journalfort =
                 vurderingForhandsvarsel.journalfor(journalpostId = JournalpostId(mockedJournalpostId.toString()))
             vurderingRepository.setJournalpostId(journalfort)
-            val results = runBlocking { vurderingService.journalforVurderinger() }
-            val (success, failed) = results.partition { it.isSuccess }
+            val journalforteVurderinger = runBlocking { vurderingService.journalforVurderinger() }
+            val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(0, success.size)
         }
@@ -196,8 +196,8 @@ class VurderingServiceTest {
             )
             vurderingRepository.createVurdering(pdf = PDF_FORHANDSVARSEL, vurdering = vurderingForhandsvarsel)
             vurderingRepository.createVurdering(pdf = PDF_FORHANDSVARSEL, vurdering = vurderingFails)
-            val results = runBlocking { vurderingService.journalforVurderinger() }
-            val (success, failed) = results.partition { it.isSuccess }
+            val journalforteVurderinger = runBlocking { vurderingService.journalforVurderinger() }
+            val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
             assertEquals(1, failed.size)
             assertEquals(1, success.size)
         }
@@ -206,8 +206,8 @@ class VurderingServiceTest {
         fun `journalfører flere vurderinger av ulik type`() {
             vurderingRepository.createVurdering(pdf = PDF_FORHANDSVARSEL, vurdering = vurderingForhandsvarsel)
             vurderingRepository.createVurdering(pdf = PDF_VURDERING, vurdering = vurderingOppfylt)
-            val results = runBlocking { vurderingService.journalforVurderinger() }
-            val (success, failed) = results.partition { it.isSuccess }
+            val journalforteVurderinger = runBlocking { vurderingService.journalforVurderinger() }
+            val (success, failed) = journalforteVurderinger.partition { it.isSuccess }
             assertEquals(0, failed.size)
             assertEquals(2, success.size)
         }
