@@ -27,6 +27,8 @@ import no.nav.syfo.api.model.VurderingerResponseDTO
 import no.nav.syfo.api.testApiModule
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
+import no.nav.syfo.application.service.VurderingService.Companion.FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_LONGEST
+import no.nav.syfo.application.service.VurderingService.Companion.FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_SHORTEST
 import no.nav.syfo.domain.*
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
@@ -171,6 +173,48 @@ class ArbeidsuforhetEndpointsTest {
             assertEquals(PDF_FORHANDSVARSEL.size, pVurderingPdf?.pdf?.size)
             assertEquals(PDF_FORHANDSVARSEL[0], pVurderingPdf?.pdf?.get(0))
             assertEquals(PDF_FORHANDSVARSEL[1], pVurderingPdf?.pdf?.get(1))
+        }
+
+        @Test
+        fun `Validates too short svarfrist when create a new forhandsvarsel`() = testApplication {
+            val client = setupApiAndClient()
+            val response = runBlocking {
+                client.postVurdering(
+                    forhandsvarselRequestDTO.copy(
+                        frist = LocalDate.now().plusDays(FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_SHORTEST - 1),
+                    )
+                )
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Validates too long svarfrist when create a new forhandsvarsel`() = testApplication {
+            val client = setupApiAndClient()
+            val response = runBlocking {
+                client.postVurdering(
+                    forhandsvarselRequestDTO.copy(
+                        frist = LocalDate.now().plusDays(FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_LONGEST + 1),
+                    )
+                )
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Validates missing svarfrist when create a new forhandsvarsel`() = testApplication {
+            val client = setupApiAndClient()
+            val response = runBlocking {
+                client.postVurdering(
+                    forhandsvarselRequestDTO.copy(
+                        frist = null,
+                    )
+                )
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
         @Test
