@@ -7,8 +7,10 @@ import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.*
 import no.nav.syfo.domain.Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv
+import no.nav.syfo.domain.Vurdering.Forhandsvarsel
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
+import java.lang.IllegalArgumentException
 import java.time.LocalDate
 
 class VurderingService(
@@ -41,6 +43,9 @@ class VurderingService(
         val currentVurdering = getVurderinger(personident).firstOrNull()
         if (type == VurderingType.FORHANDSVARSEL && currentVurdering is Vurdering.Forhandsvarsel) {
             throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
+        }
+        if (type == VurderingType.FORHANDSVARSEL && !Forhandsvarsel.hasValidSvarfrist(svarfrist)) {
+            throw IllegalArgumentException("Svarfrist for ${VurderingType.FORHANDSVARSEL} er ugyldig")
         }
         if (type == VurderingType.AVSLAG && (currentVurdering == null || !currentVurdering.isExpiredForhandsvarsel())) {
             throw IllegalArgumentException("Cannot create ${VurderingType.AVSLAG} without expired ${VurderingType.FORHANDSVARSEL}")

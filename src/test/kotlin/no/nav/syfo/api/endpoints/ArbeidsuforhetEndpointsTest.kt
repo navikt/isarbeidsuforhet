@@ -174,6 +174,48 @@ class ArbeidsuforhetEndpointsTest {
         }
 
         @Test
+        fun `Validates too short svarfrist when create a new forhandsvarsel`() = testApplication {
+            val client = setupApiAndClient()
+            val response = runBlocking {
+                client.postVurdering(
+                    forhandsvarselRequestDTO.copy(
+                        frist = LocalDate.now().plusDays(20),
+                    )
+                )
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Validates too long svarfrist when create a new forhandsvarsel`() = testApplication {
+            val client = setupApiAndClient()
+            val response = runBlocking {
+                client.postVurdering(
+                    forhandsvarselRequestDTO.copy(
+                        frist = LocalDate.now().plusDays(43),
+                    )
+                )
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
+        fun `Validates missing svarfrist when create a new forhandsvarsel`() = testApplication {
+            val client = setupApiAndClient()
+            val response = runBlocking {
+                client.postVurdering(
+                    forhandsvarselRequestDTO.copy(
+                        frist = null,
+                    )
+                )
+            }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+
+        @Test
         fun `Does not allow duplicate forhandsvarsel`() {
             runBlocking {
                 createVurdering(
