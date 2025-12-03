@@ -261,11 +261,7 @@ class ArbeidsuforhetEndpointsTest {
         @Test
         fun `Creates new vurdering AVSLAG and creates PDF`() {
             val expiredForhandsvarsel =
-                generateForhandsvarselVurdering().copy(
-                    varsel = Varsel(
-                        svarfrist = LocalDate.now().minusDays(1),
-                    ),
-                )
+                generateForhandsvarselVurdering(svarfrist = LocalDate.now().minusDays(1))
             vurderingRepository.createVurdering(
                 vurdering = expiredForhandsvarsel,
                 pdf = PDF_FORHANDSVARSEL,
