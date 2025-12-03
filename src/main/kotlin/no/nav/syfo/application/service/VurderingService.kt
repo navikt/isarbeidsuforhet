@@ -7,6 +7,7 @@ import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.IVurderingRepository
 import no.nav.syfo.domain.*
 import no.nav.syfo.domain.Vurdering.AvslagUtenForhandsvarsel.VurderingInitiertAv
+import no.nav.syfo.domain.Vurdering.Forhandsvarsel
 import no.nav.syfo.infrastructure.metric.METRICS_NS
 import no.nav.syfo.infrastructure.metric.METRICS_REGISTRY
 import java.lang.IllegalArgumentException
@@ -40,15 +41,11 @@ class VurderingService(
         callId: String,
     ): Vurdering {
         val currentVurdering = getVurderinger(personident).firstOrNull()
-        if (type == VurderingType.FORHANDSVARSEL) {
-            if (currentVurdering is Vurdering.Forhandsvarsel) {
-                throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
-            }
-            val allowedSvarfristShortest = LocalDate.now().plusDays(FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_SHORTEST)
-            val allowedSvarfristLongest = LocalDate.now().plusDays(FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_LONGEST)
-            if (svarfrist == null || svarfrist.isBefore(allowedSvarfristShortest) || svarfrist.isAfter(allowedSvarfristLongest)) {
-                throw IllegalArgumentException("Forhandsvarsel has invalid svarfrist")
-            }
+        if (type == VurderingType.FORHANDSVARSEL && currentVurdering is Vurdering.Forhandsvarsel) {
+            throw IllegalArgumentException("Duplicate ${VurderingType.FORHANDSVARSEL} for given person")
+        }
+        if (type == VurderingType.FORHANDSVARSEL && !Forhandsvarsel.hasValidSvarfrist(svarfrist)) {
+            throw IllegalArgumentException("Svarfrist for ${VurderingType.FORHANDSVARSEL} er ugyldig")
         }
         if (type == VurderingType.AVSLAG && (currentVurdering == null || !currentVurdering.isExpiredForhandsvarsel())) {
             throw IllegalArgumentException("Cannot create ${VurderingType.AVSLAG} without expired ${VurderingType.FORHANDSVARSEL}")
@@ -159,11 +156,6 @@ class VurderingService(
                 publishedVurdering
             }
         }
-    }
-
-    companion object {
-        const val FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_SHORTEST = 21L
-        const val FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_LONGEST = 42L
     }
 }
 

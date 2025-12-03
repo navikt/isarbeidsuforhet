@@ -27,8 +27,6 @@ import no.nav.syfo.api.model.VurderingerResponseDTO
 import no.nav.syfo.api.testApiModule
 import no.nav.syfo.application.IVurderingProducer
 import no.nav.syfo.application.service.VurderingService
-import no.nav.syfo.application.service.VurderingService.Companion.FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_LONGEST
-import no.nav.syfo.application.service.VurderingService.Companion.FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_SHORTEST
 import no.nav.syfo.domain.*
 import no.nav.syfo.generator.generateDocumentComponent
 import no.nav.syfo.generator.generateForhandsvarselVurdering
@@ -181,7 +179,7 @@ class ArbeidsuforhetEndpointsTest {
             val response = runBlocking {
                 client.postVurdering(
                     forhandsvarselRequestDTO.copy(
-                        frist = LocalDate.now().plusDays(FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_SHORTEST - 1),
+                        frist = LocalDate.now().plusDays(20),
                     )
                 )
             }
@@ -195,7 +193,7 @@ class ArbeidsuforhetEndpointsTest {
             val response = runBlocking {
                 client.postVurdering(
                     forhandsvarselRequestDTO.copy(
-                        frist = LocalDate.now().plusDays(FORHANDSVARSEL_ALLOWED_SVARFRIST_DAYS_LONGEST + 1),
+                        frist = LocalDate.now().plusDays(43),
                     )
                 )
             }
@@ -263,7 +261,11 @@ class ArbeidsuforhetEndpointsTest {
         @Test
         fun `Creates new vurdering AVSLAG and creates PDF`() {
             val expiredForhandsvarsel =
-                generateForhandsvarselVurdering(svarfrist = LocalDate.now().minusDays(1))
+                generateForhandsvarselVurdering().copy(
+                    varsel = Varsel(
+                        svarfrist = LocalDate.now().minusDays(1),
+                    ),
+                )
             vurderingRepository.createVurdering(
                 vurdering = expiredForhandsvarsel,
                 pdf = PDF_FORHANDSVARSEL,
