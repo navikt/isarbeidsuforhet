@@ -3,24 +3,24 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val CONFLUENT = "7.9.1"
+val CONFLUENT = "8.1.0"
 val FLYWAY = "11.17.1"
 val HIKARI = "7.0.2"
 val POSTGRES = "42.7.8"
 val POSTGRES_EMBEDDED = "2.2.0"
 val POSTGRES_RUNTIME_VERSION = "17.6.0"
-val KAFKA = "3.9.1"
+val KAFKA = "4.1.0"
 val LOGBACK = "1.5.21"
-val LOGSTASH_ENCODER = "8.1"
-val MICROMETER_REGISTRY = "1.16.0"
+val LOGSTASH_ENCODER = "9.0"
+val MICROMETER_REGISTRY = "1.12.13"
 val JACKSON_DATATYPE = "2.20.1"
-val KTOR = "3.3.2"
+val KTOR = "3.3.3"
 val MOCKK = "1.14.6"
 val NIMBUS_JOSE_JWT = "10.6"
 
 plugins {
     kotlin("jvm") version "2.2.21"
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.adarshr.test-logger") version "4.0.0"
 }
@@ -92,7 +92,7 @@ dependencies {
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.27.1")
+                require("1.28.0")
             }
         }
     }
