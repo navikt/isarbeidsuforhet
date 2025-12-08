@@ -3,8 +3,8 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val CONFLUENT = "8.1.0"
-val FLYWAY = "11.17.1"
+val CONFLUENT = "8.1.1"
+val FLYWAY = "11.18.0"
 val HIKARI = "7.0.2"
 val POSTGRES = "42.7.8"
 val POSTGRES_EMBEDDED = "2.2.0"
@@ -12,10 +12,10 @@ val POSTGRES_RUNTIME_VERSION = "17.6.0"
 val KAFKA = "4.1.0"
 val LOGBACK = "1.5.21"
 val LOGSTASH_ENCODER = "9.0"
-val MICROMETER_REGISTRY = "1.12.13"
+val MICROMETER_REGISTRY = "1.16.0"
 val JACKSON_DATATYPE = "2.20.1"
 val KTOR = "3.3.3"
-val MOCKK = "1.14.6"
+val MOCKK = "1.14.7"
 val NIMBUS_JOSE_JWT = "10.6"
 
 plugins {
