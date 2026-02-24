@@ -16,9 +16,8 @@ Se "§ 8-4 Medisinske vilkår" på Navet for mer informasjon.
 
 ##### Test Libraries:
 
-* Kluent
 * Mockk
-* Spek
+* JUnit
 
 #### Requirements
 

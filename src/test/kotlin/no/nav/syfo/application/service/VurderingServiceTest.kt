@@ -351,6 +351,46 @@ class VurderingServiceTest {
             }
 
             @Test
+            fun `lager ikke vurdering FORHANDSVARSEL med for kort svarfrist`() {
+                coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_FORHANDSVARSEL
+                assertThrows<IllegalArgumentException> {
+                    runBlocking {
+                        vurderingServiceWithMocks.createVurdering(
+                            personident = ARBEIDSTAKER_PERSONIDENT,
+                            veilederident = VEILEDER_IDENT,
+                            type = VurderingType.FORHANDSVARSEL,
+                            arsak = null,
+                            begrunnelse = begrunnelse,
+                            document = document,
+                            gjelderFom = null,
+                            svarfrist = LocalDate.now().plusDays(20),
+                            callId = "",
+                        )
+                    }
+                }
+            }
+
+            @Test
+            fun `lager ikke vurdering FORHANDSVARSEL med for lang svarfrist`() {
+                coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_FORHANDSVARSEL
+                assertThrows<IllegalArgumentException> {
+                    runBlocking {
+                        vurderingServiceWithMocks.createVurdering(
+                            personident = ARBEIDSTAKER_PERSONIDENT,
+                            veilederident = VEILEDER_IDENT,
+                            type = VurderingType.FORHANDSVARSEL,
+                            arsak = null,
+                            begrunnelse = begrunnelse,
+                            document = document,
+                            gjelderFom = null,
+                            svarfrist = LocalDate.now().plusDays(43),
+                            callId = "",
+                        )
+                    }
+                }
+            }
+
+            @Test
             fun `lager vurdering OPPFYLT med pdf`() {
                 coEvery { vurderingPdfServiceMock.createVurderingPdf(any(), any()) } returns PDF_VURDERING
                 val vurdering = runBlocking {
