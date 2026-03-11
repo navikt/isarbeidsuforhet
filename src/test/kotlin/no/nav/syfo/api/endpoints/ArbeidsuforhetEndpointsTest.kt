@@ -41,6 +41,8 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertNotNull
 import java.time.LocalDate
 import java.util.*
 
@@ -159,7 +161,7 @@ class ArbeidsuforhetEndpointsTest {
             assertEquals(VurderingType.FORHANDSVARSEL, responseDTO.type)
             assertNull(responseDTO.gjelderFom)
             assertNotNull(responseDTO.varsel)
-            assertEquals(svarfrist, responseDTO.varsel.svarfrist)
+            assertEquals(svarfrist, responseDTO.varsel!!.svarfrist)
 
             val vurdering = vurderingRepository.getVurderinger(ARBEIDSTAKER_PERSONIDENT).single()
             assertEquals(begrunnelse, vurdering.begrunnelse)
@@ -423,7 +425,7 @@ class ArbeidsuforhetEndpointsTest {
                 assertNull(responseDTO.arsak)
                 assertNotNull(responseDTO.varsel)
                 assertEquals(LocalDate.now().plusWeeks(3), responseDTO.varsel?.svarfrist)
-                assertFalse(responseDTO.varsel.isExpired)
+                assertFalse(responseDTO.varsel!!.isExpired)
             }
         }
 

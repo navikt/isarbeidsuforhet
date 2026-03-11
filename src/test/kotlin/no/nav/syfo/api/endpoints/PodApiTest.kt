@@ -11,9 +11,9 @@ import no.nav.syfo.infrastructure.database.TestDatabase
 import no.nav.syfo.infrastructure.database.TestDatabaseNotResponding
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.Test
 
 class PodApiTest {

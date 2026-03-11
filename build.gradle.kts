@@ -9,17 +9,18 @@ val HIKARI = "7.0.2"
 val POSTGRES = "42.7.8"
 val POSTGRES_EMBEDDED = "2.2.0"
 val POSTGRES_RUNTIME_VERSION = "17.6.0"
-val KAFKA = "4.1.0"
-val LOGBACK = "1.5.22"
+val KAFKA = "4.1.1"
+val LOGBACK = "1.5.32"
 val LOGSTASH_ENCODER = "9.0"
-val MICROMETER_REGISTRY = "1.12.13"
-val JACKSON_DATATYPE = "2.20.1"
-val KTOR = "3.3.3"
-val MOCKK = "1.14.7"
-val NIMBUS_JOSE_JWT = "10.6"
+val MICROMETER_REGISTRY = "1.16.3"
+val JACKSON_DATATYPE = "2.21.1"
+val JACKSON_DATABIND = "3.1.0"
+val KTOR = "3.4.1"
+val MOCKK = "1.14.9"
+val NIMBUS_JOSE_JWT = "10.8"
 
 plugins {
-    kotlin("jvm") version "2.2.21"
+    kotlin("jvm") version "2.3.10"
     id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.adarshr.test-logger") version "4.0.0"
@@ -64,12 +65,6 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
     constraints {
-        implementation("org.apache.zookeeper:zookeeper") {
-            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
-            version {
-                require("3.9.4")
-            }
-        }
         implementation("commons-beanutils:commons-beanutils") {
             because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
             version {
@@ -80,15 +75,10 @@ dependencies {
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$JACKSON_DATATYPE")
+    implementation("tools.jackson.core:jackson-databind:$JACKSON_DATABIND")
 
     implementation("io.confluent:kafka-avro-serializer:$CONFLUENT", excludeLog4j)
     constraints {
-        implementation("org.apache.avro:avro") {
-            because("io.confluent:kafka-avro-serializer:$CONFLUENT -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
-            version {
-                require("1.12.0")
-            }
-        }
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {

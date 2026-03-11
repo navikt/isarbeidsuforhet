@@ -25,6 +25,7 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNotNull
 import java.util.concurrent.Future
 
 private val journalpostId = JournalpostId("123")
