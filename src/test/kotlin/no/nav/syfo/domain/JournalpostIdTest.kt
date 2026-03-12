@@ -2,7 +2,7 @@ package no.nav.syfo.domain
 
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNotNull
 
 class JournalpostIdTest {
     @Test
