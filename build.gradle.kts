@@ -17,7 +17,7 @@ val JACKSON_DATATYPE = "2.21.2"
 val JACKSON_DATABIND = "3.1.1"
 val KTOR = "3.4.2"
 val MOCKK = "1.14.9"
-val NIMBUS_JOSE_JWT = "10.8"
+val NIMBUS_JOSE_JWT = "10.9"
 
 plugins {
     kotlin("jvm") version "2.3.20"
