@@ -8,16 +8,16 @@ val FLYWAY = "11.19.0"
 val HIKARI = "7.0.2"
 val POSTGRES = "42.7.10"
 val POSTGRES_EMBEDDED = "2.2.2"
-val POSTGRES_RUNTIME_VERSION = "17.6.0"
+val POSTGRES_RUNTIME_VERSION = "17.9.0"
 val KAFKA = "4.2.0"
 val LOGBACK = "1.5.32"
 val LOGSTASH_ENCODER = "9.0"
 val MICROMETER_REGISTRY = "1.16.4"
 val JACKSON_DATATYPE = "2.21.2"
-val JACKSON_DATABIND = "3.1.1"
+val JACKSON_DATABIND = "3.1.2"
 val KTOR = "3.4.2"
 val MOCKK = "1.14.9"
-val NIMBUS_JOSE_JWT = "10.8"
+val NIMBUS_JOSE_JWT = "10.9"
 
 plugins {
     kotlin("jvm") version "2.3.20"
@@ -62,30 +62,15 @@ dependencies {
     // Kafka
     val excludeLog4j = fun ExternalModuleDependency.() {
         exclude(group = "log4j")
+        exclude(group = "org.apache.logging.log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
-    constraints {
-        implementation("commons-beanutils:commons-beanutils") {
-            because("org.apache.kafka:kafka_2.13:$KAFKA -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
-            version {
-                require("1.11.0")
-            }
-        }
-    }
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$JACKSON_DATATYPE")
     implementation("tools.jackson.core:jackson-databind:$JACKSON_DATABIND")
 
     implementation("io.confluent:kafka-avro-serializer:$CONFLUENT", excludeLog4j)
-    constraints {
-        implementation("org.apache.commons:commons-compress") {
-            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
-            version {
-                require("1.28.0")
-            }
-        }
-    }
 
     // Tests
     testImplementation("io.ktor:ktor-server-test-host:$KTOR")
