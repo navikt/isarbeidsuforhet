@@ -19,7 +19,8 @@ import no.nav.syfo.UserConstants.PDF_AVSLAG
 import no.nav.syfo.UserConstants.PDF_FORHANDSVARSEL
 import no.nav.syfo.UserConstants.PDF_VURDERING
 import no.nav.syfo.UserConstants.VEILEDER_IDENT
-import no.nav.syfo.api.generateJWT
+import no.nav.syfo.api.tokenForVeilederWithFullTilgang
+import no.nav.syfo.api.tokenForVeilederWithNoWriteTilgang
 import no.nav.syfo.api.model.VurderingRequestDTO
 import no.nav.syfo.api.model.VurderingResponseDTO
 import no.nav.syfo.api.model.VurderingerRequestDTO
@@ -65,11 +66,7 @@ class ArbeidsuforhetEndpointsTest {
         journalforingService = journalforingService,
         vurderingProducer = mockk<IVurderingProducer>(),
     )
-    private val validToken = generateJWT(
-        audience = externalMockEnvironment.environment.azure.appClientId,
-        issuer = externalMockEnvironment.wellKnownInternalAzureAD.issuer,
-        navIdent = VEILEDER_IDENT,
-    )
+    private val validToken = tokenForVeilederWithFullTilgang
 
     private val begrunnelse = "Dette er en begrunnelse for vurdering av 8-4"
     private val forhandsvarselDocument = generateDocumentComponent(
@@ -636,6 +633,18 @@ class ArbeidsuforhetEndpointsTest {
             val response = client.get(urlVurdering) {
                 bearerAuth(validToken)
                 header(NAV_PERSONIDENT_HEADER, ARBEIDSTAKER_PERSONIDENT_VEILEDER_NO_ACCESS.value)
+            }
+            assertEquals(HttpStatusCode.Forbidden, response.status)
+        }
+
+        @Test
+        fun `Returns status Forbidden if denied write access`() = testApplication {
+            val client = setupApiAndClient()
+            val response = client.post(urlVurdering) {
+                bearerAuth(tokenForVeilederWithNoWriteTilgang)
+                contentType(ContentType.Application.Json)
+                header(NAV_PERSONIDENT_HEADER, personIdent)
+                setBody(forhandsvarselRequestDTO)
             }
             assertEquals(HttpStatusCode.Forbidden, response.status)
         }

@@ -7,8 +7,9 @@ import no.nav.syfo.infrastructure.clients.veiledertilgang.VeilederTilgangskontro
 
 suspend fun RoutingContext.validateVeilederAccess(
     action: String,
-    personIdentToAccess: PersonIdent,
+    personidentToAccess: PersonIdent,
     veilederTilgangskontrollClient: VeilederTilgangskontrollClient,
+    requiresWriteAccess: Boolean = false,
     requestBlock: suspend () -> Unit,
 ) {
     val callId = getCallId()
@@ -16,11 +17,19 @@ suspend fun RoutingContext.validateVeilederAccess(
     val token = getBearerHeader()
         ?: throw IllegalArgumentException("Failed to complete the following action: $action. No Authorization header supplied")
 
-    val hasVeilederAccess = veilederTilgangskontrollClient.hasAccess(
-        callId = callId,
-        personIdent = personIdentToAccess,
-        token = token,
-    )
+    val hasVeilederAccess = if (requiresWriteAccess) {
+        veilederTilgangskontrollClient.hasWriteAccess(
+            callId = callId,
+            personident = personidentToAccess,
+            token = token,
+        )
+    } else {
+        veilederTilgangskontrollClient.hasAccess(
+            callId = callId,
+            personident = personidentToAccess,
+            token = token,
+        )
+    }
     if (hasVeilederAccess) {
         requestBlock()
     } else {

@@ -25,16 +25,16 @@ fun Route.registerArbeidsuforhetEndpoints(
 ) {
     route(arbeidsuforhetApiBasePath) {
         get(vurderingPath) {
-            val personIdent = call.getPersonIdent()
+            val personident = call.getPersonIdent()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
 
             validateVeilederAccess(
                 action = API_ACTION,
-                personIdentToAccess = personIdent,
+                personidentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
             ) {
                 val vurderinger = vurderingService.getVurderinger(
-                    personident = personIdent,
+                    personident = personident,
                 )
                 val responseDTO = vurderinger.map { vurdering -> VurderingResponseDTO.createFromVurdering(vurdering) }
                 call.respond(HttpStatusCode.OK, responseDTO)
@@ -42,13 +42,14 @@ fun Route.registerArbeidsuforhetEndpoints(
         }
 
         post(vurderingPath) {
-            val personIdent = call.getPersonIdent()
+            val personident = call.getPersonIdent()
                 ?: throw IllegalArgumentException("Failed to $API_ACTION: No $NAV_PERSONIDENT_HEADER supplied in request header")
 
             validateVeilederAccess(
                 action = API_ACTION,
-                personIdentToAccess = personIdent,
+                personidentToAccess = personident,
                 veilederTilgangskontrollClient = veilederTilgangskontrollClient,
+                requiresWriteAccess = true,
             ) {
                 val requestDTO = call.receive<VurderingRequestDTO>()
                 val callId = call.getCallId()
@@ -59,7 +60,7 @@ fun Route.registerArbeidsuforhetEndpoints(
                 val navIdent = call.getNAVIdent()
 
                 val newVurdering = vurderingService.createVurdering(
-                    personident = personIdent,
+                    personident = personident,
                     veilederident = navIdent,
                     type = requestDTO.type,
                     arsak = requestDTO.arsak,
