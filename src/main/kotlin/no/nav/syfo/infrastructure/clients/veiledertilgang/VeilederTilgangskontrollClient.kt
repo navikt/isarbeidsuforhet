@@ -7,7 +7,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Counter
-import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.infrastructure.clients.ClientEnvironment
 import no.nav.syfo.infrastructure.clients.httpClientDefault
 import no.nav.syfo.domain.PersonIdent
@@ -29,34 +28,17 @@ class VeilederTilgangskontrollClient(
 
     suspend fun hasAccess(
         callId: String,
-        personIdent: PersonIdent,
+        personident: PersonIdent,
         token: String
-    ): Boolean {
-        val onBehalfOfToken =
-            azureAdClient.getOnBehalfOfToken(
-                scopeClientId = clientEnvironment.clientId,
-                token = token
-            )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
+    ): Boolean = getTilgang(callId, personident, token)?.erGodkjent ?: false
 
-        return try {
-            val tilgang =
-                httpClient.get(tilgangskontrollPersonUrl) {
-                    header(HttpHeaders.Authorization, bearerHeader(onBehalfOfToken))
-                    header(NAV_PERSONIDENT_HEADER, personIdent.value)
-                    header(NAV_CALL_ID_HEADER, callId)
-                    accept(ContentType.Application.Json)
-                }
-            Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.increment()
-            tilgang.body<Tilgang>().erGodkjent
-        } catch (e: ResponseException) {
-            if (e.response.status == HttpStatusCode.Forbidden) {
-                Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
-            } else {
-                handleUnexpectedResponseException(e.response, callId)
-            }
-            false
-        }
-    }
+    suspend fun hasWriteAccess(
+        callId: String,
+        personident: PersonIdent,
+        token: String,
+    ): Boolean = getTilgang(callId, personident, token)?.let {
+        it.erGodkjent && it.fullTilgang
+    } ?: false
 
     suspend fun veilederPersonerAccess(
         personidenter: List<PersonIdent>,
@@ -96,16 +78,36 @@ class VeilederTilgangskontrollClient(
         }
     }
 
-    private fun handleUnexpectedResponseException(
-        response: HttpResponse,
-        callId: String
-    ) {
-        log.error(
-            "Error while requesting access to person from istilgangskontroll with {}, {}",
-            StructuredArguments.keyValue("statusCode", response.status.value.toString()),
-            StructuredArguments.keyValue("callId", callId)
-        )
-        Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.increment()
+    private suspend fun getTilgang(
+        callId: String,
+        personident: PersonIdent,
+        token: String,
+    ): Tilgang? {
+        val onBehalfOfToken =
+            azureAdClient.getOnBehalfOfToken(
+                scopeClientId = clientEnvironment.clientId,
+                token = token
+            )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
+
+        return try {
+            val tilgang =
+                httpClient.get(tilgangskontrollPersonUrl) {
+                    header(HttpHeaders.Authorization, bearerHeader(onBehalfOfToken))
+                    header(NAV_PERSONIDENT_HEADER, personident.value)
+                    header(NAV_CALL_ID_HEADER, callId)
+                    accept(ContentType.Application.Json)
+                }
+            Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSON_SUCCESS.increment()
+            tilgang.body<Tilgang>()
+        } catch (e: ResponseException) {
+            if (e.response.status == HttpStatusCode.Forbidden) {
+                Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSON_FORBIDDEN.increment()
+            } else {
+                log.error("Error while requesting access to person from istilgangskontroll with statusCode=${e.response.status.value}, callId=$callId")
+                Metrics.COUNT_CALL_TILGANGSKONTROLL_PERSON_FAIL.increment()
+            }
+            null
+        }
     }
 
     companion object {
