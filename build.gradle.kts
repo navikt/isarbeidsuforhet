@@ -21,7 +21,7 @@ val NIMBUS_JOSE_JWT = "10.9"
 
 plugins {
     kotlin("jvm") version "2.3.21"
-    id("com.gradleup.shadow") version "8.3.8"
+    id("com.gradleup.shadow") version "9.4.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.adarshr.test-logger") version "4.0.0"
 }
