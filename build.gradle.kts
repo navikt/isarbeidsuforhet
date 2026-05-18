@@ -3,7 +3,7 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val CONFLUENT = "8.2.0"
+val CONFLUENT = "8.2.1"
 val FLYWAY = "11.19.0"
 val HIKARI = "7.0.2"
 val POSTGRES = "42.7.11"
@@ -15,7 +15,7 @@ val LOGSTASH_ENCODER = "9.0"
 val MICROMETER_REGISTRY = "1.16.5"
 val JACKSON_DATATYPE = "2.21.3"
 val JACKSON_DATABIND = "3.1.3"
-val KTOR = "3.4.3"
+val KTOR = "3.5.0"
 val MOCKK = "1.14.9"
 val NIMBUS_JOSE_JWT = "10.9"
 
