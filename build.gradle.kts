@@ -15,9 +15,9 @@ val LOGSTASH_ENCODER = "9.0"
 val MICROMETER_REGISTRY = "1.17.1"
 val JACKSON_DATATYPE = "2.22.2"
 val JACKSON_DATABIND = "3.2.2"
-val KTOR = "3.5.2"
+val KTOR = "3.6.0"
 val MOCKK = "1.14.11"
-val NIMBUS_JOSE_JWT = "10.9.1"
+val NIMBUS_JOSE_JWT = "10.10"
 
 plugins {
     kotlin("jvm") version "2.4.20"
