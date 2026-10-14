@@ -29,7 +29,6 @@ import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
 import no.nav.syfo.infrastructure.kafka.identhendelse.launchIdenthendelseConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
 
 const val applicationPort = 8080
 
