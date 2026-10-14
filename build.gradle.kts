@@ -35,7 +35,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation("io.ktor:ktor-client-apache:$KTOR")
+    implementation("io.ktor:ktor-client-apache5:$KTOR")
     implementation("io.ktor:ktor-client-content-negotiation:$KTOR")
     implementation("io.ktor:ktor-serialization-jackson:$KTOR")
     implementation("io.ktor:ktor-server-auth-jwt:$KTOR")
