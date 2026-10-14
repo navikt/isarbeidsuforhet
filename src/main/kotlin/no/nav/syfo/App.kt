@@ -29,7 +29,6 @@ import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
 import no.nav.syfo.infrastructure.kafka.identhendelse.launchIdenthendelseConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
 
 const val applicationPort = 8080
 
@@ -153,12 +152,10 @@ fun main() {
                     )
                 )
             }
+            monitor.subscribe(ApplicationStopPreparing) {
+                applicationState.ready = false
+            }
         }
     )
-
-    Runtime.getRuntime().addShutdownHook(
-        Thread { server.stop(10, 10, TimeUnit.SECONDS) }
-    )
-
     server.start(wait = true)
 }
