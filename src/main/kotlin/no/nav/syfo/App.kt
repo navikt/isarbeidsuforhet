@@ -153,12 +153,10 @@ fun main() {
                     )
                 )
             }
+            monitor.subscribe(ApplicationStopPreparing) {
+                applicationState.ready = false
+            }
         }
     )
-
-    Runtime.getRuntime().addShutdownHook(
-        Thread { server.stop(10, 10, TimeUnit.SECONDS) }
-    )
-
     server.start(wait = true)
 }
