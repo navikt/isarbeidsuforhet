@@ -54,6 +54,10 @@ data class Environment(
                 baseUrl = getEnvVar("DOKARKIV_URL"),
                 clientId = getEnvVar("DOKARKIV_CLIENT_ID"),
             ),
+            dokdistfordeling = ClientEnvironment(
+                baseUrl = getEnvVar("DOKDISTFORDELING_URL"),
+                clientId = getEnvVar("DOKDISTFORDELING_CLIENT_ID"),
+            ),
         ),
 )
 

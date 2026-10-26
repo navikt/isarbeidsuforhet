@@ -18,6 +18,7 @@ val JACKSON_DATABIND = "3.2.3"
 val KTOR = "3.6.0"
 val MOCKK = "1.14.11"
 val NIMBUS_JOSE_JWT = "10.10"
+val ISYFO_BACKEND_COMMON = "1.3.2"
 
 plugins {
     kotlin("jvm") version "2.4.21"
@@ -29,11 +30,13 @@ plugins {
 repositories {
     mavenCentral()
     maven(url = "https://packages.confluent.io/maven/")
+    maven(url = "https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
+    implementation("no.nav.syfo:isyfo-backend-common:$ISYFO_BACKEND_COMMON")
 
     implementation("io.ktor:ktor-client-apache5:$KTOR")
     implementation("io.ktor:ktor-client-content-negotiation:$KTOR")

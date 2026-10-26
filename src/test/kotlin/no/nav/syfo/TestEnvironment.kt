@@ -47,6 +47,10 @@ fun testEnvironment() = Environment(
             baseUrl = "dokarkivUrl",
             clientId = "dokarkivClientId",
         ),
+        dokdistfordeling = ClientEnvironment(
+            baseUrl = "https://dokdistfordeling",
+            clientId = "dokdistfordelingClientId",
+        ),
     ),
     electorPath = "electorPath",
     isJournalforingRetryEnabled = true,

@@ -16,8 +16,11 @@ import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
 import no.nav.syfo.infrastructure.clients.dokarkiv.DokarkivClient
 import no.nav.syfo.infrastructure.journalforing.JournalforingService
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.KafkaArbeidstakervarselSerializer
+import no.nav.syfo.common.distribusjon.client.DokdistfordelingClient
+import no.nav.syfo.common.http.proxyHttpClient
+import no.nav.syfo.common.token.texas.EntraIdClient
+import no.nav.syfo.common.util.ClientConfig
+import no.nav.syfo.infrastructure.distribusjon.DistribusjonService
 import no.nav.syfo.infrastructure.clients.pdfgen.PdfGenClient
 import no.nav.syfo.infrastructure.clients.pdfgen.VurderingPdfService
 import no.nav.syfo.infrastructure.clients.pdl.PdlClient
@@ -72,10 +75,16 @@ fun main() {
         pdlClient = pdlClient,
     )
 
-    val arbeidstakerForhandsvarselProducer = ArbeidstakerForhandsvarselProducer(
-        kafkaProducer = KafkaProducer(
-            kafkaAivenProducerConfig<KafkaArbeidstakervarselSerializer>(kafkaEnvironment = environment.kafka)
-        )
+    val entraIdClient = EntraIdClient()
+    val dokdistClient = DistribusjonService(
+        dokdistfordelingClient = DokdistfordelingClient(
+            systemTokenProvider = entraIdClient,
+            clientConfig = ClientConfig(
+                baseUrl = environment.clients.dokdistfordeling.baseUrl,
+                clientId = environment.clients.dokdistfordeling.clientId,
+            ),
+            httpClient = proxyHttpClient(),
+        ),
     )
     val vurderingProducer = VurderingProducer(
         producer = KafkaProducer(
@@ -116,12 +125,9 @@ fun main() {
                 vurderingProducer = vurderingProducer,
             )
             val varselRepository = VarselRepository(database = applicationDatabase)
-            val varselProducer = VarselProducer(
-                arbeidstakerForhandsvarselProducer = arbeidstakerForhandsvarselProducer,
-            )
             varselService = VarselService(
                 varselRepository = varselRepository,
-                varselProducer = varselProducer,
+                dokdistClient = dokdistClient,
             )
 
             apiModule(

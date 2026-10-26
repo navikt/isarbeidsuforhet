@@ -1,32 +1,23 @@
 package no.nav.syfo.application.service
 
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ExternalMockEnvironment
 import no.nav.syfo.UserConstants
+import no.nav.syfo.application.IDokdistClient
 import no.nav.syfo.domain.JournalpostId
 import no.nav.syfo.domain.Varsel
 import no.nav.syfo.generator.generateForhandsvarselVurdering
 import no.nav.syfo.infrastructure.database.dropData
 import no.nav.syfo.infrastructure.database.repository.VarselRepository
 import no.nav.syfo.infrastructure.database.repository.VurderingRepository
-import no.nav.syfo.infrastructure.kafka.VarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.ArbeidstakerForhandsvarselProducer
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.ArbeidstakerHendelse
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.EsyfovarselHendelse
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.HendelseType
-import no.nav.syfo.infrastructure.kafka.esyfovarsel.dto.VarselData
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertNotNull
-import java.util.concurrent.Future
 
 private val journalpostId = JournalpostId("123")
 
@@ -37,15 +28,10 @@ class VarselServiceTest {
 
     private val varselRepository = VarselRepository(database = database)
     private val vurderingRepository = VurderingRepository(database = database)
-    private val mockEsyfoVarselHendelseProducer = mockk<KafkaProducer<String, EsyfovarselHendelse>>()
-    private val arbeidstakerForhandsvarselProducer =
-        ArbeidstakerForhandsvarselProducer(kafkaProducer = mockEsyfoVarselHendelseProducer)
-    private val varselProducer = VarselProducer(
-        arbeidstakerForhandsvarselProducer = arbeidstakerForhandsvarselProducer,
-    )
+    private val dokdistClient = mockk<IDokdistClient>()
     private val varselService = VarselService(
         varselRepository = varselRepository,
-        varselProducer = varselProducer,
+        dokdistClient = dokdistClient,
     )
 
     private val vurderingForhandsvarsel = generateForhandsvarselVurdering()
@@ -53,7 +39,7 @@ class VarselServiceTest {
     @BeforeEach
     fun setup() {
         clearAllMocks()
-        every { mockEsyfoVarselHendelseProducer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+        coEvery { dokdistClient.distribuer(journalpostId) } returns "bestillingsId"
     }
 
     @AfterEach
@@ -72,15 +58,14 @@ class VarselServiceTest {
     }
 
     @Test
-    fun `publishes unpublished varsel`() {
+    fun `distributes unpublished varsel only once`() = runBlocking {
         val unpublishedVarsel = createUnpublishedVarsel()
 
         val (success, failed) = varselService.publishUnpublishedVarsler().partition { it.isSuccess }
         assertEquals(0, failed.size)
         assertEquals(1, success.size)
 
-        val producerRecordSlot = slot<ProducerRecord<String, EsyfovarselHendelse>>()
-        verify(exactly = 1) { mockEsyfoVarselHendelseProducer.send(capture(producerRecordSlot)) }
+        coVerify(exactly = 1) { dokdistClient.distribuer(journalpostId) }
 
         val publishedVarsel = success.first().getOrThrow()
         assertEquals(unpublishedVarsel.uuid, publishedVarsel.uuid)
@@ -88,33 +73,44 @@ class VarselServiceTest {
 
         assertTrue(varselRepository.getUnpublishedVarsler().isEmpty())
 
-        val esyfovarselHendelse = producerRecordSlot.captured.value() as ArbeidstakerHendelse
-        assertEquals(HendelseType.SM_ARBEIDSUFORHET_FORHANDSVARSEL, esyfovarselHendelse.type)
-        assertEquals(UserConstants.ARBEIDSTAKER_PERSONIDENT.value, esyfovarselHendelse.arbeidstakerFnr)
-        val varselData = esyfovarselHendelse.data as VarselData
-        assertEquals(publishedVarsel.uuid.toString(), varselData.journalpost?.uuid)
-        assertEquals(journalpostId.value, varselData.journalpost?.id)
+        assertTrue(varselService.publishUnpublishedVarsler().isEmpty())
+        coVerify(exactly = 1) { dokdistClient.distribuer(journalpostId) }
     }
 
     @Test
-    fun `publishes nothing when no unpublished varsel`() {
+    fun `distributes nothing when no unpublished varsel`() = runBlocking {
         val (success, failed) = varselService.publishUnpublishedVarsler().partition { it.isSuccess }
         assertEquals(0, failed.size)
         assertEquals(0, success.size)
-        verify(exactly = 0) { mockEsyfoVarselHendelseProducer.send(any()) }
+        coVerify(exactly = 0) { dokdistClient.distribuer(journalpostId) }
     }
 
     @Test
-    fun `fails publishing when kafka-producer fails`() {
+    fun `retries distribution when dokdist fails`() = runBlocking {
         val unpublishedVarsel = createUnpublishedVarsel()
-        every { mockEsyfoVarselHendelseProducer.send(any()) } throws Exception("Error producing to kafka")
+        coEvery { dokdistClient.distribuer(journalpostId) } throws Exception("Error calling dokdist")
 
         val (success, failed) = varselService.publishUnpublishedVarsler().partition { it.isSuccess }
         assertEquals(1, failed.size)
         assertEquals(0, success.size)
-        verify(exactly = 1) { mockEsyfoVarselHendelseProducer.send(any()) }
+        coVerify(exactly = 1) { dokdistClient.distribuer(journalpostId) }
 
         val (_, _, varsel) = varselRepository.getUnpublishedVarsler().first()
         assertEquals(unpublishedVarsel.uuid, varsel.uuid)
+
+        coEvery { dokdistClient.distribuer(journalpostId) } returns "bestillingsId"
+        assertTrue(varselService.publishUnpublishedVarsler().single().isSuccess)
+        assertTrue(varselRepository.getUnpublishedVarsler().isEmpty())
+    }
+
+    @Test
+    fun `does not distribute varsel before journalforing`() = runBlocking {
+        vurderingRepository.createVurdering(
+            pdf = UserConstants.PDF_FORHANDSVARSEL,
+            vurdering = vurderingForhandsvarsel,
+        )
+
+        assertTrue(varselService.publishUnpublishedVarsler().isEmpty())
+        coVerify(exactly = 0) { dokdistClient.distribuer(journalpostId) }
     }
 }
