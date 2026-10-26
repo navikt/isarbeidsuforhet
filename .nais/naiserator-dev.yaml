@@ -47,6 +47,7 @@ spec:
         - host: "login.microsoftonline.com"
         - host: "pdl-api.dev-fss-pub.nais.io"
         - host: "dokarkiv-q2.dev-fss-pub.nais.io"
+        - host: "dokdistfordeling.dev-fss-pub.nais.io"
       rules:
         - application: istilgangskontroll
         - application: ispdfgen
@@ -100,3 +101,7 @@ spec:
       value: "dev-fss.teamdokumenthandtering.dokarkiv"
     - name: DOKARKIV_URL
       value: "https://dokarkiv-q2.dev-fss-pub.nais.io"
+    - name: DOKDISTFORDELING_CLIENT_ID
+      value: "dev-fss.teamdokumenthandtering.dokdistfordeling"
+    - name: DOKDISTFORDELING_URL
+      value: "https://dokdistfordeling.dev-fss-pub.nais.io"
