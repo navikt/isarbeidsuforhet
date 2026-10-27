@@ -46,7 +46,7 @@ spec:
       external:
         - host: "login.microsoftonline.com"
         - host: "pdl-api.dev-fss-pub.nais.io"
-        - host: "dokarkiv.dev-fss-pub.nais.io"
+        - host: "dokarkiv-q2.dev-fss-pub.nais.io"
       rules:
         - application: istilgangskontroll
         - application: ispdfgen
@@ -97,6 +97,6 @@ spec:
     - name: PDL_URL
       value: "https://pdl-api.dev-fss-pub.nais.io/graphql"
     - name: DOKARKIV_CLIENT_ID
-      value: "dev-fss.teamdokumenthandtering.dokarkiv-q1"
+      value: "dev-fss.teamdokumenthandtering.dokarkiv"
     - name: DOKARKIV_URL
-      value: "https://dokarkiv.dev-fss-pub.nais.io"
+      value: "https://dokarkiv-q2.dev-fss-pub.nais.io"
