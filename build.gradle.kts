@@ -3,8 +3,8 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "0.0.1"
 
-val CONFLUENT = "8.3.0"
-val FLYWAY = "12.10.0"
+val CONFLUENT = "8.4.0"
+val FLYWAY = "13.12.1"
 val HIKARI = "7.1.0"
 val POSTGRES = "42.7.14"
 val POSTGRES_EMBEDDED = "2.2.2"
@@ -68,12 +68,26 @@ dependencies {
         exclude(group = "org.apache.logging.log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$KAFKA", excludeLog4j)
+    constraints {
+        implementation("at.yawk.lz4:lz4-java") {
+            version {
+                require("1.11.4")
+            }
+        }
+    }
 
     // (De-)serialization
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$JACKSON_DATATYPE")
     implementation("tools.jackson.core:jackson-databind:$JACKSON_DATABIND")
 
     implementation("io.confluent:kafka-avro-serializer:$CONFLUENT", excludeLog4j)
+    constraints {
+        implementation("com.google.guava:guava") {
+            version {
+                require("33.8.0-jre")
+            }
+        }
+    }
 
     // Tests
     testImplementation("io.ktor:ktor-server-test-host:$KTOR")
